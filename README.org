@@ -1,4 +1,4 @@
-#+TITLE: Demostración asistida por ordenador con Coq
+#+TITLE: Demostración Asistida por Ordenador con Coq
 
 Apuntes de demostración asistida por ordenador con
 [[https://coq.inria.fr/][Coq]] para los cursos de
