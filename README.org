@@ -5,7 +5,7 @@ Apuntes de demostración asistida por ordenador con
 + [[http://www.cs.us.es/~jalonso/cursos/m-ra/][Razonamiento automático]] del 
   [[http://master.cs.us.es/Máster_Universitario_en_Lógica,_Computación_e_Inteligencia_Artificial][Máster Universitario en Lógica, computación e inteligencia artificial]]
   de la [[http://www.us.es][Universidad de Sevilla]].
-* [[http://www.cs.us.es/~jalonso/cursos/lmf/][Lógica matemática y fundamentos]] del 
++ [[http://www.cs.us.es/~jalonso/cursos/lmf/][Lógica matemática y fundamentos]] del 
   [[http://www.us.es/estudios/grados/plan_171?p=7][Grado en Matemáticas]] 
   de la [[http://www.us.es][Universidad de Sevilla]].
 
@@ -17,8 +17,8 @@ Una primera versión de estos apuntes se han usado este año en el
 [[http://www.glc.us.es/~jalonso/SLC2018][Seminario de Lógica Computacional]].
 
 * Temas
-* [[https://github.com/jaalonso/DAOconCoq/blob/master/teorias/T1_PF_en_Coq.v][Tema 1: Programación funcional y métodos elementales de demostración en Coq]].
-* [[https://github.com/jaalonso/DAOconCoq/blob/master/teorias/T2_Induccion.v][Tema 2: Demostraciones por inducción sobre los números naturales en Coq]].
++ [[https://github.com/jaalonso/DAOconCoq/blob/master/teorias/T1_PF_en_Coq.v][Tema 1: Programación funcional y métodos elementales de demostración en Coq]].
++ [[https://github.com/jaalonso/DAOconCoq/blob/master/teorias/T2_Induccion.v][Tema 2: Demostraciones por inducción sobre los números naturales en Coq]].
 
 Todos los temas están recopilados en el libro
 [[https://github.com/jaalonso/DAOconCoq/raw/master/texto/DAOconCoq.pdf][Demostración asistida por ordenador con Coq]]. 
