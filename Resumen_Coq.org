@@ -81,7 +81,7 @@ Proof.
 Abort.
 #+END_SRC
 
-+ Tácticas de demostración 
+* Tácticas de demostración 
 
 + =assert (H: P)=: Incluyed la demostración de la propiedad P y continúa
   la demostración añadiendo como premisa la propiedad P con nombre H. 
