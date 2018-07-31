@@ -89,7 +89,7 @@ Abort.
 + =destruct n as [| n']=: Distingue dos casos según que n sea 0 o sea =S n'=. 
 + =induction n as [|n' IHn']=: Inicia una demostración por inducción
   sobre =n=. El caso base en ~n = 0~. El paso de la inducción consiste en
-  suponer la propiedad para =n=' y demostrarla para =S n'=. El nombre de la
+  suponer la propiedad para =n'= y demostrarla para =S n'=. El nombre de la
   hipótesis de inducción es =IHn'=.
 + =intros vars=: Introduce las variables del cuantificador universal y,
   como premisas, los antecedentes de las implicaciones.
