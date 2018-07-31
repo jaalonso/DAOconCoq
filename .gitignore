@@ -52,6 +52,7 @@ nra.cache
 *.out
 *.synctex.gz
 *.html
+texto/auto/*
 wiki/*
 plantilla*
 version_1.zip
