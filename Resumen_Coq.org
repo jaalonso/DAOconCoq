@@ -1,0 +1,99 @@
+#+TITLE: Resumen de Coq
+
+En esta sección se resumen las construcciones y tácticas utilizadas
+hasta ahora.
+
+* Definiciones 
+
++ Definición de tipos inductivos sin argumentos
+#+BEGIN_SRC coq
+Inductive X  :=
+  | constructor1 : X
+  | constructor2 : X
+  ...
+  | constructorN : X.
+#+END_SRC
+
++ Definición de tipos inductivos con argumentos
+#+BEGIN_SRC coq
+Inductive X args :=
+  | constructor1 : args1 -> X
+  | constructor2 : args2 -> X
+  ...
+  | constructorN : argsN -> X.
+#+END_SRC
+
++ Definición de funciones no recursivas
+#+BEGIN_SRC coq
+Definition nombre args: tipo :=
+  cuerpo
+#+END_SRC
+
++ Definición de funciones recursivas
+#+BEGIN_SRC coq
+Fixpoint nombre args: tipo :=
+  cuerpo
+#+END_SRC
+
++ Expresión con casos
+#+BEGIN_SRC coq
+match d with
+| caso1 => resultado1
+| caso2 => resultado2
+...
+| casoN => resultadoN
+end.
+#+END_SRC
+
++ Módulos: Los módulos se inician con =Module Nombre.= y
+  terminan con =End Nombre=
+
++ Teorías: Las teorías se importan con =Require Export Nombre=.
+
+* Evaluación de expresiones
+
++ =Check e= escribe el tipo de la expresión =e=.
++ =Compute e= escribe el valor de la expresión =e=.
+
+* Enunciados 
+
++ Enunciados de teoremas
+#+BEGIN_SRC coq
+Theorem nombre:
+  cuerpo.
+#+END_SRC
+
++ El mismo patrón para =Example= y =Lemma=
+
+* Estructura de demostraciones 
+
++ Demostración completa
+#+BEGIN_SRC coq
+Proof.
+  cuerpo
+Qed.
+#+END_SRC
+
++ Demostración incompleta
+#+BEGIN_SRC coq
+Proof.
+  cuerpo
+Abort.
+#+END_SRC
+
++ Tácticas de demostración 
+
++ =assert (H: P)=: Incluyed la demostración de la propiedad P y continúa
+  la demostración añadiendo como premisa la propiedad P con nombre H. 
++ =destruct b=: Distingue dos casos según que b sea True o False.
++ =destruct n as [| n']=: Distingue dos casos según que n sea 0 o sea =S n'=. 
++ =induction n as [|n' IHn']=: Inicia una demostración por inducción
+  sobre =n=. El caso base en ~n = 0~. El paso de la inducción consiste en
+  suponer la propiedad para =n=' y demostrarla para =S n'=. El nombre de la
+  hipótesis de inducción es =IHn'=.
++ =intros vars=: Introduce las variables del cuantificador universal y,
+  como premisas, los antecedentes de las implicaciones.
++ =reflexivity=: Demuestra el objetivo si es una igualdad trivial.
++ =rewrite H=: Sustituye el término izquierdo de H por el derecho.
++ =rewrite <-H=: Sustituye el término derecho de H por el izquierdo.
++ =simpl=: Simplifica las expresiones.
