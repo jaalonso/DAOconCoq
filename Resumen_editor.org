@@ -1,0 +1,31 @@
+#+TITLE: Resumen de editor con Proof General y company-coq
+
+* Símbolos
+
++ Cuando está activado el =prettify-symbols-mode=, al poner el cursor
+  sobre un símbolo se muestra su equivalente en ASCII.
++ Se puede escribir símbolos matemáticos como en LaTeX. Por ejemplo, =\opl RET=.
+
+* Completaciones 
+
++ Escribiendo las primeras letras de una táctica o un teorema, completa
+  el nombre.
+
+* Atajos
+
++ =intros! RET= introduce todas las hipótesis.
+
+* Órdenes
+
++ =M-x prettify-symbols-mode=: Conmuta la presentación de símbolos. 
++ =C-h= sobre una táctica o teorema muestra su descripción.
++ =C-c C-d= sobre un identificador, muestra su tipo.
++ =M-.= sobre un identificador, muestra su definición.
++ =C-click= sobre un identificador, muestra una ventana con su definición.
++ =C-c C-,= muestra las definiciones, lemas y teoremas de la teoría.
++ =C-c C-a C-a "suma"= muestra los lemas sobre "suma". Se pueda también
+  obtener evaluando =SearchAbout suma.=
++ =C-c C-a C-e= informa del error.
++ =C-c C-a C-d= muestra la diferencia.
++ =C-c C-a C-x= extrae un lema.
+

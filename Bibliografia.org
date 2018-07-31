@@ -1,0 +1,42 @@
+#+TITLE: Bibliografía
+
+* Libros
+
++ [[https://softwarefoundations.cis.upenn.edu/current/lf-current][Software foundations (Vol. 1: Logical foundations)]] de Benjamin Peirce
+  y otros.
+
+* Cursos
+
+** Escocia
+
+*** Univ. de Edimburgo
++ [[http://www.inf.ed.ac.uk/teaching/courses/tspl/][Types and semantics for programming languages]]. ~ Philip Wadler 
+
+** EE.UU.
+
+*** Univ. de Cornell
++ [[http://www.cs.cornell.edu/courses/cs3110/2018sp/][Data structures and functional programming]].
+
+** Francia
+
+*** Sophia Antipolis, Francia.
++ [[https://team.inria.fr/marelle/en/advanced-coq-winter-school-2016/][Advanced Coq Winter School 2016]]. ~ Cyril Cohen, Laurence Rideau,
+  Enrico Tassi y Laurent Thery 
+
+*** École Polytechnique
++ [[http://www.enseignement.polytechnique.fr/informatique/INF551/][Computational logic: artificial intelligence in mathematical reasoning]]. 
+  ~ [[http://www.lix.polytechnique.fr/Labo/Stephane.Graham-Lengrand/][Stéphane Graham-Lengrand]] y Roberto Blanco
+
+* Resúmenes de Coq
+
++ [[http://www.enseignement.polytechnique.fr/informatique/INF551/TD/TD3/aux/cheat1.pdf][Coq cheat sheet]] del curso [[http://www.enseignement.polytechnique.fr/informatique/INF551/][Computational logic: artificial intelligence in mathematical reasoning]].
++ [[http://www.inf.ed.ac.uk/teaching/courses/tspl/cheatsheet.pdf][Coq cheat sheet]] del curso [[http://www.inf.ed.ac.uk/teaching/courses/tspl/][Types and semantics for programming languages]]
++ [[http://www-sop.inria.fr/teams/marelle/advanced-coq-16/cheatsheet.pdf][Coq cheat sheet]] del curso [[https://team.inria.fr/marelle/en/advanced-coq-winter-school-2016/][Advanced Coq Winter School 2016]].
++ [[https://www.typesofnote.com/posts/coq-cheat-sheet.html][Coq cheat sheet]] por Calvin Beck.
++ [[https://pjreddie.com/coq-tactics/][Coq tactic index]] por Joseph Redmon.
++ [[http://www.cs.cornell.edu/courses/cs3110/2018sp/a5/coq-tactics-cheatsheet.html][Coq tactics cheatsheet]] del curso [[http://www.cs.cornell.edu/courses/cs3110/2018sp/][Data structures and functional programming]]
+
+* Resúmenes de Proof General
+
++ [[https://github.com/UniMath/UniMath/wiki/Coq-and-ProofGeneral-cheat-sheet][Coq and ProofGeneral cheat sheet]].
+

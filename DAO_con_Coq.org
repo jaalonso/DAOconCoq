@@ -1,0 +1,48 @@
+#+TITLE: DAO (demostración asitida por ordenador) con Coq
+
+Notas del libro [[https://softwarefoundations.cis.upenn.edu/current/lf-current/index.html][Software foundations (Vol. 1: Logical foundations)]] (versión
+5.5 de mayo de 2018) de B.C. Peirce et als.
+
+La copia local está [[~/ownCloud/Biblioteca/Libros/2018/Sofware%20foundations%20~%20Peirce-18][aquí]].
+
+Se complementa con el curso [[http://www.seas.upenn.edu/~cis500/current/index.html][CIS 500: Software foundations]] de Benjamin Pierce. 
+
+* Contenido 
++ Preface ([[./Preface.v][Preface]]).
++ Functional programming in Coq ([[./Basics.v][Basics]]).
++ Proof by induction ([[./Induction.v][Induction]]).
++ Working with Structured Data    (Lists)
++ Polymorphism and Higher-Order Functions    (Poly)
++ More Basic Tactics    (Tactics)
++ Logic in Coq    (Logic)
++ Inductively Defined Propositions    (IndProp)
++ Total and Partial Maps    (Maps)
++ The Curry-Howard Correspondence    (ProofObjects)
++ Induction Principles    (IndPrinciples)
++ Properties of Relations    (Rel)
++ Simple Imperative Programs    (Imp)
++ Lexing and Parsing in Coq    (ImpParser)
++ An Evaluation Function for Imp    (ImpCEvalFun)
++ Extracting ML from Coq    (Extraction)
++ More Automation    (Auto)
++ Postscript
++ Bibliography    (Bib)
+* Referencias
+** Resúmenes de Coq
++ [[http://www.comp.nus.edu.sg/~cs3234/coq/cheat_sheet_v1.pdf][Coq Cheat Sheet for CS3234 (Aquinas Hobor and Martin Henz)]].
++ [[http://specfun.inria.fr/mahboubi/cheat.pdf][Coq cheat sheet]]. Assia Mahboubi
++ [[http://adam.chlipala.net/itp/tactic-reference.html][Coq Tactics Quick Reference]]. Adam Chlipala
++ [[http://www.enseignement.polytechnique.fr/informatique/INF551/TD/TD3/aux/cheat1.pdf][Basic cheat sheet]]. Stéphane Graham-Lengrand
++ [[http://cs.brown.edu/courses/csci1950-x/current/index.html][Coq Cheat Sheet]]. Ben Lerner
+
+** Soluciones en GitHub
++ [[https://github.com/pykello/software-foundations][pykello]]
++ [[https://github.com/scturtle/CIS500_sol][scturtle]]
++ [[https://github.com/steven7woo/CIS500][steven7woo]]
++ [[https://github.com/ysyshtc/cis500/blob/master/Basics.v][ysyshtc]]
+
+** Pendientes
++ [[https://courses.ps.uni-saarland.de/icl_18/][Introduction to computational logic]] (Curso de Smolka)
++ [[http://www-verimag.imag.fr/~corbinea/mmode.fr.html][C-zar: le langage de preuves déclaratif pour Coq]].
++ [[http://flint.cs.yale.edu/cs430][Formal Semantics]] (Curso de Yale).
++ [[http://adam.chlipala.net/cpdt/][Certified programming with dependent types]]. ~ A. Chlipala
