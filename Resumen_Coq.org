@@ -86,11 +86,11 @@ Abort.
 + =assert (H: P)=: Incluyed la demostración de la propiedad P y continúa
   la demostración añadiendo como premisa la propiedad P con nombre H. 
 + =destruct b=: Distingue dos casos según que b sea True o False.
-+ =destruct n as [| n']=: Distingue dos casos según que n sea 0 o sea =S n'=. 
-+ =induction n as [|n' IHn']=: Inicia una demostración por inducción
++ =destruct n as [| n1]=: Distingue dos casos según que =n= sea 0 o sea =S n1=. 
++ =induction n as [|n1 IHn1]=: Inicia una demostración por inducción
   sobre =n=. El caso base en ~n = 0~. El paso de la inducción consiste en
-  suponer la propiedad para ~n'~ y demostrarla para ~S n'~. El nombre de la
-  hipótesis de inducción es ~IHn'~.
+  suponer la propiedad para ~n1~ y demostrarla para ~S n1~. El nombre de la
+  hipótesis de inducción es ~IHn1~.
 + =intros vars=: Introduce las variables del cuantificador universal y,
   como premisas, los antecedentes de las implicaciones.
 + =reflexivity=: Demuestra el objetivo si es una igualdad trivial.
