@@ -2,152 +2,184 @@
 
 Require Export T2_Induccion.
 
-(* ---------------------------------------------------------------------
-   Nota. Iniciar el módulo NatList.
-   ------------------------------------------------------------------ *)
-
-Module NatList. 
-
 (* =====================================================================
-   § Pares de números 
+   § 1. Pares de números 
    ================================================================== *)
 
 (* ---------------------------------------------------------------------
-   Ejemplo. El tipo de los números naturales es natprod y su
-   constructor es pair.
+   Nota. Se iniciar el módulo ListaNat.
    ------------------------------------------------------------------ *)
 
-Inductive natprod : Type :=
-  pair : nat -> nat -> natprod.
-
-Check (pair 3 5).
+Module ListaNat. 
 
 (* ---------------------------------------------------------------------
-   Ejemplo. Definir la función
-      fst : natprod -> nat
+   Ejemplo 1.1. Definir el tipo ProdNat para los pares de números
+   naturales con el constructor
+      par : nat -> nat -> ProdNat.
+   ------------------------------------------------------------------ *)
+
+Inductive ProdNat : Type :=
+  par : nat -> nat -> ProdNat.
+
+(* ---------------------------------------------------------------------
+   Ejemplo 1.2. Calcular el tipo de la expresión (par 3 5)
+   ------------------------------------------------------------------ *)
+
+Check (par 3 5).
+(* ===> par 3 5 : ProdNat *)
+
+(* ---------------------------------------------------------------------
+   Ejemplo 1.3. Definir la función
+      fst : ProdNat -> nat
    tal que (fst p) es la primera componente de p.
    ------------------------------------------------------------------ *)
 
-Definition fst (p : natprod) : nat := 
+Definition fst (p : ProdNat) : nat := 
   match p with
-  | pair x y => x
+  | par x y => x
   end.
 
 (* ---------------------------------------------------------------------
-   Ejemplo. Evaluar la expresión 
-      fst (pair 3 5)
+   Ejemplo 1.4. Evaluar la expresión 
+      fst (par 3 5)
    ------------------------------------------------------------------ *)
 
-Eval compute in (fst (pair 3 5)).
-(* ===> 3 *)
+Compute (fst (par 3 5)).
+(* ===> 3 : nat *)
 
 (* ---------------------------------------------------------------------
-   Ejemplo. Definir la función
-      snd : natprod -> nat
+   Ejemplo 1.5. Definir la función
+      snd : ProdNat -> nat
    tal que (snd p) es la segunda componente de p.
    ------------------------------------------------------------------ *)
 
-Definition snd (p : natprod) : nat := 
+Definition snd (p : ProdNat) : nat := 
   match p with
-  | pair x y => y
+  | par x y => y
   end.
 
 (* ---------------------------------------------------------------------
-   Ejemplo. Definir la notación (x,y) como una abreviaura de (pair x y).
+   Ejemplo 1.6. Definir la notación (x,y) como una abreviaura de 
+   (par x y).
    ------------------------------------------------------------------ *)
 
-Notation "( x , y )" := (pair x y).
+Notation "( x , y )" := (par x y).
 
 (* ---------------------------------------------------------------------
-   Ejemplo. Evaluar la expresión 
+   Ejemplo 1.7. Evaluar la expresión 
       fst (3,5)
    ------------------------------------------------------------------ *)
 
-Eval compute in (fst (3,5)).
-(* ===> 3 *)
+Compute (fst (3,5)).
+(* ===> 3 : nat *)
 
 (* ---------------------------------------------------------------------
-   Ejemplo. Redefinir la función fst usando la abreviatura de pares.
+   Ejemplo 1.8. Redefinir la función fst usando la abreviatura de pares.
    ------------------------------------------------------------------ *)
 
-Definition fst' (p : natprod) : nat := 
+Definition fst' (p : ProdNat) : nat := 
   match p with
   | (x,y) => x
   end.
 
 (* ---------------------------------------------------------------------
-   Ejemplo. Redefinir la función snd usando la abreviatura de pares.
+   Ejemplo 1.9. Redefinir la función snd usando la abreviatura de pares.
    ------------------------------------------------------------------ *)
 
-Definition snd' (p : natprod) : nat := 
+Definition snd' (p : ProdNat) : nat := 
   match p with
   | (x,y) => y
   end.
 
 (* ---------------------------------------------------------------------
-   Ejemplo. Definir la función
-      swap_pair : natprod -> natprod
-   tal que (swap_pair p) es el par obtenido intercambiando las
+   Ejemplo 1.10. Definir la función
+      intercambia : ProdNat -> ProdNat
+   tal que (intercambia p) es el par obtenido intercambiando las
    componentes de p.
    ------------------------------------------------------------------ *)
 
-Definition swap_pair (p : natprod) : natprod := 
+Definition intercambia (p : ProdNat) : ProdNat := 
   match p with
   | (x,y) => (y,x)
   end.
 
 (* ---------------------------------------------------------------------
-   Ejemplo. Demostrar que para todos los naturales
+   Ejemplo 1.11. Demostrar que para todos los naturales
       (n,m) = (fst (n,m), snd (n,m)).
    ------------------------------------------------------------------ *)
 
-Theorem surjective_pairing' : forall (n m : nat),
+Theorem par_componentes1 : forall (n m : nat),
   (n,m) = (fst (n,m), snd (n,m)).
 Proof.
   reflexivity.
 Qed.
 
 (* ---------------------------------------------------------------------
-   Ejemplo. Demostrar que para todo par de naturales
+   Ejemplo 1.12. Demostrar que para todo par de naturales
       p = (fst p, snd p).
    ------------------------------------------------------------------ *)
 
-Theorem surjective_pairing_stuck : forall (p : natprod),
+(* 1º intento *)
+Theorem par_componentes2 : forall (p : ProdNat),
   p = (fst p, snd p).
 Proof.
-  simpl. (* No reduce nada. *)
+  simpl. (* 
+            ============================
+            forall p : ProdNat, p = (fst p, snd p) *)
 Abort.
 
-Theorem surjective_pairing : forall (p : natprod),
+(* 2º intento *)
+Theorem par_componentes : forall (p : ProdNat),
   p = (fst p, snd p).
 Proof.
-  intros p.  destruct p as [n m].  simpl.  reflexivity.
+  intros p.            (* p : ProdNat
+                          ============================
+                          p = (fst p, snd p) *)
+  destruct p as [n m]. (* n, m : nat
+                          ============================
+                          (n, m) = (fst (n, m), snd (n, m)) *)
+  simpl.               (* (n, m) = (n, m) *)
+  reflexivity.
 Qed.
 
 (* ---------------------------------------------------------------------
-   Ejercicio 1. Demostrar que para todo par de naturales p,
-      (snd p, fst p) = swap_pair p.
+   Ejercicio 1.1. Demostrar que para todo par de naturales p,
+      (snd p, fst p) = intercambia p.
    ------------------------------------------------------------------ *)
 
-Theorem snd_fst_is_swap : forall (p : natprod),
-  (snd p, fst p) = swap_pair p.
+Theorem ejercicio_1_1: forall p : ProdNat,
+  (snd p, fst p) = intercambia p.
 Proof.
-  intro p. destruct p as [n m]. simpl. reflexivity.
+  intro p.             (* p : ProdNat
+                          ============================
+                          (snd p, fst p) = intercambia p *)
+  destruct p as [n m]. (* n, m : nat
+                          ============================
+                          (snd (n, m), fst (n, m)) = intercambia (n, m) *)
+  simpl.               (* (m, n) = (m, n) *)
+  reflexivity.
 Qed.
 
 (* ---------------------------------------------------------------------
-   Ejercicio 2. Demostrar que para todo par de naturales p,
-      fst (swap_pair p) = snd p.
+   Ejercicio 1.2. Demostrar que para todo par de naturales p,
+      fst (intercambia p) = snd p.
    ------------------------------------------------------------------ *)
 
-Theorem fst_swap_is_snd : forall (p : natprod),
-  fst (swap_pair p) = snd p.
+Theorem ejercicio_1_2: forall p : ProdNat,
+  fst (intercambia p) = snd p.
 Proof.
-  intro p. destruct p as [n m]. simpl. reflexivity.
+  intro p.             (* p : ProdNat
+                          ============================
+                          fst (intercambia p) = snd p *)
+  destruct p as [n m]. (* n, m : nat
+                          ============================
+                          fst (intercambia (n, m)) = snd (n, m) *)
+  simpl.               (* m = m *)
+  reflexivity.
 Qed.
 
 (* =====================================================================
-   § Listas de números 
+   § 2. Listas de números 
    ================================================================== *)
 
 (* ---------------------------------------------------------------------
@@ -194,7 +226,7 @@ Definition mylist2 := 1 :: 2 :: 3 :: nil.
 Definition mylist3 := [1;2;3].
 
 (* =====================================================================
-   §§ Repeat  
+   §§ 2.1. Repeat  
    ================================================================== *)
 
 (* ---------------------------------------------------------------------
@@ -580,7 +612,7 @@ Proof.
 Qed.
 
 (* =====================================================================
-   § Razonamiento sobre listas
+   § 3. Razonamiento sobre listas
    ================================================================== *)
 
 (* ---------------------------------------------------------------------
@@ -608,7 +640,7 @@ Proof.
 Qed.
 
 (* =====================================================================
-   §§ Inducción sobre listas
+   §§ 3.1. Inducción sobre listas
    ================================================================== *)
 
 (* ---------------------------------------------------------------------
@@ -878,7 +910,7 @@ Proof.
 Qed.
 
 (* =====================================================================
-   § Opcionales
+   § 4. Opcionales
    ================================================================== *)
 
 (* ---------------------------------------------------------------------
@@ -996,13 +1028,13 @@ Proof.
 Qed.
 
 (* ---------------------------------------------------------------------
-   Nota. Finalizar el módulo NatList.
+   Nota. Finalizar el módulo ListaNat.
    ------------------------------------------------------------------ *)
 
-End NatList.
+End ListaNat.
 
 (* =====================================================================
-   § Funciones parciales (o diccionarios)
+   § 5. Funciones parciales (o diccionarios)
    ================================================================== *)
 
 (* ---------------------------------------------------------------------
@@ -1035,11 +1067,11 @@ Proof.
 Qed.
 
 (* ---------------------------------------------------------------------
-   Nota. Iniciar el módulo PartialMap que importa a NatList.
+   Nota. Iniciar el módulo PartialMap que importa a ListaNat.
    ------------------------------------------------------------------ *)
 
 Module PartialMap.
-Export NatList.
+Export ListaNat.
 
 (* ---------------------------------------------------------------------
    Ejemplo. Definir el tipo partial_map (para representar los

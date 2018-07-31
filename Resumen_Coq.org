@@ -87,6 +87,7 @@ Abort.
   la demostración añadiendo como premisa la propiedad P con nombre H. 
 + =destruct b=: Distingue dos casos según que b sea True o False.
 + =destruct n as [| n1]=: Distingue dos casos según que =n= sea 0 o sea =S n1=. 
++ =destruct p as [n m]=: Sustituye el par =p= por =(n,m)=.
 + =induction n as [|n1 IHn1]=: Inicia una demostración por inducción
   sobre =n=. El caso base en ~n = 0~. El paso de la inducción consiste en
   suponer la propiedad para ~n1~ y demostrarla para ~S n1~. El nombre de la
