@@ -2,6 +2,9 @@
 
 Require Export T2_Induccion.
 
+(* Pendiente de borrar la siguiente importación. *)
+Require Export Lists.List.
+
 (* =====================================================================
    § 1. Pares de números 
    ================================================================== *)
@@ -182,27 +185,31 @@ Qed.
    § 2. Listas de números 
    ================================================================== *)
 
+(* =====================================================================
+   § 2.1. El tipo de la lista de números. 
+   ================================================================== *)
+
 (* ---------------------------------------------------------------------
-   Ejemplo. natlist es la lista de los números naturales y sus
-   constructores son 
+   Ejemplo 2.1.1. Definir el tipo ListaNat de la lista de los números
+   naturales y cuyo constructores son 
    + nil (la lista vacía) y 
    + cons (tal que (cons x ys) es la lista obtenida añadiéndole x a ys. 
    ------------------------------------------------------------------ *)
 
-Inductive natlist : Type :=
-  | nil  : natlist
-  | cons : nat -> natlist -> natlist.
+Inductive ListaNat : Type :=
+  | nil  : ListaNat
+  | cons : nat -> ListaNat -> ListaNat.
 
 (* ---------------------------------------------------------------------
-   Ejemplo. Definir la constante 
-      mylist : natlist
+   Ejemplo 2.1.2. Definir la constante 
+      ejLista : ListaNat
    que es la lista cuyos elementos son 1, 2 y 3.
    ------------------------------------------------------------------ *)
 
-Definition mylist := cons 1 (cons 2 (cons 3 nil)).
+Definition ejLista := cons 1 (cons 2 (cons 3 nil)).
 
 (* ---------------------------------------------------------------------
-   Ejemplo. Definir la notación (x :: ys) como una abreviatura de 
+   Ejemplo 2.1.3. Definir la notación (x :: ys) como una abreviatura de 
    (cons x ys).
    ------------------------------------------------------------------ *)
 
@@ -210,403 +217,455 @@ Notation "x :: l" := (cons x l)
                      (at level 60, right associativity).
 
 (* ---------------------------------------------------------------------
-   Ejemplo. Definir la notación de las listas finitas escribiendo sus
-   elementos entre corchetes y separados por puntos y comas.
+   Ejemplo 2.1.4. Definir la notación de las listas finitas escribiendo
+   sus elementos entre corchetes y separados por puntos y comas.
    ------------------------------------------------------------------ *)
 
 Notation "[ ]" := nil.
 Notation "[ x ; .. ; y ]" := (cons x .. (cons y nil) ..).
 
 (* ---------------------------------------------------------------------
-   Ejemplo. Distintas representaciones de mylist.
+   Ejemplo 2.1.5. Definir la lista cuyos elementos son 1, 2 y 3 mediante
+   sistintas represerntaciones.
    ------------------------------------------------------------------ *)
 
-Definition mylist1 := 1 :: (2 :: (3 :: nil)).
-Definition mylist2 := 1 :: 2 :: 3 :: nil.
-Definition mylist3 := [1;2;3].
+Definition ejLista1 := 1 :: (2 :: (3 :: nil)).
+Definition ejLista2 := 1 :: 2 :: 3 :: nil.
+Definition ejLista3 := [1;2;3].
 
 (* =====================================================================
-   §§ 2.1. Repeat  
+   § 2.2. La función repite (repeat)  
    ================================================================== *)
 
 (* ---------------------------------------------------------------------
-   Ejemplo. Definir la función
-      repeat : nat -> nat -> natlist
-   tal que (repeat n k) es la lista formada por k veces el número n.
+   Ejemplo 2.2.1. Definir la función
+      repite : nat -> nat -> ListaNat
+   tal que (repite n k) es la lista formada por k veces el número n. Por
+   ejemplo, 
+      repite 5 3 = [5; 5; 5]
+
+   Nota: La función repite es quivalente a la predefinida repeat.
    ------------------------------------------------------------------ *)
 
-Fixpoint repeat (n count : nat) : natlist :=
-  match count with
+Fixpoint repite (n k : nat) : ListaNat :=
+  match k with
   | O        => nil
-  | S count' => n :: (repeat n count')
+  | S k' => n :: (repite n k')
   end.
 
+Compute (repite 5 3).
+(* ===> [5; 5; 5] : ListaNat*)
+
 (* =====================================================================
-   §§ Length  
+   § 2.3. La función longitud (length)  
    ================================================================== *)
 
 (* ---------------------------------------------------------------------
-   Ejemplo. Definir la función
-      length : natlist -> nat
-   tal que (length xs) es el número de elementos de xs.
+   Ejemplo 2.3.1. Definir la función
+      longitud : ListaNat -> nat
+   tal que (longitud xs) es el número de elementos de xs. Por ejemplo, 
+      longitud [4;2;6] = 3
+
+   Nota: La función longitud es equivalente a la predefinida length
    ------------------------------------------------------------------ *)
 
-Fixpoint length (l:natlist) : nat :=
+Fixpoint longitud (l:ListaNat) : nat :=
   match l with
   | nil    => O
-  | h :: t => S (length t)
+  | h :: t => S (longitud t)
   end.
 
+Compute (longitud [4;2;6]).
+(* ===> 3 : nat *)
+
 (* =====================================================================
-   §§ Append  
+   § 2.4. La función conc (app)  
    ================================================================== *)
 
 (* ---------------------------------------------------------------------
-   Ejemplo. Definir la función
-      append : natlist -> natlist -> natlist
-   tal que (append xs ys) es la concatenación de xs e ys.
+   Ejemplo 2.4.1. Definir la función
+      conc : ListaNat -> ListaNat -> ListaNat
+   tal que (conc xs ys) es la concatenación de xs e ys. Por ejemplo, 
+      conc [1;3] [4;2;3;5] =  [1; 3; 4; 2; 3; 5]
+
+   Nota:La función conc es equivalente a la predefinida app.
    ------------------------------------------------------------------ *)
-Fixpoint app (l1 l2 : natlist) : natlist :=
-  match l1 with
-  | nil    => l2
-  | h :: t => h :: (app t l2)
+
+Fixpoint conc (xs ys : ListaNat) : ListaNat :=
+  match xs with
+  | nil    => ys
+  | x :: zs => x :: (conc zs ys)
   end.
 
+Compute (conc [1;3] [4;2;3;5]).
+(* ===> [1; 3; 4; 2; 3; 5] : ListaNat *)
+
 (* ---------------------------------------------------------------------
-   Ejemplo. Definir la notación (xs ++ ys) como una abreviaura de 
-   (append xs ys).
+   Ejemplo 2.4.2. Definir la notación (xs ++ ys) como una abreviaura de 
+   (conc xs ys).
    ------------------------------------------------------------------ *)
 
-Notation "x ++ y" := (app x y)
+Notation "x ++ y" := (conc x y)
                      (right associativity, at level 60).
 
 (* ---------------------------------------------------------------------
-   Ejemplo. Demostrar que
+   Ejemplo 2.4.3. Demostrar que
       [1;2;3] ++ [4;5] = [1;2;3;4;5].
       nil     ++ [4;5] = [4;5].
       [1;2;3] ++ nil   = [1;2;3].
    ------------------------------------------------------------------ *)
 
-Example test_app1: [1;2;3] ++ [4;5] = [1;2;3;4;5].
+Example test_conc1: [1;2;3] ++ [4;5] = [1;2;3;4;5].
 Proof. reflexivity.  Qed.
-Example test_app2: nil ++ [4;5] = [4;5].
+
+Example test_conc2: nil ++ [4;5] = [4;5].
 Proof. reflexivity.  Qed.
-Example test_app3: [1;2;3] ++ nil = [1;2;3].
+
+Example test_conc3: [1;2;3] ++ nil = [1;2;3].
 Proof. reflexivity.  Qed.
 
 (* =====================================================================
-   §§ Head y tail  
+   § 2.5. Las funciones primero (hd) y resto (tl)
    ================================================================== *)
 
 (* ---------------------------------------------------------------------
-   Ejemplo. Definir la función
-      hd : nat -> natlist -> natlist
-   tal que (hd d xs) es el primer elemento de xs o d, si xs es la lista
-   vacía. 
+   Ejemplo 2.5.1. Definir la función
+      primero : nat -> ListaNat -> ListaNat
+   tal que (primero d xs) es el primer elemento de xs o d, si xs es la lista
+   vacía. Por ejemplo,
+      primero 7 [3;2;5] = 3 
+      primero 7 []      = 7 
+
+   Nota. La función primero es equivalente a la predefinida hd
    ------------------------------------------------------------------ *)
 
-Definition hd (default:nat) (l:natlist) : nat :=
-  match l with
-  | nil    => default
-  | h :: t => h
+Definition primero (d : nat) (xs : ListaNat) : nat :=
+  match xs with
+  | nil     => d
+  | y :: ys => y
   end.
 
+Compute (primero 7 [3;2;5]).
+(* ===> 3 : nat *)
+Compute (primero 7 []).
+(* ===> 7 : nat *)
+
 (* ---------------------------------------------------------------------
-   Ejemplo. Definir la función
-      tl : natlist -> natlist
-   tal que (tl xs) es el resto de xs.
+   Ejemplo 2.5.2. Demostrar que 
+       primero 0 [1;2;3] = 1.
+       resto [1;2;3]     = [2;3].
    ------------------------------------------------------------------ *)
 
-Definition tl (l:natlist) : natlist :=
-  match l with
-  | nil    => nil
-  | h :: t => t
+Example prop_primero1: primero 0 [1;2;3] = 1.
+Proof. reflexivity.  Qed.
+
+Example prop_primero2: primero 0 [] = 0.
+Proof. reflexivity.  Qed.
+
+(* ---------------------------------------------------------------------
+   Ejemplo 2.5.3. Definir la función
+      resto : ListaNat -> ListaNat
+   tal que (resto xs) es el resto de xs. Por ejemplo.
+      resto [3;2;5] = [2; 5]
+      resto []      = [ ]
+
+   Nota. La función resto es equivalente la predefinida tl.
+   ------------------------------------------------------------------ *)
+
+Definition resto (xs:ListaNat) : ListaNat :=
+  match xs with
+  | nil     => nil
+  | y :: ys => ys
   end.
 
+Compute (resto [3;2;5]).
+(* ===> [2; 5] : ListaNat *)
+Compute (resto []).
+(* ===> [ ] : ListaNat *)
+
 (* ---------------------------------------------------------------------
-   Ejemplo. Demostrar que 
-       hd 0 [1;2;3] = 1.
-       hd 0 []      = 0.
-       tl [1;2;3]   = [2;3].
+   Ejemplo 2.5.4. Demostrar que 
+       resto [1;2;3] = [2;3].
    ------------------------------------------------------------------ *)
 
-Example test_hd1: hd 0 [1;2;3] = 1.
-Proof. reflexivity.  Qed.
-Example test_hd2: hd 0 [] = 0.
-Proof. reflexivity.  Qed.
-Example test_tl: tl [1;2;3] = [2;3].
+Example prop_resto: resto [1;2;3] = [2;3].
 Proof. reflexivity.  Qed.
 
+(* =====================================================================
+   § 2.6. Ejercicios sobre listas de números 
+   ================================================================== *)
+
 (* ---------------------------------------------------------------------
-   Ejercicio 3. Definir la función
-      nonzeros : natlist -> natlist
-   tal que (nonzeros xs) es la lista de los elementos de xs distintos de
+   Ejercicio 2.6.1. Definir la función
+      noCeros : ListaNat -> ListaNat
+   tal que (noCeros xs) es la lista de los elementos de xs distintos de
    cero. Por ejemplo,
-      nonzeros [0;1;0;2;3;0;0] = [1;2;3].
+      noCeros [0;1;0;2;3;0;0] = [1;2;3].
    ------------------------------------------------------------------ *)
 
-Fixpoint nonzeros (l:natlist) : natlist :=
-  match l with
+Fixpoint noCeros (xs:ListaNat) : ListaNat :=
+  match xs with
   | nil => nil
   | a::bs => match a with
-            | 0 => nonzeros bs 
-            | _ =>  a:: nonzeros bs end
+            | 0 => noCeros bs 
+            | _ =>  a :: noCeros bs
+            end
  end.
-Example test_nonzeros: nonzeros [0;1;0;2;3;0;0] = [1;2;3].
-Proof. simpl. reflexivity. Qed.
 
-Fixpoint nonzeros2 (l:natlist) : natlist :=
- match l with
-  | nil => nil
-  | h :: t => if(beq_nat h 0) then nonzeros2 t else h :: nonzeros2 t end.
-
-Example test_nonzeros2: nonzeros2 [0;1;0;2;3;0;0] = [1;2;3].
-Proof. reflexivity. Qed.
+Compute (noCeros [0;1;0;2;3;0;0]).
+(* ===> [1; 2; 3] : ListaNat  *)
 
 (* ---------------------------------------------------------------------
-   Ejercicio 4. Definir la función
-      oddmembers : natlist -> natlist
-   tal que (oddmembers xs) es la lista de los elementos impares de
+   Ejercicio 2.6.2. Definir la función
+      impares : ListaNat -> ListaNat
+   tal que (impares xs) es la lista de los elementos impares de
    xs. Por ejemplo,
-      oddmembers [0;1;0;2;3;0;0] = [1;3].
+      impares [0;1;0;2;3;0;0] = [1;3].
    ------------------------------------------------------------------ *)
 
-Fixpoint oddmembers (l:natlist) : natlist :=
-  match l with
-  | nil => nil
-  | t::xs => if oddb t then t :: oddmembers xs else oddmembers xs
+Fixpoint impares (xs:ListaNat) : ListaNat :=
+  match xs with
+  | nil   => nil
+  | y::ys => if esImpar y
+             then y :: impares ys 
+             else impares ys
   end.
  
-Example test_oddmembers: oddmembers [0;1;0;2;3;0;0] = [1;3].
-Proof. reflexivity. Qed.
+Compute (impares [0;1;0;2;3;0;0]).
+(* ===> [1; 3] : ListaNat *)
 
 (* ---------------------------------------------------------------------
-   Ejercicio 5. Definir la función
-      countoddmembers : natlist -> nat
-   tal que (countoddmembers xs) es el número de elementos impares de
-   xs. Por ejemplo,
-      countoddmembers [1;0;3;1;4;5] = 4.
-      countoddmembers [0;2;4]       = 0.
-      countoddmembers nil           = 0.
+   Ejercicio 2.6.3. Definir la función
+      nImpares : ListaNat -> nat
+   tal que (nImpares xs) es el número de elementos impares de xs. Por 
+   ejemplo,
+      nImpares [1;0;3;1;4;5] = 4.
+      nImpares [0;2;4]       = 0.
+      nImpares nil           = 0.
    ------------------------------------------------------------------ *)
 
-Definition countoddmembers (l:natlist) : nat :=
- length (oddmembers l). 
+Definition nImpares (xs:ListaNat) : nat :=
+  longitud (impares xs). 
 
-Example test_countoddmembers1: countoddmembers [1;0;3;1;4;5] = 4.
+Example prop_nImpares1: nImpares [1;0;3;1;4;5] = 4.
 Proof. reflexivity. Qed.
-Example test_countoddmembers2: countoddmembers [0;2;4] = 0.
+
+Example prop_nImpares2: nImpares [0;2;4] = 0.
 Proof. reflexivity. Qed.
-Example test_countoddmembers3: countoddmembers nil = 0.
+
+Example prop_nImpares3: nImpares nil = 0.
 Proof. reflexivity. Qed.
 
 (* ---------------------------------------------------------------------
-   Ejercicio 6. Definir la función
-      alternate : natlist -> natlist -> natlist
-   tal que (alternate xs ys) es la lista obtenida intercalando los
+   Ejercicio 2.6.4. Definir la función
+      intercaladas : ListaNat -> ListaNat -> ListaNat
+   tal que (intercaladas xs ys) es la lista obtenida intercalando los
    elementos de xs e ys. Por ejemplo,
-      alternate [1;2;3] [4;5;6] = [1;4;2;5;3;6].
-      alternate [1] [4;5;6]     = [1;4;5;6].
-      alternate [1;2;3] [4]     = [1;4;2;3].
-      alternate [] [20;30]      = [20;30].
+      intercaladas [1;2;3] [4;5;6] = [1;4;2;5;3;6].
+      intercaladas [1] [4;5;6]     = [1;4;5;6].
+      intercaladas [1;2;3] [4]     = [1;4;2;3].
+      intercaladas [] [20;30]      = [20;30].
    ------------------------------------------------------------------ *)
 
-Fixpoint alternate (l1 l2 : natlist) : natlist :=
-  match l1 with
-  | nil => l2
-  | t::xs => match l2 with
-            | nil => t::xs
-            | p::ys => t::p::alternate xs ys end
+Fixpoint intercaladas (xs ys : ListaNat) : ListaNat :=
+  match xs with
+  | nil    => ys
+  | x::xs' => match ys with
+              | nil    => xs
+              | y::ys' => x::y::intercaladas xs' ys'
+              end
   end.
 
-Example test_alternate1: alternate [1;2;3] [4;5;6] = [1;4;2;5;3;6].
+Example prop_intercaladas1: intercaladas [1;2;3] [4;5;6] = [1;4;2;5;3;6].
 Proof. reflexivity. Qed.
-Example test_alternate2: alternate [1] [4;5;6] = [1;4;5;6].
+
+Example prop_intercaladas2: intercaladas [1] [4;5;6] = [1;4;5;6].
 Proof. reflexivity. Qed.
-Example test_alternate3: alternate [1;2;3] [4] = [1;4;2;3].
+
+Example prop_intercaladas3: intercaladas [1;2;3] [4] = [1;4;2;3].
 Proof. reflexivity. Qed.
-Example test_alternate4: alternate [] [20;30] = [20;30].
+
+Example prop_intercaladas4: intercaladas [] [20;30] = [20;30].
 Proof. reflexivity. Qed.
 
 (* =====================================================================
-   §§ Multiconjuntos como listas 
+   §§ 2.7. Multiconjuntos como listas 
    ================================================================== *)
 
-(* Un multiconjunto es como un conjunto donde los elementos pueden
-   repetirse más de una vez. Podemos implementarlos como listas.  *)
-
 (* ---------------------------------------------------------------------
-   Ejemplo. Definir el tipo baf de los multiconjuntos de números
+   Ejemplo 2.7.1. Un multiconjunto es una colección de elementos donde
+   no importa el orden de los elementos, pero sí el número de
+   ocurrencias de cada elemento.
+
+   Definir el tipo multiconjunto de los multiconjuntos de números
    naturales. 
    ------------------------------------------------------------------ *)
 
-Definition bag := natlist.
+Definition multiconjunto := ListaNat.
 
 (* ---------------------------------------------------------------------
-   Ejercicio 7. Definir la función
-      count : nat -> bag -> nat 
-   tal que (count v s) es el número des veces que aparece el elemento v
-   en el multiconjunto s. Por ejemplo,
-      count 1 [1;2;3;1;4;1] = 3.
-      count 6 [1;2;3;1;4;1] = 0.
+   Ejercicio 2.7.2. Definir la función
+      nOcurrencias : nat -> multiconjunto -> nat 
+   tal que (nOcurrencias x ys) es el número de veces que aparece el
+   elemento x en el multiconjunto ys. Por ejemplo,
+      nOcurrencias 1 [1;2;3;1;4;1] = 3.
+      nOcurrencias 6 [1;2;3;1;4;1] = 0.
    ------------------------------------------------------------------ *)
 
-Fixpoint count (v:nat) (s:bag) : nat :=
-  match s with
-  | nil   => 0
-  | t::xs => if beq_nat t v
-            then 1 + count v xs
-            else count v xs
+Fixpoint nOcurrencias (x:nat) (ys:multiconjunto) : nat :=
+  match ys with
+  | nil    => 0
+  | y::ys' => if iguales_nat y x
+              then 1 + nOcurrencias x ys'
+              else nOcurrencias x ys'
   end.
 
-Example test_count1: count 1 [1;2;3;1;4;1] = 3.
+Example prop_nOcurrencias1: nOcurrencias 1 [1;2;3;1;4;1] = 3.
 Proof. reflexivity. Qed.
-Example test_count2: count 6 [1;2;3;1;4;1] = 0.
+
+Example prop_nOcurrencias2: nOcurrencias 6 [1;2;3;1;4;1] = 0.
 Proof. reflexivity. Qed. 
 
 (* ---------------------------------------------------------------------
-   Ejercicio 8. Definir la función
-      sum : bag -> bag -> bag
-   tal que (sum xs ys) es la suma de los multiconjuntos xs e ys. Por
+   Ejercicio 2.7.3. Definir la función
+      suma : multiconjunto -> multiconjunto -> multiconjunto
+   tal que (suma xs ys) es la suma de los multiconjuntos xs e ys. Por
    ejemplo, 
-      count 1 (sum [1;2;3] [1;4;1]) = 3.
+      suma [1;2;3] [1;4;1]                  = [1; 2; 3; 1; 4; 1]
+      nOcurrencias 1 (suma [1;2;3] [1;4;1]) = 3.
    ------------------------------------------------------------------ *)
 
-Definition sum : bag -> bag -> bag := app.
+Definition suma : multiconjunto -> multiconjunto -> multiconjunto :=
+  conc.
 
-Example test_sum1: count 1 (sum [1;2;3] [1;4;1]) = 3.
+Example prop_sum: nOcurrencias 1 (suma [1;2;3] [1;4;1]) = 3.
 Proof. reflexivity. Qed.
 
 (* ---------------------------------------------------------------------
-   Ejercicio 9. Definir la función
-      add : nat -> bag -> bag
-   tal que (add x ys) es el multiconjunto obtenido añadiendo el elemento
-   x al multiconjunto ys. Por ejemplo,
-      count 1 (add 1 [1;4;1]) = 3.
-      count 5 (add 1 [1;4;1]) = 0.
+   Ejercicio 2.7.4. Definir la función
+      agrega : nat -> multiconjunto -> multiconjunto 
+   tal que (agrega x ys) es el multiconjunto obtenido añadiendo el
+   elemento x al multiconjunto ys. Por ejemplo,
+      nOcurrencias 1 (agrega 1 [1;4;1]) = 3.
+      nOcurrencias 5 (agrega 1 [1;4;1]) = 0.
    ------------------------------------------------------------------ *)
 
-Definition add (v:nat) (s:bag) : bag :=
-  v :: s.
+Definition agrega (x:nat) (ys:multiconjunto) : multiconjunto :=
+  x :: ys.
 
-Example test_add1: count 1 (add 1 [1;4;1]) = 3.
+Example prop_agrega1: nOcurrencias 1 (agrega 1 [1;4;1]) = 3.
 Proof. reflexivity. Qed.
-Example test_add2: count 5 (add 1 [1;4;1]) = 0.
+
+Example prop_agrega2: nOcurrencias 5 (agrega 1 [1;4;1]) = 0.
 Proof. reflexivity. Qed.
 
 (* ---------------------------------------------------------------------
-   Ejercicio 10. Definir la función
-      member : nat -> bag -> bool
-   tal que (member x ys) se verfica si x pertenece al multiconjunto
+   Ejercicio 2.7.5. Definir la función
+      pertenece : nat -> multiconjunto -> bool
+   tal que (pertenece x ys) se verfica si x pertenece al multiconjunto
    ys. Por ejemplo,  
-      member 1 [1;4;1] = true.
-      member 2 [1;4;1] = false.
+      pertenece 1 [1;4;1] = true.
+      pertenece 2 [1;4;1] = false.
    ------------------------------------------------------------------ *)
 
-Definition member (v:nat) (s:bag) : bool := 
-  if beq_nat 0 (count v s)
-  then false
-  else true.
+Definition pertenece (x:nat) (ys:multiconjunto) : bool := 
+  negacion (iguales_nat 0 (nOcurrencias x ys)).
 
-Example test_member1: member 1 [1;4;1] = true.
-Proof. reflexivity. Qed.
-Example test_member2: member 2 [1;4;1] = false.
+Example prop_pertenece1: pertenece 1 [1;4;1] = true.
 Proof. reflexivity. Qed.
 
-Definition member2 (v:nat) (s:bag) : bool :=
-  negb (beq_nat O (count v s)).
-
-Example test_member2_1: member 1 [1;4;1] = true.
-Proof. reflexivity. Qed.
-Example test_member2_2: member 2 [1;4;1] = false.
+Example prop_pertenece2: pertenece 2 [1;4;1] = false.
 Proof. reflexivity. Qed.
 
 (* ---------------------------------------------------------------------
-   Ejercicio 11. Definir la función
-      remove_one : nat -> bag -> bag
-   tal que (remove_one x ys) es el multiconjunto obtenido eliminando una
+   Ejercicio 2.7.6. Definir la función
+      eliminaUna : nat -> multiconjunto -> multiconjunto
+   tal que (eliminaUna x ys) es el multiconjunto obtenido eliminando una
    ocurrencia de x en el multiconjunto ys. Por ejemplo, 
-      count 5 (remove_one 5 [2;1;5;4;1])     = 0.
-      count 4 (remove_one 5 [2;1;4;5;1;4])   = 2.
-      count 5 (remove_one 5 [2;1;5;4;5;1;4]) = 1.
+      nOcurrencias 5 (eliminaUna 5 [2;1;5;4;1])     = 0.
+      nOcurrencias 4 (eliminaUna 5 [2;1;4;5;1;4])   = 2.
+      nOcurrencias 5 (eliminaUna 5 [2;1;5;4;5;1;4]) = 1.
    ------------------------------------------------------------------ *)
 
-Fixpoint remove_one (v:nat) (s:bag) : bag :=
-  match s with
-  | nil     => nil
-  | t :: xs => if beq_nat t v
-               then xs
-               else t :: remove_one v xs
+Fixpoint eliminaUna (x:nat) (ys:multiconjunto) : multiconjunto :=
+  match ys with
+  | nil      => nil
+  | y :: ys' => if iguales_nat y x
+               then ys'
+               else y :: eliminaUna x ys'
   end.
 
-Example test_remove_one1: count 5 (remove_one 5 [2;1;5;4;1]) = 0.
+Example prop_eliminaUna1: nOcurrencias 5 (eliminaUna 5 [2;1;5;4;1]) = 0.
 Proof. reflexivity. Qed.
-Example test_remove_one2: count 5 (remove_one 5 [2;1;4;1]) = 0.
+
+Example prop_eliminaUna2: nOcurrencias 5 (eliminaUna 5 [2;1;4;1]) = 0.
 Proof. reflexivity. Qed.
-Example test_remove_one3: count 4 (remove_one 5 [2;1;4;5;1;4]) = 2.
+
+Example prop_eliminaUna3: nOcurrencias 4 (eliminaUna 5 [2;1;4;5;1;4]) = 2.
 Proof. reflexivity. Qed.
-Example test_remove_one4: count 5 (remove_one 5 [2;1;5;4;5;1;4]) = 1.
+
+Example prop_eliminaUna4: nOcurrencias 5 (eliminaUna 5 [2;1;5;4;5;1;4]) = 1.
 Proof. reflexivity. Qed.
 
 (* ---------------------------------------------------------------------
    Ejercicio 12. Definir la función
-      remove_all : nat -> bag -> bag
+      remove_all : nat -> multiconjunto -> multiconjunto
    tal que (remove_all x ys) es el multiconjunto obtenido eliminando
    todas las ocurrencias de x en el multiconjunto ys. Por ejemplo,
-      count 5 (remove_all 5 [2;1;5;4;1])           = 0.
-      count 5 (remove_all 5 [2;1;4;1])             = 0.
-      count 4 (remove_all 5 [2;1;4;5;1;4])         = 2.
-      count 5 (remove_all 5 [2;1;5;4;5;1;4;5;1;4]) = 0.
+      nOcurrencias 5 (remove_all 5 [2;1;5;4;1])           = 0.
+      nOcurrencias 5 (remove_all 5 [2;1;4;1])             = 0.
+      nOcurrencias 4 (remove_all 5 [2;1;4;5;1;4])         = 2.
+      nOcurrencias 5 (remove_all 5 [2;1;5;4;5;1;4;5;1;4]) = 0.
    ------------------------------------------------------------------ *)
 
-Fixpoint remove_all (v:nat) (s:bag) : bag :=
+Fixpoint remove_all (v:nat) (s:multiconjunto) : multiconjunto :=
    match s with
   | nil => nil
-  | t :: xs => if beq_nat t v
+  | t :: xs => if iguales_nat t v
                then remove_all v xs
                else t :: remove_all v xs
   end.
 
-Example test_remove_all1: count 5 (remove_all 5 [2;1;5;4;1]) = 0.
+Example prop_remove_all1: nOcurrencias 5 (remove_all 5 [2;1;5;4;1]) = 0.
 Proof. reflexivity. Qed.
-Example test_remove_all2: count 5 (remove_all 5 [2;1;4;1]) = 0.
+Example prop_remove_all2: nOcurrencias 5 (remove_all 5 [2;1;4;1]) = 0.
 Proof. reflexivity. Qed.
-Example test_remove_all3: count 4 (remove_all 5 [2;1;4;5;1;4]) = 2.
+Example prop_remove_all3: nOcurrencias 4 (remove_all 5 [2;1;4;5;1;4]) = 2.
 Proof. reflexivity. Qed.
-Example test_remove_all4: count 5 (remove_all 5 [2;1;5;4;5;1;4;5;1;4]) = 0.
+Example prop_remove_all4: nOcurrencias 5 (remove_all 5 [2;1;5;4;5;1;4;5;1;4]) = 0.
 Proof. reflexivity. Qed.
 
 (* ---------------------------------------------------------------------
    Ejercicio 13. Definir la función
-      subset : bag -> bag -> bool
+      subset : multiconjunto -> multiconjunto -> bool
    tal que (subset xs ys) se verifica si xs es un sub,ulticonjunto de
    ys. Por ejemplo,
       subset [1;2]   [2;1;4;1] = true.
       subset [1;2;2] [2;1;4;1] = false.
    ------------------------------------------------------------------ *)
 
-Fixpoint subset (s1:bag) (s2:bag) : bool :=
+Fixpoint subset (s1:multiconjunto) (s2:multiconjunto) : bool :=
   match s1 with
   | nil   => true
-  | x::xs => member x s2 && subset xs (remove_one x s2)
+  | x::xs => pertenece x s2 && subset xs (eliminaUna x s2)
   end.
 
-Example test_subset1: subset [1;2] [2;1;4;1] = true.
+Example prop_subset1: subset [1;2] [2;1;4;1] = true.
 Proof. reflexivity. Qed.
-Example test_subset2: subset [1;2;2] [2;1;4;1] = false.
+Example prop_subset2: subset [1;2;2] [2;1;4;1] = false.
 Proof. reflexivity. Qed.
 
 (* ---------------------------------------------------------------------
    Ejercicio 14. Escribir un teorema sobre multiconjuntos con las funciones
-   count y add y probarlo. 
+   nOcurrencias y agrega y probarlo. 
    ------------------------------------------------------------------ *)
 
-Theorem bag_theorem : forall s1 s2 : bag, forall n : nat,
-  count n s1 + count n s2 = count n (app s1 s2).                 
+Theorem multiconjunto_theorem : forall s1 s2 : multiconjunto, forall n : nat,
+  nOcurrencias n s1 + nOcurrencias n s2 = nOcurrencias n (conc s1 s2).                 
 Proof.
   intros s1 s2 n. induction s1 as [|s s'].
  - simpl. reflexivity.
- - simpl. destruct (beq_nat s n).
+ - simpl. destruct (iguales_nat s n).
     + simpl. rewrite IHs'. reflexivity.
     + rewrite IHs'. reflexivity.
 Qed.
@@ -620,17 +679,17 @@ Qed.
       [] ++ l = l
    ------------------------------------------------------------------ *)
 
-Theorem nil_app : forall l:natlist,
+Theorem nil_conc : forall l:ListaNat,
   [] ++ l = l.
 Proof. reflexivity. Qed.
 
 (* ---------------------------------------------------------------------
    Ejemplo. Demostrar que, para toda lista de naturales l,
-      pred (length l) = length (tl l)
+      pred (longitud l) = longitud (resto l)
    ------------------------------------------------------------------ *)
 
-Theorem tl_length_pred : forall l:natlist,
-  pred (length l) = length (tl l).
+Theorem resto_longitud_pred : forall l:ListaNat,
+  pred (longitud l) = longitud (resto l).
 Proof.
   intros l. destruct l as [| n l'].
   - (* l = nil *)
@@ -648,7 +707,7 @@ Qed.
    asociativa. 
    ------------------------------------------------------------------ *)
 
-Theorem app_assoc : forall l1 l2 l3 : natlist,
+Theorem conc_assoc : forall l1 l2 l3 : ListaNat,
   (l1 ++ l2) ++ l3 = l1 ++ (l2 ++ l3).
 Proof.
   intros l1 l2 l3. induction l1 as [| n l1' IHl1'].
@@ -666,21 +725,21 @@ Qed.
 
 (* ---------------------------------------------------------------------
    Ejemplo. Definir la función
-      rev : natlist -> natlist
+      rev : ListaNat -> ListaNat
    tal que (rev xs) es la inversa de xs. Por ejemplo,
       rev [1;2;3] = [3;2;1].
       rev nil     = nil.
    ------------------------------------------------------------------ *)
 
-Fixpoint rev (l:natlist) : natlist :=
+Fixpoint rev (l:ListaNat) : ListaNat :=
   match l with
   | nil    => nil
   | h :: t => rev t ++ [h]
   end.
 
-Example test_rev1: rev [1;2;3] = [3;2;1].
+Example prop_rev1: rev [1;2;3] = [3;2;1].
 Proof. reflexivity.  Qed.
-Example test_rev2: rev nil = nil.
+Example prop_rev2: rev nil = nil.
 Proof. reflexivity.  Qed.
 
 (* =====================================================================
@@ -689,11 +748,11 @@ Proof. reflexivity.  Qed.
 
 (* ---------------------------------------------------------------------
    Ejemplo. Demostrar que
-      length (rev l) = length l
+      longitud (rev l) = longitud l
    ------------------------------------------------------------------ *)
 
-Theorem rev_length_firsttry : forall l : natlist,
-  length (rev l) = length l.
+Theorem rev_longitud_firsttry : forall l : ListaNat,
+  longitud (rev l) = longitud l.
 Proof.
   intros l. induction l as [| n l' IHl'].
   - (* l = [] *)
@@ -706,8 +765,8 @@ Proof.
        nos ayude. *) 
 Abort.
 
-Theorem app_length : forall l1 l2 : natlist,
-  length (l1 ++ l2) = (length l1) + (length l2).
+Theorem conc_longitud : forall l1 l2 : ListaNat,
+  longitud (l1 ++ l2) = (longitud l1) + (longitud l2).
 Proof.
   intros l1 l2. induction l1 as [| n l1' IHl1'].
   - (* l1 = nil *)
@@ -718,14 +777,14 @@ Qed.
 
 (* Ahora completamos la prueba original. *)
 
-Theorem rev_length : forall l : natlist,
-  length (rev l) = length l.
+Theorem rev_longitud : forall l : ListaNat,
+  longitud (rev l) = longitud l.
 Proof.
   intros l. induction l as [| n l' IHl'].
   - (* l = nil *)
     reflexivity.
   - (* l = cons *)
-    simpl. rewrite -> app_length, plus_comm.
+    simpl. rewrite -> conc_longitud, plus_comm.
     simpl. rewrite -> IHl'. reflexivity.
 Qed.
 
@@ -742,7 +801,7 @@ Qed.
    derecha de la concatenación de listas. 
    ------------------------------------------------------------------ *)
 
-Theorem app_nil_r : forall l : natlist,
+Theorem conc_nil_r : forall l : ListaNat,
   l ++ [] = l.
 Proof.
   intros l. induction l as [| x xs HI].
@@ -751,26 +810,26 @@ Proof.
 Qed.
 
 (* ---------------------------------------------------------------------
-   Ejercicio 16. Demostrar que rev es un endomorfismo en (natlist,++)
+   Ejercicio 16. Demostrar que rev es un endomorfismo en (ListaNat,++)
    ------------------------------------------------------------------ *)
-Theorem rev_app_distr: forall l1 l2 : natlist,
+Theorem rev_conc_distr: forall l1 l2 : ListaNat,
   rev (l1 ++ l2) = rev l2 ++ rev l1.
 Proof.
   intros l1 l2. induction l1 as [|x xs HI].
-  - simpl. rewrite app_nil_r. reflexivity.
-  - simpl. rewrite HI, app_assoc. reflexivity.
+  - simpl. rewrite conc_nil_r. reflexivity.
+  - simpl. rewrite HI, conc_assoc. reflexivity.
 Qed.
 
 (* ---------------------------------------------------------------------
    Ejercicio 17. Demostrar que rev es involutiva.
    ------------------------------------------------------------------ *)
 
-Theorem rev_involutive : forall l : natlist,
+Theorem rev_involutive : forall l : ListaNat,
   rev (rev l) = l.
 Proof.
   induction l as [|x xs HI].
   - reflexivity.
-  - simpl. rewrite rev_app_distr. rewrite HI. reflexivity.
+  - simpl. rewrite rev_conc_distr. rewrite HI. reflexivity.
 Qed.
 
 (* ---------------------------------------------------------------------
@@ -778,10 +837,10 @@ Qed.
       l1 ++ (l2 ++ (l3 ++ l4)) = ((l1 ++ l2) ++ l3) ++ l4.
    ------------------------------------------------------------------ *)
 
-Theorem app_assoc4 : forall l1 l2 l3 l4 : natlist,
+Theorem conc_assoc4 : forall l1 l2 l3 l4 : ListaNat,
   l1 ++ (l2 ++ (l3 ++ l4)) = ((l1 ++ l2) ++ l3) ++ l4.
 Proof.
-  intros l1 l2 l3 l4. rewrite app_assoc. rewrite app_assoc. reflexivity.
+  intros l1 l2 l3 l4. rewrite conc_assoc. rewrite conc_assoc. reflexivity.
 Qed.
 
 (* ---------------------------------------------------------------------
@@ -789,8 +848,8 @@ Qed.
    desaparecen ceros. 
    ------------------------------------------------------------------ *)
 
-Lemma nonzeros_app : forall l1 l2 : natlist,
-  nonzeros (l1 ++ l2) = (nonzeros l1) ++ (nonzeros l2).
+Lemma noCeros_conc : forall l1 l2 : ListaNat,
+  noCeros (l1 ++ l2) = (noCeros l1) ++ (noCeros l2).
 Proof.
   intros l1 l2. induction l1 as [|x xs HI].
   - reflexivity.
@@ -801,26 +860,26 @@ Qed.
 
 (* ---------------------------------------------------------------------
    Ejercicio 20. Definir la función
-      beq_natlist : natlist -> natlist -> bool
-   tal que (beq_natlist xs ys) se verifica si las listas xs e ys son
+      beq_ListaNat : ListaNat -> ListaNat -> bool
+   tal que (beq_ListaNat xs ys) se verifica si las listas xs e ys son
    iguales. Por ejemplo,
-      beq_natlist nil nil         = true.
-      beq_natlist [1;2;3] [1;2;3] = true.
-      beq_natlist [1;2;3] [1;2;4] = false. 
+      beq_ListaNat nil nil         = true.
+      beq_ListaNat [1;2;3] [1;2;3] = true.
+      beq_ListaNat [1;2;3] [1;2;4] = false. 
    ------------------------------------------------------------------ *)
 
-Fixpoint beq_natlist (l1 l2 : natlist) : bool:=
+Fixpoint beq_ListaNat (l1 l2 : ListaNat) : bool:=
   match l1, l2 with
   | nil,   nil   => true
-  | x::xs, y::ys => beq_nat x y && beq_natlist xs ys
+  | x::xs, y::ys => iguales_nat x y && beq_ListaNat xs ys
   | _, _         => false
  end.
 
-Example test_beq_natlist1: (beq_natlist nil nil = true).
+Example prop_beq_ListaNat1: (beq_ListaNat nil nil = true).
 Proof. reflexivity. Qed.
-Example test_beq_natlist2: beq_natlist [1;2;3] [1;2;3] = true.
+Example prop_beq_ListaNat2: beq_ListaNat [1;2;3] [1;2;3] = true.
 Proof. reflexivity. Qed.
-Example test_beq_natlist3: beq_natlist [1;2;3] [1;2;4] = false.
+Example prop_beq_ListaNat3: beq_ListaNat [1;2;3] [1;2;4] = false.
 Proof. reflexivity. Qed.
 
 (* ---------------------------------------------------------------------
@@ -828,13 +887,13 @@ Proof. reflexivity. Qed.
    reflexiva. 
    ------------------------------------------------------------------ *)
 
-Theorem beq_natlist_refl : forall l:natlist,
-  true = beq_natlist l l.
+Theorem beq_ListaNat_refl : forall l:ListaNat,
+  true = beq_ListaNat l l.
 Proof.
   induction l as [|n xs HI].
   - reflexivity.
-  - simpl. rewrite <- HI. replace (beq_nat n n) with true.  reflexivity.
-    + rewrite <- beq_nat_refl. reflexivity.
+  - simpl. rewrite <- HI. replace (iguales_nat n n) with true.  reflexivity.
+    + rewrite <- iguales_nat_refl. reflexivity.
 Qed.
 
 (* =====================================================================
@@ -846,8 +905,8 @@ Qed.
    ese elemento aparece al menos una vez en el resultado.
    ------------------------------------------------------------------ *)
 
-Theorem count_member_nonzero : forall (s : bag),
-  leb 1 (count 1 (1 :: s)) = true.
+Theorem nOcurrencias_pertenece_nonzero : forall (s : multiconjunto),
+  leb 1 (nOcurrencias 1 (1 :: s)) = true.
 Proof.
  intro s.  simpl. reflexivity.
 Qed.
@@ -873,8 +932,8 @@ Qed.
    o igual que en el original.
    ------------------------------------------------------------------ *)
 
-Theorem remove_decreases_count: forall (s : bag),
-  leb (count 0 (remove_one 0 s)) (count 0 s) = true.
+Theorem remove_decreases_nOcurrencias: forall (s : multiconjunto),
+  leb (nOcurrencias 0 (eliminaUna 0 s)) (nOcurrencias 0 s) = true.
 Proof.
   induction s as [|x xs HI].
   - reflexivity.
@@ -884,26 +943,26 @@ Proof.
 Qed.    
 
 (* ---------------------------------------------------------------------
-   Ejercicio 25. Escribir un teorema con las funciones count y sum de los
+   Ejercicio 25. Escribir un teorema con las funciones nOcurrencias y suma de los
    multiconjuntos. 
    ------------------------------------------------------------------ *)
 
-Theorem bag_count_sum: forall n : nat, forall b1 b2 : bag,
-  count n b1 + count n b2 = count n (sum b1 b2).
+Theorem multiconjunto_nOcurrencias_sum: forall n : nat, forall b1 b2 : multiconjunto,
+  nOcurrencias n b1 + nOcurrencias n b2 = nOcurrencias n (suma b1 b2).
 Proof.
   intros n b1 b2. induction b1 as [|b bs HI].
   - reflexivity.
-  - simpl. destruct (beq_nat b n).
+  - simpl. destruct (iguales_nat b n).
     + simpl. rewrite HI. reflexivity.
     + rewrite HI. reflexivity.
 Qed.
 
 (* ---------------------------------------------------------------------
    Ejercicio 26. Demostrar que la función rev es inyectiva; es decir,
-      forall (l1 l2 : natlist), rev l1 = rev l2 -> l1 = l2.
+      forall (l1 l2 : ListaNat), rev l1 = rev l2 -> l1 = l2.
    ------------------------------------------------------------------ *)
 
-Theorem rev_injective : forall (l1 l2 : natlist),
+Theorem rev_injective : forall (l1 l2 : ListaNat),
   rev l1 = rev l2 -> l1 = l2.
 Proof.
   intros. rewrite <- rev_involutive, <- H, rev_involutive. reflexivity.
@@ -915,15 +974,15 @@ Qed.
 
 (* ---------------------------------------------------------------------
    Ejemplo. Definir la función
-      nth_bad : natlist -> n -> nat
+      nth_bad : ListaNat -> n -> nat
    tal que (nth_bad xs n) es el n-ésimo elemento de la lista xs y 42 si
    la lista tiene menos de n elementos. 
    ------------------------------------------------------------------ *)
 
-Fixpoint nth_bad (l:natlist) (n:nat) : nat :=
+Fixpoint nth_bad (l:ListaNat) (n:nat) : nat :=
   match l with
   | nil     => 42  (* un valor arbitrario *)
-  | a :: l' => match beq_nat n O with
+  | a :: l' => match iguales_nat n O with
                | true  => a
                | false => nth_bad l' (pred n)
                end
@@ -941,7 +1000,7 @@ Inductive natoption : Type :=
 
 (* ---------------------------------------------------------------------
    Ejemplo. Definir la función
-      nth_error : natlist -> nat -> natoption
+      nth_error : ListaNat -> nat -> natoption
    tal que (nth_error xs n) es el n-ésimo elemento de la lista xs o None
    si la lista tiene menos de n elementos. Por ejemplo,
       nth_error [4;5;6;7] 0 = Some 4.
@@ -949,28 +1008,28 @@ Inductive natoption : Type :=
       nth_error [4;5;6;7] 9 = None.
    ------------------------------------------------------------------ *)
 
-Fixpoint nth_error (l:natlist) (n:nat) : natoption :=
+Fixpoint nth_error (l:ListaNat) (n:nat) : natoption :=
   match l with
   | nil     => None
-  | a :: l' => match beq_nat n O with
+  | a :: l' => match iguales_nat n O with
                | true  => Some a
                | false => nth_error l' (pred n)
                end
   end.
 
-Example test_nth_error1 : nth_error [4;5;6;7] 0 = Some 4.
+Example prop_nth_error1 : nth_error [4;5;6;7] 0 = Some 4.
 Proof. reflexivity. Qed.
-Example test_nth_error2 : nth_error [4;5;6;7] 3 = Some 7.
+Example prop_nth_error2 : nth_error [4;5;6;7] 3 = Some 7.
 Proof. reflexivity. Qed.
-Example test_nth_error3 : nth_error [4;5;6;7] 9 = None.
+Example prop_nth_error3 : nth_error [4;5;6;7] 9 = None.
 Proof. reflexivity. Qed.
 
 (* Introduciendo condicionales nos queda: *)
 
-Fixpoint nth_error' (l:natlist) (n:nat) : natoption :=
+Fixpoint nth_error' (l:ListaNat) (n:nat) : natoption :=
   match l with
   | nil => None
-  | a :: l' => if beq_nat n O
+  | a :: l' => if iguales_nat n O
                then Some a
                else nth_error' l' (pred n)
   end.
@@ -993,34 +1052,34 @@ Definition option_elim (d : nat) (o : natoption) : nat :=
 
 (* ---------------------------------------------------------------------
    Ejercicio 27. Definir la función
-      hd_error : natlist -> natoption
-   tal que (hd_error xs) es el primer elemento de xs, si xs es no vacía;
+      primero_error : ListaNat -> natoption
+   tal que (primero_error xs) es el primer elemento de xs, si xs es no vacía;
    o es None, en caso contrario. Por ejemplo,
-      hd_error []    = None.
-      hd_error [1]   = Some 1.
-      hd_error [5;6] = Some 5.
+      primero_error []    = None.
+      primero_error [1]   = Some 1.
+      primero_error [5;6] = Some 5.
    ------------------------------------------------------------------ *)
 
-Definition hd_error (l : natlist) : natoption :=
+Definition primero_error (l : ListaNat) : natoption :=
   match l with
   | nil   => None
   | x::xs => Some x
   end.
 
-Example test_hd_error1 : hd_error [] = None.
+Example prop_primero_error1 : primero_error [] = None.
 Proof. reflexivity. Qed.
-Example test_hd_error2 : hd_error [1] = Some 1.
+Example prop_primero_error2 : primero_error [1] = Some 1.
 Proof. reflexivity. Qed.
-Example test_hd_error3 : hd_error [5;6] = Some 5.
+Example prop_primero_error3 : primero_error [5;6] = Some 5.
 Proof. reflexivity. Qed.
 
 (* ---------------------------------------------------------------------
    Ejercicio 28. Demostrar que
-      hd default l = option_elim default (hd_error l).
+      primero default l = option_elim default (primero_error l).
    ------------------------------------------------------------------ *)
 
-Theorem option_elim_hd : forall (l:natlist) (default:nat),
-  hd default l = option_elim default (hd_error l).
+Theorem option_elim_primero : forall (l:ListaNat) (default:nat),
+  primero default l = option_elim default (primero_error l).
 Proof.
   intros l default. destruct l as [|x xs].
   - reflexivity.
@@ -1054,7 +1113,7 @@ Inductive id : Type :=
 
 Definition beq_id (x1 x2 : id) :=
   match x1, x2 with
-  | Id n1, Id n2 => beq_nat n1 n2
+  | Id n1, Id n2 => iguales_nat n1 n2
   end.
 
 (* ---------------------------------------------------------------------
@@ -1063,7 +1122,7 @@ Definition beq_id (x1 x2 : id) :=
 
 Theorem beq_id_refl : forall x, true = beq_id x x.
 Proof.
-  intro x. destruct x. simpl. rewrite <- beq_nat_refl. reflexivity.
+  intro x. destruct x. simpl. rewrite <- iguales_nat_refl. reflexivity.
 Qed.
 
 (* ---------------------------------------------------------------------
@@ -1124,8 +1183,8 @@ Theorem update_eq :
     find x (update d x v) = Some v.
 Proof.
   intros d x v. destruct d as [|d' x' v'].
-  - simpl. destruct x. simpl. rewrite <- beq_nat_refl. reflexivity.
-  - simpl. destruct x. simpl. rewrite <- beq_nat_refl. reflexivity.
+  - simpl. destruct x. simpl. rewrite <- iguales_nat_refl. reflexivity.
+  - simpl. destruct x. simpl. rewrite <- iguales_nat_refl. reflexivity.
 Qed.
 
 (* ---------------------------------------------------------------------
@@ -1154,3 +1213,11 @@ End PartialMap.
         | Baz2 : baz -> bool -> baz.
    ¿Cuántos elementos tiene el tipo baz?
    ------------------------------------------------------------------ *)
+
+(* =====================================================================
+   § Bibliografía
+   ================================================================== *)
+
+(*
+ + "Working with structured data" de Peirce et als. http://bit.ly/2LQABsv
+ *)
