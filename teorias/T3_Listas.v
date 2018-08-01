@@ -718,17 +718,27 @@ Qed.
    § 3. Razonamiento sobre listas
    ================================================================== *)
 
+(* =====================================================================
+   § 3.1. Demostración por simplificación 
+   ================================================================== *)
+
 (* ---------------------------------------------------------------------
-   Ejemplo. Demostrar que, para toda lista de naturales l,
-      [] ++ l = l
+   Ejemplo 3.1.1. Demostrar que, para toda lista de naturales xs,
+      [] ++ xs = xs
    ------------------------------------------------------------------ *)
 
-Theorem nil_conc : forall l:ListaNat,
-  [] ++ l = l.
-Proof. reflexivity. Qed.
+Theorem nil_conc : forall xs:ListaNat,
+  [] ++ xs = xs.
+Proof.
+  reflexivity.
+Qed.
+
+(* =====================================================================
+   § 3.2. Demostración por casos 
+   ================================================================== *)
 
 (* ---------------------------------------------------------------------
-   Ejemplo. Demostrar que, para toda lista de naturales l,
+   Ejemplo 3.2.1. Demostrar que, para toda lista de naturales l,
       pred (longitud l) = longitud (resto l)
    ------------------------------------------------------------------ *)
 
