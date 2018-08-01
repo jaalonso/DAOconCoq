@@ -608,66 +608,110 @@ Example prop_eliminaUna4: nOcurrencias 5 (eliminaUna 5 [2;1;5;4;5;1;4]) = 1.
 Proof. reflexivity. Qed.
 
 (* ---------------------------------------------------------------------
-   Ejercicio 12. Definir la función
-      remove_all : nat -> multiconjunto -> multiconjunto
-   tal que (remove_all x ys) es el multiconjunto obtenido eliminando
+   Ejercicio 2.7.7. Definir la función
+      eliminaTodas : nat -> multiconjunto -> multiconjunto
+   tal que (eliminaTodas x ys) es el multiconjunto obtenido eliminando
    todas las ocurrencias de x en el multiconjunto ys. Por ejemplo,
-      nOcurrencias 5 (remove_all 5 [2;1;5;4;1])           = 0.
-      nOcurrencias 5 (remove_all 5 [2;1;4;1])             = 0.
-      nOcurrencias 4 (remove_all 5 [2;1;4;5;1;4])         = 2.
-      nOcurrencias 5 (remove_all 5 [2;1;5;4;5;1;4;5;1;4]) = 0.
+      nOcurrencias 5 (eliminaTodas 5 [2;1;5;4;1])           = 0.
+      nOcurrencias 5 (eliminaTodas 5 [2;1;4;1])             = 0.
+      nOcurrencias 4 (eliminaTodas 5 [2;1;4;5;1;4])         = 2.
+      nOcurrencias 5 (eliminaTodas 5 [2;1;5;4;5;1;4;5;1;4]) = 0.
    ------------------------------------------------------------------ *)
 
-Fixpoint remove_all (v:nat) (s:multiconjunto) : multiconjunto :=
-   match s with
-  | nil => nil
-  | t :: xs => if iguales_nat t v
-               then remove_all v xs
-               else t :: remove_all v xs
+Fixpoint eliminaTodas (x:nat) (ys:multiconjunto) : multiconjunto :=
+  match ys with
+  | nil      => nil
+  | y :: ys' => if iguales_nat y x
+               then eliminaTodas x ys'
+               else y :: eliminaTodas x ys'
   end.
 
-Example prop_remove_all1: nOcurrencias 5 (remove_all 5 [2;1;5;4;1]) = 0.
+Example prop_eliminaTodas1: nOcurrencias 5 (eliminaTodas 5 [2;1;5;4;1]) = 0.
 Proof. reflexivity. Qed.
-Example prop_remove_all2: nOcurrencias 5 (remove_all 5 [2;1;4;1]) = 0.
+
+Example prop_eliminaTodas2: nOcurrencias 5 (eliminaTodas 5 [2;1;4;1]) = 0.
 Proof. reflexivity. Qed.
-Example prop_remove_all3: nOcurrencias 4 (remove_all 5 [2;1;4;5;1;4]) = 2.
+
+Example prop_eliminaTodas3: nOcurrencias 4 (eliminaTodas 5 [2;1;4;5;1;4]) = 2.
 Proof. reflexivity. Qed.
-Example prop_remove_all4: nOcurrencias 5 (remove_all 5 [2;1;5;4;5;1;4;5;1;4]) = 0.
+
+Example prop_eliminaTodas4: nOcurrencias 5 (eliminaTodas 5 [1;5;4;5;4;5;1]) = 0.
 Proof. reflexivity. Qed.
 
 (* ---------------------------------------------------------------------
-   Ejercicio 13. Definir la función
-      subset : multiconjunto -> multiconjunto -> bool
-   tal que (subset xs ys) se verifica si xs es un sub,ulticonjunto de
-   ys. Por ejemplo,
-      subset [1;2]   [2;1;4;1] = true.
-      subset [1;2;2] [2;1;4;1] = false.
+   Ejercicio 2.7.8. Definir la función
+      submulticonjunto : multiconjunto -> multiconjunto -> bool
+   tal que (submulticonjunto xs ys) se verifica si xs es un
+   submulticonjunto de ys. Por ejemplo,
+      submulticonjunto [1;2]   [2;1;4;1] = true.
+      submulticonjunto [1;2;2] [2;1;4;1] = false.
    ------------------------------------------------------------------ *)
 
-Fixpoint subset (s1:multiconjunto) (s2:multiconjunto) : bool :=
-  match s1 with
-  | nil   => true
-  | x::xs => pertenece x s2 && subset xs (eliminaUna x s2)
+Fixpoint submulticonjunto (xs:multiconjunto) (ys:multiconjunto) : bool :=
+  match xs with
+  | nil    => true
+  | x::xs' => pertenece x ys && submulticonjunto xs' (eliminaUna x ys)
   end.
 
-Example prop_subset1: subset [1;2] [2;1;4;1] = true.
+Example prop_submulticonjunto1: submulticonjunto [1;2] [2;1;4;1] = true.
 Proof. reflexivity. Qed.
-Example prop_subset2: subset [1;2;2] [2;1;4;1] = false.
+
+Example prop_submulticonjunto2: submulticonjunto [1;2;2] [2;1;4;1] = false.
 Proof. reflexivity. Qed.
 
 (* ---------------------------------------------------------------------
-   Ejercicio 14. Escribir un teorema sobre multiconjuntos con las funciones
-   nOcurrencias y agrega y probarlo. 
+   Ejercicio 2.7.9. Escribir una propiedad sobre multiconjuntos con las
+   funciones nOcurrencias y agrega y demostrarla. 
    ------------------------------------------------------------------ *)
 
-Theorem multiconjunto_theorem : forall s1 s2 : multiconjunto, forall n : nat,
-  nOcurrencias n s1 + nOcurrencias n s2 = nOcurrencias n (conc s1 s2).                 
+Theorem nOcurrencias_conc: forall xs ys : multiconjunto, forall n:nat,
+  nOcurrencias n (conc xs ys) = nOcurrencias n xs + nOcurrencias n ys.
 Proof.
-  intros s1 s2 n. induction s1 as [|s s'].
- - simpl. reflexivity.
- - simpl. destruct (iguales_nat s n).
-    + simpl. rewrite IHs'. reflexivity.
-    + rewrite IHs'. reflexivity.
+  intros xs ys n.               (* xs, ys : multiconjunto
+                                   n : nat
+                                   ============================
+                                   nOcurrencias n (xs ++ ys) = 
+                                    nOcurrencias n xs + nOcurrencias n ys *)
+  induction xs as [|x xs' HI].
+  -                             (* ys : multiconjunto
+                                   n : nat
+                                   ============================
+                                   nOcurrencias n ([ ] ++ ys) = 
+                                    nOcurrencias n [ ] + nOcurrencias n ys *)
+    simpl.                      (* nOcurrencias n ys = nOcurrencias n ys *)
+    reflexivity.
+  -                             (* x : nat
+                                   xs' : ListaNat
+                                   ys : multiconjunto
+                                   n : nat
+                                   HI : nOcurrencias n (xs' ++ ys) = 
+                                        nOcurrencias n xs' + nOcurrencias n ys
+                                   ============================
+                                   nOcurrencias n ((x :: xs') ++ ys) =
+                                    nOcurrencias n (x :: xs') + 
+                                    nOcurrencias n ys *)
+    simpl.                      (* (if iguales_nat x n
+                                    then S (nOcurrencias n (xs' ++ ys))
+                                    else nOcurrencias n (xs' ++ ys)) =
+                                   (if iguales_nat x n 
+                                    then S (nOcurrencias n xs') 
+                                    else nOcurrencias n xs') +
+                                   nOcurrencias n ys  *)
+    destruct (iguales_nat x n). 
+    +                           (* S (nOcurrencias n (xs' ++ ys)) = 
+                                   S (nOcurrencias n xs') + 
+                                   nOcurrencias n ys *)
+      simpl.                    (* S (nOcurrencias n (xs' ++ ys)) = 
+                                   S (nOcurrencias n xs' + 
+                                      nOcurrencias n ys) *)
+      rewrite HI.               (* S (nOcurrencias n xs' + nOcurrencias n ys) =
+                                   S (nOcurrencias n xs' + nOcurrencias n ys) *)
+      reflexivity.
+    +                           (* nOcurrencias n (xs' ++ ys) = 
+                                   nOcurrencias n xs' + nOcurrencias n ys *)
+      rewrite HI.               (* nOcurrencias n xs' + nOcurrencias n ys =
+                                   nOcurrencias n xs' + nOcurrencias n ys *)
+      reflexivity.
 Qed.
 
 (* =====================================================================
