@@ -3,10 +3,10 @@
 Require Export T1_PF_en_Coq.
 
 (* El contenido de la teoría es
-1. Demostraciones por inducción. 
-2. Demostraciones anidadas.
-3. Demostraciones formales vs demostraciones informales.
-4. Ejercicios complementarios *)
+   1. Demostraciones por inducción. 
+   2. Demostraciones anidadas.
+   3. Demostraciones formales vs demostraciones informales.
+   4. Ejercicios complementarios *)
 
 (* =====================================================================
    § 1. Demostraciones por inducción 
