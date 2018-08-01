@@ -767,88 +767,139 @@ Qed.
 
 (* ---------------------------------------------------------------------
    Ejemplo 3.3.1. Demostrar que la concatenación de listas de naturales
-   es asociativa. 
+   es asociativa; es decir,
+      (xs ++ ys) ++ zs = xs ++ (ys ++ zs).
    ------------------------------------------------------------------ *)
 
-Theorem conc_assoc : forall l1 l2 l3 : ListaNat,
-  (l1 ++ l2) ++ l3 = l1 ++ (l2 ++ l3).
+Theorem conc_assoc : forall xs ys zs : ListaNat,
+  (xs ++ ys) ++ zs = xs ++ (ys ++ zs).
 Proof.
-  intros l1 l2 l3. induction l1 as [| n l1' IHl1'].
-  - (* l1 = nil *)
+  intros xs ys zs.             (* xs, ys, zs : ListaNat
+                                  ============================
+                                  (xs ++ ys) ++ zs = xs ++ (ys ++ zs) *)
+  induction xs as [|x xs' HI]. 
+  -                            (* ys, zs : ListaNat
+                                  ============================
+                                  ([ ] ++ ys) ++ zs = [ ] ++ (ys ++ zs) *)
     reflexivity.
-  - (* l1 = cons n l1' *)
-    simpl. rewrite -> IHl1'. reflexivity.
+  -                            (* x : nat
+                                  xs', ys, zs : ListaNat
+                                  HI : (xs' ++ ys) ++ zs = xs' ++ (ys ++ zs)
+                                  ============================
+                                  ((x :: xs') ++ ys) ++ zs = 
+                                   (x :: xs') ++ (ys ++ zs) *)
+    simpl.                     (* (x :: (xs' ++ ys)) ++ zs = 
+                                  x :: (xs' ++ (ys ++ zs)) *)
+    rewrite -> HI.             (* x :: (xs' ++ (ys ++ zs)) = 
+                                  x :: (xs' ++ (ys ++ zs)) *)
+    reflexivity.
 Qed.
 
-(* Comentar los nombres dados en la hipótesis de inducción. *)
-
-(* =====================================================================
-   §§§ Inversa de una lista  
-   ================================================================== *)
-
 (* ---------------------------------------------------------------------
-   Ejemplo. Definir la función
-      rev : ListaNat -> ListaNat
-   tal que (rev xs) es la inversa de xs. Por ejemplo,
-      rev [1;2;3] = [3;2;1].
-      rev nil     = nil.
+   Ejemplo 3.3.2. Definir la función
+      inversa : ListaNat -> ListaNat
+   tal que (inversa xs) es la inversa de xs. Por ejemplo,
+      inversa [1;2;3] = [3;2;1].
+      inversa nil     = nil.
+
+   Nota. La función inversa es equivalente a la predefinida rev.
    ------------------------------------------------------------------ *)
 
-Fixpoint rev (l:ListaNat) : ListaNat :=
-  match l with
+Fixpoint inversa (xs:ListaNat) : ListaNat :=
+  match xs with
   | nil    => nil
-  | h :: t => rev t ++ [h]
+  | x::xs' => inversa xs' ++ [x]
   end.
 
-Example prop_rev1: rev [1;2;3] = [3;2;1].
-Proof. reflexivity.  Qed.
-Example prop_rev2: rev nil = nil.
+Example prop_inversa1: inversa [1;2;3] = [3;2;1].
 Proof. reflexivity.  Qed.
 
-(* =====================================================================
-   §§§ Propiedaes de la función rev  
-   ================================================================== *)
+Example prop_inversa2: inversa nil = nil.
+Proof. reflexivity.  Qed.
 
 (* ---------------------------------------------------------------------
-   Ejemplo. Demostrar que
-      longitud (rev l) = longitud l
+   Ejemplo 3.3.3. Demostrar que
+      longitud (inversa xs) = longitud xs
    ------------------------------------------------------------------ *)
 
-Theorem rev_longitud_firsttry : forall l : ListaNat,
-  longitud (rev l) = longitud l.
+(* 1º intento *)
+Theorem longitud_inversa1: forall xs:ListaNat,
+  longitud (inversa xs) = longitud xs.
 Proof.
-  intros l. induction l as [| n l' IHl'].
-  - (* l = [] *)
+  intros xs.
+  induction xs as [|x xs' HI]. 
+  -                            (* 
+                                  ============================
+                                  longitud (inversa [ ]) = longitud [ ] *)
     reflexivity.
-  - (* l = n :: l' *)
-    (* Probamos simplificando *)
-    simpl.
-    rewrite <- IHl'.
-    (* Nos encontramos sin más que hacer, así que buscamos un lema que
-       nos ayude. *) 
+  -                            (* x : nat
+                                  xs' : ListaNat
+                                  HI : longitud (inversa xs') = longitud xs'
+                                  ============================
+                                  longitud (inversa (x :: xs')) = 
+                                   longitud (x :: xs') *)
+    simpl.                     (* longitud (inversa xs' ++ [x]) = 
+                                   S (longitud xs')*)
+    rewrite <- HI.             (* longitud (inversa xs' ++ [x]) = 
+                                   S (longitud (inversa xs')) *)
 Abort.
 
-Theorem conc_longitud : forall l1 l2 : ListaNat,
-  longitud (l1 ++ l2) = (longitud l1) + (longitud l2).
+(* Nota: Para simplificar la última expresión se necesita el siguiente lema. *)
+
+Lemma longitud_conc : forall xs ys : ListaNat,
+  longitud (xs ++ ys) = longitud xs + longitud ys.
 Proof.
-  intros l1 l2. induction l1 as [| n l1' IHl1'].
-  - (* l1 = nil *)
+  intros xs ys.                 (* xs, ys : ListaNat
+                                   ============================
+                                   longitud (xs ++ ys) = 
+                                    longitud xs + longitud ys *)
+  induction xs as [| x xs' HI]. 
+  -                             (* ys : ListaNat
+                                   ============================
+                                   longitud ([ ] ++ ys) = 
+                                    longitud [ ] + longitud ys *)
     reflexivity.
-  - (* l1 = cons *)
-    simpl. rewrite -> IHl1'. reflexivity.
+  -                             (* x : nat
+                                   xs', ys : ListaNat
+                                   HI : longitud (xs' ++ ys) = 
+                                         longitud xs' + longitud ys
+                                   ============================
+                                   longitud ((x :: xs') ++ ys) = 
+                                   longitud (x :: xs') + longitud ys *)
+    simpl.                      (* S (longitud (xs' ++ ys)) = 
+                                   S (longitud xs' + longitud ys) *)
+    rewrite -> HI.              (* S (longitud xs' + longitud ys) = 
+                                   S (longitud xs' + longitud ys) *)
+    reflexivity.
 Qed.
 
-(* Ahora completamos la prueba original. *)
-
-Theorem rev_longitud : forall l : ListaNat,
-  longitud (rev l) = longitud l.
+(* 2º intento *)
+Theorem longitud_inversa : forall xs:ListaNat,
+  longitud (inversa xs) = longitud xs.
 Proof.
-  intros l. induction l as [| n l' IHl'].
-  - (* l = nil *)
+  intros xs.                    (* xs : ListaNat
+                                   ============================
+                                   longitud (inversa xs) = longitud xs *)
+  induction xs as [| x xs' HI].
+  -                             (* 
+                                   ============================
+                                   longitud (inversa [ ]) = longitud [ ] *)
     reflexivity.
-  - (* l = cons *)
-    simpl. rewrite -> conc_longitud, plus_comm.
-    simpl. rewrite -> IHl'. reflexivity.
+  -                             (* x : nat
+                                   xs' : ListaNat
+                                   HI : longitud (inversa xs') = longitud xs'
+                                   ============================
+                                   longitud (inversa (x :: xs')) = 
+                                    longitud (x :: xs') *)
+    simpl.                      (* longitud (inversa xs' ++ [x]) = 
+                                   S (longitud xs') *)
+    rewrite longitud_conc.      (* longitud (inversa xs') + longitud [x] = 
+                                   S (longitud xs') *)
+    rewrite HI.                 (* longitud xs' + longitud [x] = 
+                                   S (longitud xs') *)
+    simpl.                      (* longitud xs' + 1 = S (longitud xs') *)
+    rewrite suma_conmutativa.   (* 1 + longitud xs' = S (longitud xs') *)
+    reflexivity.
 Qed.
 
 (* =====================================================================
@@ -873,10 +924,10 @@ Proof.
 Qed.
 
 (* ---------------------------------------------------------------------
-   Ejercicio 16. Demostrar que rev es un endomorfismo en (ListaNat,++)
+   Ejercicio 16. Demostrar que inversa es un endomorfismo en (ListaNat,++)
    ------------------------------------------------------------------ *)
 Theorem rev_conc_distr: forall l1 l2 : ListaNat,
-  rev (l1 ++ l2) = rev l2 ++ rev l1.
+  inversa (l1 ++ l2) = inversa l2 ++ inversa l1.
 Proof.
   intros l1 l2. induction l1 as [|x xs HI].
   - simpl. rewrite conc_nil_r. reflexivity.
@@ -884,11 +935,11 @@ Proof.
 Qed.
 
 (* ---------------------------------------------------------------------
-   Ejercicio 17. Demostrar que rev es involutiva.
+   Ejercicio 17. Demostrar que inversa es involutiva.
    ------------------------------------------------------------------ *)
 
 Theorem rev_involutive : forall l : ListaNat,
-  rev (rev l) = l.
+  inversa (inversa l) = l.
 Proof.
   induction l as [|x xs HI].
   - reflexivity.
@@ -1021,12 +1072,12 @@ Proof.
 Qed.
 
 (* ---------------------------------------------------------------------
-   Ejercicio 26. Demostrar que la función rev es inyectiva; es decir,
-      forall (l1 l2 : ListaNat), rev l1 = rev l2 -> l1 = l2.
+   Ejercicio 26. Demostrar que la función inversa es inyectiva; es decir,
+      forall (l1 l2 : ListaNat), inversa l1 = inversa l2 -> l1 = l2.
    ------------------------------------------------------------------ *)
 
 Theorem rev_injective : forall (l1 l2 : ListaNat),
-  rev l1 = rev l2 -> l1 = l2.
+  inversa l1 = inversa l2 -> l1 = l2.
 Proof.
   intros. rewrite <- rev_involutive, <- H, rev_involutive. reflexivity.
 Qed.
