@@ -719,7 +719,7 @@ Qed.
    ================================================================== *)
 
 (* =====================================================================
-   § 3.1. Demostración por simplificación 
+   § 3.1. Demostraciones por simplificación 
    ================================================================== *)
 
 (* ---------------------------------------------------------------------
@@ -734,31 +734,40 @@ Proof.
 Qed.
 
 (* =====================================================================
-   § 3.2. Demostración por casos 
+   § 3.2. Demostraciones por casos 
    ================================================================== *)
 
 (* ---------------------------------------------------------------------
-   Ejemplo 3.2.1. Demostrar que, para toda lista de naturales l,
-      pred (longitud l) = longitud (resto l)
+   Ejemplo 3.2.1. Demostrar que, para toda lista de naturales xs,
+      pred (longitud xs) = longitud (resto xs)
    ------------------------------------------------------------------ *)
 
-Theorem resto_longitud_pred : forall l:ListaNat,
-  pred (longitud l) = longitud (resto l).
+Theorem resto_longitud_pred : forall xs:ListaNat,
+  pred (longitud xs) = longitud (resto xs).
 Proof.
-  intros l. destruct l as [| n l'].
-  - (* l = nil *)
+  intros xs.                (* xs : ListaNat
+                               ============================
+                               Nat.pred (longitud xs) = longitud (resto xs) *)
+  destruct xs as [|x xs']. 
+  -                         (* 
+                               ============================
+                               Nat.pred (longitud []) = longitud (resto []) *)
     reflexivity.
-  - (* l = cons n l' *)
+  -                         (* x : nat
+                               xs' : ListaNat
+                               ============================
+                               Nat.pred (longitud (x :: xs')) = 
+                                longitud (resto (x :: xs')) *)
     reflexivity.
 Qed.
 
 (* =====================================================================
-   §§ 3.1. Inducción sobre listas
+   §§ 3.3. Demostraciones por inducción
    ================================================================== *)
 
 (* ---------------------------------------------------------------------
-   Ejemplo. Demostrar que la concatenación de listas de naturales es
-   asociativa. 
+   Ejemplo 3.3.1. Demostrar que la concatenación de listas de naturales
+   es asociativa. 
    ------------------------------------------------------------------ *)
 
 Theorem conc_assoc : forall l1 l2 l3 : ListaNat,
