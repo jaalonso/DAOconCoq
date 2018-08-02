@@ -1113,7 +1113,7 @@ Qed.
    resultado. 
    ------------------------------------------------------------------ *)
 
-Theorem nOcurrencias_agrega: forall x:nat, forall xs:multiconjunto,
+Theorem nOcurrencias_agrega: forall (x:nat) (xs:multiconjunto),
   menor_o_igual 1 (nOcurrencias x (agrega x xs)) = true.
 Proof.
   intros x xs.              (* x : nat
@@ -1276,117 +1276,122 @@ Qed.
    ================================================================== *)
 
 (* ---------------------------------------------------------------------
-   Ejemplo. Definir la función
-      nth_bad : ListaNat -> n -> nat
-   tal que (nth_bad xs n) es el n-ésimo elemento de la lista xs y 42 si
-   la lista tiene menos de n elementos. 
+   Ejemplo 4.1. Definir el tipo OpcionalNat con los contructores
+      Some : nat -> OpcionalNat
+      None : OpcionalNat.
    ------------------------------------------------------------------ *)
 
-Fixpoint nth_bad (l:ListaNat) (n:nat) : nat :=
-  match l with
-  | nil     => 42  (* un valor arbitrario *)
-  | a :: l' => match iguales_nat n O with
-               | true  => a
-               | false => nth_bad l' (pred n)
-               end
-  end.
+Inductive OpcionalNat : Type :=
+  | Some : nat -> OpcionalNat
+  | None : OpcionalNat.
 
 (* ---------------------------------------------------------------------
-   Ejemplo. Definir el tipo natoption con los contructores
-      Some : nat -> natoption
-      None : natoption.
-   ------------------------------------------------------------------ *)
-
-Inductive natoption : Type :=
-  | Some : nat -> natoption
-  | None : natoption.
-
-(* ---------------------------------------------------------------------
-   Ejemplo. Definir la función
-      nth_error : ListaNat -> nat -> natoption
-   tal que (nth_error xs n) es el n-ésimo elemento de la lista xs o None
+   Ejemplo 4.2. Definir la función
+      nthOpcional : ListaNat -> nat -> OpcionalNat
+   tal que (nthOpcional xs n) es el n-ésimo elemento de la lista xs o None
    si la lista tiene menos de n elementos. Por ejemplo,
-      nth_error [4;5;6;7] 0 = Some 4.
-      nth_error [4;5;6;7] 3 = Some 7.
-      nth_error [4;5;6;7] 9 = None.
+      nthOpcional [4;5;6;7] 0 = Some 4.
+      nthOpcional [4;5;6;7] 3 = Some 7.
+      nthOpcional [4;5;6;7] 9 = None.
    ------------------------------------------------------------------ *)
 
-Fixpoint nth_error (l:ListaNat) (n:nat) : natoption :=
-  match l with
-  | nil     => None
-  | a :: l' => match iguales_nat n O with
-               | true  => Some a
-               | false => nth_error l' (pred n)
-               end
+Fixpoint nthOpcional (xs:ListaNat) (n:nat) : OpcionalNat :=
+  match xs with
+  | nil      => None
+  | x :: xs' => match iguales_nat n O with
+                | true  => Some x
+                | false => nthOpcional xs' (pred n)
+                end
   end.
 
-Example prop_nth_error1 : nth_error [4;5;6;7] 0 = Some 4.
+Example prop_nthOpcional1 : nthOpcional [4;5;6;7] 0 = Some 4.
 Proof. reflexivity. Qed.
-Example prop_nth_error2 : nth_error [4;5;6;7] 3 = Some 7.
+
+Example prop_nthOpcional2 : nthOpcional [4;5;6;7] 3 = Some 7.
 Proof. reflexivity. Qed.
-Example prop_nth_error3 : nth_error [4;5;6;7] 9 = None.
+
+Example prop_nthOpcional3 : nthOpcional [4;5;6;7] 9 = None.
 Proof. reflexivity. Qed.
 
 (* Introduciendo condicionales nos queda: *)
-
-Fixpoint nth_error' (l:ListaNat) (n:nat) : natoption :=
-  match l with
-  | nil => None
-  | a :: l' => if iguales_nat n O
-               then Some a
-               else nth_error' l' (pred n)
+Fixpoint nthOpcional' (xs:ListaNat) (n:nat) : OpcionalNat :=
+  match xs with
+  | nil      => None
+  | x :: xs' => if iguales_nat x O
+                then Some x
+                else nthOpcional' xs' (pred n)
   end.
 
-(* Nota: Los condicionales funcionan sobre todo tipo inductivo con dos 
-   constructores en Coq, sin booleanos. *)
-
 (* ---------------------------------------------------------------------
-   Ejemplo. Definir la función
-      option_elim nat -> natoption -> nat
-   tal que (option_elim d o) es el valor de o, si o tienve valor o es d
-   en caso contrario.
+   Ejemplo 4.3. Definir la función
+      eliminaOpcionalNat -> OpcionalNat -> nat
+   tal que (option_elim d o) es el valor de o, si o tiene valor o es d
+   en caso contrario. Por ejemplo,
+      eliminaOpcionalNat 3 (Some 7) = 7
+      eliminaOpcionalNat 3 None     = 3
    ------------------------------------------------------------------ *)
 
-Definition option_elim (d : nat) (o : natoption) : nat :=
+Definition eliminaOpcionalNat (d : nat) (o : OpcionalNat) : nat :=
   match o with
   | Some n' => n'
-  | None => d
+  | None    => d
   end.
 
+Compute (eliminaOpcionalNat 3 (Some 7)).
+(* ===> 7 : nat *)
+Compute (eliminaOpcionalNat 3 None).
+(* ===> 3 : nat *)
+
 (* ---------------------------------------------------------------------
-   Ejercicio 27. Definir la función
-      primero_error : ListaNat -> natoption
-   tal que (primero_error xs) es el primer elemento de xs, si xs es no vacía;
-   o es None, en caso contrario. Por ejemplo,
-      primero_error []    = None.
-      primero_error [1]   = Some 1.
-      primero_error [5;6] = Some 5.
+   Ejercicio 4.1. Definir la función
+      primeroOpcional : ListaNat -> OpcionalNat
+   tal que (primeroOpcional xs) es el primer elemento de xs, si xs es no
+   vacía; o es None, en caso contrario. Por ejemplo,
+      primeroOpcional []    = None.
+      primeroOpcional [1]   = Some 1.
+      primeroOpcional [5;6] = Some 5.
    ------------------------------------------------------------------ *)
 
-Definition primero_error (l : ListaNat) : natoption :=
-  match l with
-  | nil   => None
-  | x::xs => Some x
+Definition primeroOpcional (xs : ListaNat) : OpcionalNat :=
+  match xs with
+  | nil    => None
+  | x::xs' => Some x
   end.
 
-Example prop_primero_error1 : primero_error [] = None.
+Example prop_primeroOpcional1 : primeroOpcional [] = None.
 Proof. reflexivity. Qed.
-Example prop_primero_error2 : primero_error [1] = Some 1.
+
+Example prop_primeroOpcional2 : primeroOpcional [1] = Some 1.
 Proof. reflexivity. Qed.
-Example prop_primero_error3 : primero_error [5;6] = Some 5.
+
+Example prop_primeroOpcional3 : primeroOpcional [5;6] = Some 5.
 Proof. reflexivity. Qed.
 
 (* ---------------------------------------------------------------------
-   Ejercicio 28. Demostrar que
-      primero default l = option_elim default (primero_error l).
+   Ejercicio 4.2. Demostrar que
+      primero d xs = eliminaOpcionalNat d (primeroOpcional xs).
    ------------------------------------------------------------------ *)
 
-Theorem option_elim_primero : forall (l:ListaNat) (default:nat),
-  primero default l = option_elim default (primero_error l).
+Theorem primero_primeroOpcional: forall (xs:ListaNat) (d:nat),
+  primero d xs = eliminaOpcionalNat d (primeroOpcional xs).
 Proof.
-  intros l default. destruct l as [|x xs].
-  - reflexivity.
-  - simpl. reflexivity.
+  intros xs d.             (* xs : ListaNat
+                              d : nat
+                              ============================
+                              primero d xs = eliminaOpcionalNat d (primeroOpcional xs) *)
+  destruct xs as [|x xs']. 
+  -                        (* d : nat
+                              ============================
+                              primero d [] = eliminaOpcionalNat d (primeroOpcional []) *)
+    reflexivity.
+  -                        (* x : nat
+                              xs' : ListaNat
+                              d : nat
+                              ============================
+                              primero d (x :: xs') = 
+                              eliminaOpcionalNat d (primeroOpcional (x :: xs')) *)
+    simpl.                 (* x = x *)
+    reflexivity.
 Qed.
 
 (* ---------------------------------------------------------------------
@@ -1396,126 +1401,165 @@ Qed.
 End ListaNat.
 
 (* =====================================================================
-   § 5. Funciones parciales (o diccionarios)
+   § 5. Diccionarios (o funciones parciales)
    ================================================================== *)
 
 (* ---------------------------------------------------------------------
-   Ejemplo. Definir el tipo id con el constructor
+   Ejemplo 5.1. Definir el tipo id (por identificador) con el
+   constructor 
       Id : nat -> id.
-   La idea es usarlo como clave de los dicccionarios.
    ------------------------------------------------------------------ *)
 
 Inductive id : Type :=
   | Id : nat -> id.
 
 (* ---------------------------------------------------------------------
-   Ejemplo. Definir la función
-      beq_id : id -> id -> bool
-   tal que  (beq_id x1 x2) se verifcia si tienen la misma clave.
+   Ejemplo 5.2. Definir la función
+      iguales_id : id -> id -> bool
+   tal que (iguales_id x1 x2) se verifica si tienen la misma clave. Por
+   ejemplo, 
+      iguales_id (Id 3) (Id 3) = true : bool
+      iguales_id (Id 3) (Id 4) = false : bool
    ------------------------------------------------------------------ *)
 
-Definition beq_id (x1 x2 : id) :=
+Definition iguales_id (x1 x2 : id) :=
   match x1, x2 with
   | Id n1, Id n2 => iguales_nat n1 n2
   end.
 
+Compute (iguales_id (Id 3) (Id 3)).
+(* ===> true : bool *)
+Compute (iguales_id (Id 3) (Id 4)).
+(* ===> false : bool *)
+
 (* ---------------------------------------------------------------------
-   Ejercicio 29. Demostrar que beq_id es reflexiva.
+   Ejercicio 5.1. Demostrar que iguales_id es reflexiva.
    ------------------------------------------------------------------ *)
 
-Theorem beq_id_refl : forall x, true = beq_id x x.
+Theorem iguales_id_refl : forall x:id, iguales_id x x = true.
 Proof.
-  intro x. destruct x. simpl. rewrite <- iguales_nat_refl. reflexivity.
+  intro x.                  (* x : id
+                               ============================
+                               iguales_id x x = true *)
+  destruct x.               (* iguales_id (Id n) (Id n) = true *)
+  simpl.                    (* iguales_nat n n = true *)
+  rewrite iguales_nat_refl. (* true = true *)
+  reflexivity.
 Qed.
 
 (* ---------------------------------------------------------------------
-   Nota. Iniciar el módulo PartialMap que importa a ListaNat.
+   Ejemplo 5.3. Iniciar el módulo Diccionario que importa a ListaNat.
    ------------------------------------------------------------------ *)
 
-Module PartialMap.
+Module Diccionario.
 Export ListaNat.
 
 (* ---------------------------------------------------------------------
-   Ejemplo. Definir el tipo partial_map (para representar los
-   diccionarios) con los contructores
-      empty  : partial_map
-      record : id -> nat -> partial_map -> partial_map.
+   Ejemplo 5.4. Definir el tipo diccionario con los contructores
+      vacio    : diccionario
+      registro : id -> nat -> diccionario -> diccionario.
    ------------------------------------------------------------------ *)
 
-Inductive partial_map : Type :=
-  | empty  : partial_map
-  | record : id -> nat -> partial_map -> partial_map.
-
+Inductive diccionario : Type :=
+  | vacio    : diccionario
+  | registro : id -> nat -> diccionario -> diccionario.
 
 (* ---------------------------------------------------------------------
-   Ejemplo. Definir la función
-      update : partial_map -> id -> nat -> partial_map
-   tal que (update d i v) es el diccionario obtenido a partir del d
-   + si d tiene un elemento con clave i, le cambia su valor a v
-   + en caso contrario, le añade el elemento v con clave i 
+   Ejemplo 5.5. Definir los diccionarios cuyos elementos son
+      + []
+      + [(3,6)]
+      + [(2,4), (3,6)]
    ------------------------------------------------------------------ *)
 
-Definition update (d : partial_map)
-                  (x : id) (value : nat)
-                  : partial_map :=
-  record x value d.
+Definition diccionario1 := vacio.
+Definition diccionario2 := registro (Id 3) 6 diccionario1.
+Definition diccionario3 := registro (Id 2) 4 diccionario2.
 
 (* ---------------------------------------------------------------------
-   Ejemplo. Definir la función
-      find : id -> partial_map -> natoption 
-   tal que (find i d) es el valor de la entrada de d con clave i, o None
-   si d no tiene ninguna entrada con clave i.
+   Ejemplo 5.6. Definir la función
+      valor : id -> diccionario -> OpcionalNat 
+   tal que (valor i d) es el valor de la entrada de d con clave i, o
+   None si d no tiene ninguna entrada con clave i. Por ejemplo,
+      valor (Id 2) diccionario3 = Some 4
+      valor (Id 2) diccionario2 = None
    ------------------------------------------------------------------ *)
 
-Fixpoint find (x : id) (d : partial_map) : natoption :=
+Fixpoint valor (x : id) (d : diccionario) : OpcionalNat :=
   match d with
-  | empty         => None
-  | record y v d' => if beq_id x y
-                     then Some v
-                     else find x d'
+  | vacio           => None
+  | registro y v d' => if iguales_id x y
+                      then Some v
+                      else valor x d'
   end.
 
+Compute (valor (Id 2) diccionario3).
+(* = Some 4 : OpcionalNat *)
+Compute (valor (Id 2) diccionario2).
+(* = None : OpcionalNat*)
+
 (* ---------------------------------------------------------------------
-   Ejercicio 30. Demostrar que
-      forall (d : partial_map) (x : id) (v: nat),
-        find x (update d x v) = Some v.
+   Ejemplo 5.7. Definir la función
+      actualiza : diccionario -> id -> nat -> diccionario
+   tal que (actualiza d x v) es el diccionario obtenido a partir del d
+   + si d tiene un elemento con clave x, le cambia su valor a v
+   + en caso contrario, le añade el elemento v con clave x 
    ------------------------------------------------------------------ *)
 
-Theorem update_eq :
-  forall (d : partial_map) (x : id) (v: nat),
-    find x (update d x v) = Some v.
+Definition actualiza (d : diccionario)
+                     (x : id) (v : nat)
+                     : diccionario :=
+  registro x v d.
+
+(* ---------------------------------------------------------------------
+   Ejercicio 5.2. Demostrar que
+      forall (d : diccionario) (x : id) (v: nat),
+        valor x (actualiza d x v) = Some v.
+   ------------------------------------------------------------------ *)
+
+Theorem valor_actualiza: forall (d : diccionario) (x : id) (v: nat),
+    valor x (actualiza d x v) = Some v.
 Proof.
-  intros d x v. destruct d as [|d' x' v'].
-  - simpl. destruct x. simpl. rewrite <- iguales_nat_refl. reflexivity.
-  - simpl. destruct x. simpl. rewrite <- iguales_nat_refl. reflexivity.
+  intros d x v.             (* d : diccionario
+                               x : id
+                               v : nat
+                               ============================
+                               valor x (actualiza d x v) = Some v *)
+  destruct x.               (* valor (Id n) (actualiza d (Id n) v) = Some v *)
+  simpl.                    (* (if iguales_nat n n then Some v 
+                                                   else valor (Id n) d) 
+                               = Some v *)
+  rewrite iguales_nat_refl. (* Some v = Some v *)
+  reflexivity.
 Qed.
 
 (* ---------------------------------------------------------------------
-   Ejercicio 31. Demostrar que
-      forall (d : partial_map) (x y : id) (o: nat),
-        beq_id x y = false -> find x (update d y o) = find x d.
+   Ejercicio 5.3. Demostrar que
+      forall (d : diccionario) (x y : id) (o: nat),
+        iguales_id x y = false -> valor x (actualiza d y o) = valor x d.
    ------------------------------------------------------------------ *)
 
-Theorem update_neq :
-  forall (d : partial_map) (x y : id) (o: nat),
-    beq_id x y = false -> find x (update d y o) = find x d.
+Theorem actualiza_neq :
+  forall (d : diccionario) (x y : id) (o: nat),
+    iguales_id x y = false -> valor x (actualiza d y o) = valor x d.
 Proof.
-  intros d x y o p. simpl. rewrite p. reflexivity.
+  intros d x y o p. (* d : diccionario
+                       x, y : id
+                       o : nat
+                       p : iguales_id x y = false
+                       ============================
+                       valor x (actualiza d y o) = valor x d *)
+  simpl.            (* (if iguales_id x y then Some o 
+                                          else valor x d) 
+                       = valor x d *)
+  rewrite p.        (* valor x d = valor x d *)
+  reflexivity.
 Qed.
 
 (* ---------------------------------------------------------------------
-   Nota. Finalizr el módulo PartialMap
+   Ejemplo 5.8. Finalizar el módulo Diccionario
    ------------------------------------------------------------------ *)
 
-End PartialMap.
-
-(* ---------------------------------------------------------------------
-   Ejercicio 32. Se define el tipo baz por
-      Inductive baz : Type :=
-        | Baz1 : baz -> baz
-        | Baz2 : baz -> bool -> baz.
-   ¿Cuántos elementos tiene el tipo baz?
-   ------------------------------------------------------------------ *)
+End Diccionario.
 
 (* =====================================================================
    § Bibliografía
