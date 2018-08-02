@@ -771,7 +771,7 @@ Qed.
       (xs ++ ys) ++ zs = xs ++ (ys ++ zs).
    ------------------------------------------------------------------ *)
 
-Theorem conc_assoc : forall xs ys zs : ListaNat,
+Theorem conc_asociativa: forall xs ys zs : ListaNat,
   (xs ++ ys) ++ zs = xs ++ (ys ++ zs).
 Proof.
   intros xs ys zs.             (* xs, ys, zs : ListaNat
@@ -933,14 +933,40 @@ Proof.
 Qed.
 
 (* ---------------------------------------------------------------------
-   Ejercicio 16. Demostrar que inversa es un endomorfismo en (ListaNat,++)
+   Ejercicio 3.4.2. Demostrar que inversa es un endomorfismo en 
+   (ListaNat,++); es decir,
+      inversa (xs ++ ys) = inversa ys ++ inversa xs.
    ------------------------------------------------------------------ *)
-Theorem rev_conc_distr: forall l1 l2 : ListaNat,
-  inversa (l1 ++ l2) = inversa l2 ++ inversa l1.
+
+Theorem inversa_conc: forall xs ys : ListaNat,
+  inversa (xs ++ ys) = inversa ys ++ inversa xs.
 Proof.
-  intros l1 l2. induction l1 as [|x xs HI].
-  - simpl. rewrite conc_nil_r. reflexivity.
-  - simpl. rewrite HI, conc_assoc. reflexivity.
+  intros xs ys.                (* xs, ys : ListaNat
+                                  ============================
+                                  inversa (xs ++ ys) = 
+                                  inversa ys ++ inversa xs *)
+  induction xs as [|x xs' HI]. 
+  -                            (* ys : ListaNat
+                                  ============================
+                                  inversa ([ ] ++ ys) = 
+                                  inversa ys ++ inversa [ ] *)
+    simpl.                     (* inversa ys = inversa ys ++ [ ] *)
+    rewrite conc_nil.          (* inversa ys = inversa ys *)
+    reflexivity.
+  -                            (* x : nat
+                                  xs', ys : ListaNat
+                                  HI : inversa (xs' ++ ys) = 
+                                       inversa ys ++ inversa xs'
+                                  ============================
+                                  inversa ((x :: xs') ++ ys) = 
+                                  inversa ys ++ inversa (x :: xs') *)
+    simpl.                     (* inversa (xs' ++ ys) ++ [x] = 
+                                  inversa ys ++ (inversa xs' ++ [x]) *)
+    rewrite HI.                (* (inversa ys ++ inversa xs') ++ [x] = 
+                                  inversa ys ++ (inversa xs' ++ [x]) *)
+    rewrite conc_asociativa.   (* inversa ys ++ (inversa xs' ++ [x]) = 
+                                  inversa ys ++ (inversa xs' ++ [x]) *)
+    reflexivity.
 Qed.
 
 (* ---------------------------------------------------------------------
@@ -952,7 +978,7 @@ Theorem rev_involutive : forall l : ListaNat,
 Proof.
   induction l as [|x xs HI].
   - reflexivity.
-  - simpl. rewrite rev_conc_distr. rewrite HI. reflexivity.
+  - simpl. rewrite inversa_conc. rewrite HI. reflexivity.
 Qed.
 
 (* ---------------------------------------------------------------------
@@ -960,10 +986,10 @@ Qed.
       l1 ++ (l2 ++ (l3 ++ l4)) = ((l1 ++ l2) ++ l3) ++ l4.
    ------------------------------------------------------------------ *)
 
-Theorem conc_assoc4 : forall l1 l2 l3 l4 : ListaNat,
+Theorem conc_asociativa4 : forall l1 l2 l3 l4 : ListaNat,
   l1 ++ (l2 ++ (l3 ++ l4)) = ((l1 ++ l2) ++ l3) ++ l4.
 Proof.
-  intros l1 l2 l3 l4. rewrite conc_assoc. rewrite conc_assoc. reflexivity.
+  intros l1 l2 l3 l4. rewrite conc_asociativa. rewrite conc_asociativa. reflexivity.
 Qed.
 
 (* ---------------------------------------------------------------------
