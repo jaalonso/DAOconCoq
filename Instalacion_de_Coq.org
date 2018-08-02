@@ -1,0 +1,91 @@
+#+TITLE: Instalación de Coq
+
+* Instalación de OPAM
+
++ Instalar [[http://opam.ocaml.org/doc/Usage.html][OPAM]]:
+: sudo apt-get install opam
+
++ Inicializar OPAM
+: opam init
+Crea el fichero =~/.ocamlinit=, el directorio =~/.opam= y modifica el
+fichero =~/.bashrc= añadiéndole al final
+: # OPAM configuration
+: . /home/jalonso/.opam/opam-init/init.sh > /dev/null 2> /dev/null || true
+
++ Actualizar el entorno
+: eval `opam config env`
+
+* Instalación de Coq y de CoqIDE
+
++ Desinstalar la versión anterior:
+: sudo apt-get --purge remove coq libcoq-ocaml
+: sudo apt autoremove
+
++ Añadir el repositorio de Coq
+: opam repo add coq-released http://coq.inria.fr/opam/released
+
++ Instalar Coq
+: opam install coq
+Instala los siguientes programas 
+| camlp5    |  7.06 | required by coq       |
+| conf-m4   |     1 | required by ocamlfind |
+| base-num  |  base | required by num       |
+| ocamlfind | 1.8.0 | required by coq       |
+| num       |     0 | required by coq       |
+| coq       | 8.8.1 |                       |
+Se instala en =~/.opam/system/bin=
+
++ Enlazar directorios
+: ln -s ~/.opam/system/bin/* ~/bin  
+
++ Instalar CoqIDE
+: opam install coqide
+Instala los siguientes programas
+| conf-pkg-config    |    1.1 | required by conf-gtksourceview |
+| conf-gtksourceview |      2 | required by coqide             |
+| lablgtk            | 2.18.5 | required by coqide             |
+| coqide             |  8.8.1 |                                |
+Para que se cumplan las dependencias se ejecuta
+: opam depext conf-gtksourceview.2
+que instala ~depext 1.0.5~ y la librería ~libgtksourceview2.0-dev~
+
++ Enlazar directorios
+: ln -s ~/.opam/system/bin/* ~/bin  
+
++ Actualizar el entorno
+: eval `opam config env`
+
++ Comprobar la instalación de Coq
+: coqc -v 
+Devuelve
+: The Coq Proof Assistant, version 8.8.1 (August 2018)
+compiled on Aug 1 2018 21:21:33 with OCaml 4.02.3
+
+* Instalación de Proof General
+
++ Borrar versión instalada de Proof General
+: rm -rf ~/.emacs.d/lisp/PG
+
++ Instalar Proof General
+: git clone https://github.com/ProofGeneral/PG ~/.emacs.d/lisp/PG
+: cd ~/.emacs.d/lisp/PG
+: make
+
++ Añadir la configuración a =~/alonso/emacs/conf-coq.el=
+: (package-initialize)
+: 
+: ;; Open .v files with Proof General's Coq mode
+: (load "~/.emacs.d/lisp/PG/generic/proof-site")
+: 
+: ;; Load company-coq when opening Coq files
+: (add-hook 'coq-mode-hook #'company-coq-mode)
+: 
+: (add-hook 'coq-mode-hook 'turn-on-auto-fill)
+
+* Actualización de versiones de CoqIDE
+
++ Actualizar la lista de paquetes
+: opam update
+
++ Actualizar los nuevos paquetes
+: opam upgrade
