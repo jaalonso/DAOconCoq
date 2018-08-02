@@ -1083,17 +1083,28 @@ Example prop_iguales_lista3: iguales_lista [1;2;3] [1;2;4] = false.
 Proof. reflexivity. Qed.
 
 (* ---------------------------------------------------------------------
-   Ejercicio 21. Demostrar que la igualdad de listas cumple la propiedad
-   reflexiva. 
+   Ejercicio 3.4.7. Demostrar que la igualdad de listas cumple la
+   propiedad reflexiva. 
    ------------------------------------------------------------------ *)
 
-Theorem iguales_lista_refl : forall l:ListaNat,
-  true = iguales_lista l l.
+Theorem iguales_lista_refl : forall xs:ListaNat,
+  iguales_lista xs xs = true.
 Proof.
-  induction l as [|n xs HI].
-  - reflexivity.
-  - simpl. rewrite <- HI. replace (iguales_nat n n) with true.  reflexivity.
-    + rewrite <- iguales_nat_refl. reflexivity.
+  induction xs as [|x xs' HI]. 
+  -                            (* 
+                                  ============================
+                                  iguales_lista [ ] [ ] = true *)
+    reflexivity.
+  -                            (* x : nat
+                                  xs' : ListaNat
+                                  HI : iguales_lista xs' xs' = true
+                                  ============================
+                                  iguales_lista (x :: xs') (x :: xs') = true *)
+    simpl.                     (* iguales_nat x x && 
+                                  iguales_lista xs' xs' = true *)
+    rewrite HI.                (* iguales_nat x x && true = true *)
+    rewrite iguales_nat_refl.  (* true && true = true *)
+    reflexivity.
 Qed.
 
 (* =====================================================================
