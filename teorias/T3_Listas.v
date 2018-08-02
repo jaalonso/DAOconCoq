@@ -1522,5 +1522,6 @@ End PartialMap.
    ================================================================== *)
 
 (*
- + "Working with structured data" de Peirce et als. http://bit.ly/2LQABsv
+ + "Working with structured data" de Peirce et als. 
+   http://bit.ly/2LQABsv
  *)
