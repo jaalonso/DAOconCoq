@@ -903,24 +903,25 @@ Proof.
 Qed.
 
 (* =====================================================================
-   § Ejercicios 
-   ================================================================== *)
-
-(* =====================================================================
-   §§ Ejercicios: 1ª parte 
+   § 3.4. Ejercicios 
    ================================================================== *)
 
 (* ---------------------------------------------------------------------
-   Ejercicio 15. Demostrar que la lista vacía es el elemento neutro por la
-   derecha de la concatenación de listas. 
+   Ejercicio 3.4.1. Demostrar que la lista vacía es el elemento neutro
+   por la derecha de la concatenación de listas. 
    ------------------------------------------------------------------ *)
 
-Theorem conc_nil_r : forall l : ListaNat,
-  l ++ [] = l.
+Theorem conc_nil: forall xs:ListaNat,
+  xs ++ [] = xs.
 Proof.
-  intros l. induction l as [| x xs HI].
-  - reflexivity.
-  - simpl. rewrite HI. reflexivity.
+  intros xs.
+  induction xs as [| x xs' HI]. 
+  -
+    reflexivity.
+  -
+    simpl.
+    rewrite HI.
+    reflexivity.
 Qed.
 
 (* ---------------------------------------------------------------------
