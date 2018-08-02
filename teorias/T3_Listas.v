@@ -1107,19 +1107,30 @@ Proof.
     reflexivity.
 Qed.
 
-(* =====================================================================
-   §§ Ejercicios: 1ª parte 
-   ================================================================== *)
-
 (* ---------------------------------------------------------------------
-   Ejercicio 22. Demostrar que al incluir un elemento en un multiconjunto,
-   ese elemento aparece al menos una vez en el resultado.
+   Ejercicio 3.4.8. Demostrar que al incluir un elemento en un
+   multiconjunto, ese elemento aparece al menos una vez en el
+   resultado. 
    ------------------------------------------------------------------ *)
 
-Theorem nOcurrencias_pertenece_nonzero : forall (s : multiconjunto),
-  leb 1 (nOcurrencias 1 (1 :: s)) = true.
+Theorem nOcurrencias_agrega: forall x:nat, forall xs:multiconjunto,
+  menor_o_igual 1 (nOcurrencias x (agrega x xs)) = true.
 Proof.
- intro s.  simpl. reflexivity.
+  intros x xs.              (* x : nat
+                               xs : multiconjunto
+                               ============================
+                               menor_o_igual 1 (nOcurrencias x (agrega x xs)) =
+                               true *)
+  simpl.                    (* match
+                                (if iguales_nat x x then S (nOcurrencias x xs) 
+                                                    else nOcurrencias x xs)
+                                with
+                                | 0 => false
+                                | S _ => true
+                                end = 
+                               true *)
+  rewrite iguales_nat_refl. (* true = true *)
+  reflexivity.
 Qed.
 
 (* ---------------------------------------------------------------------
@@ -1128,7 +1139,7 @@ Qed.
    ------------------------------------------------------------------ *)
 
 Theorem ble_n_Sn : forall n,
-  leb n (S n) = true.
+  menor_o_igual n (S n) = true.
 Proof.
   intros n. induction n as [| n' IHn'].
   - (* 0 *)
@@ -1144,7 +1155,7 @@ Qed.
    ------------------------------------------------------------------ *)
 
 Theorem remove_decreases_nOcurrencias: forall (s : multiconjunto),
-  leb (nOcurrencias 0 (eliminaUna 0 s)) (nOcurrencias 0 s) = true.
+  menor_o_igual (nOcurrencias 0 (eliminaUna 0 s)) (nOcurrencias 0 s) = true.
 Proof.
   induction s as [|x xs HI].
   - reflexivity.
