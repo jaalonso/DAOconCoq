@@ -1253,14 +1253,22 @@ Proof.
 Qed.
 
 (* ---------------------------------------------------------------------
-   Ejercicio 26. Demostrar que la función inversa es inyectiva; es decir,
-      forall (l1 l2 : ListaNat), inversa l1 = inversa l2 -> l1 = l2.
+   Ejercicio 3.4.12. Demostrar que la función inversa es inyectiva; es
+   decir, 
+      forall (xs ys : ListaNat), inversa xs = inversa ys -> xs = ys. 
    ------------------------------------------------------------------ *)
 
-Theorem rev_injective : forall (l1 l2 : ListaNat),
-  inversa l1 = inversa l2 -> l1 = l2.
+Theorem inversa_inyectiva: forall (xs ys : ListaNat),
+  inversa xs = inversa ys -> xs = ys.
 Proof.
-  intros. rewrite <- inversa_involutiva, <- H, inversa_involutiva. reflexivity.
+  intros xs ys H.                (* xs, ys : ListaNat
+                                    H : inversa xs = inversa ys
+                                    ============================
+                                    xs = ys *)
+  rewrite <- inversa_involutiva. (* xs = inversa (inversa ys) *)
+  rewrite <- H.                  (* xs = inversa (inversa xs) *)
+  rewrite inversa_involutiva.    (* xs = xs *)
+  reflexivity.
 Qed.
 
 (* =====================================================================
