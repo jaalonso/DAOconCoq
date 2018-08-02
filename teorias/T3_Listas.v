@@ -996,14 +996,22 @@ Proof.
 Qed.
 
 (* ---------------------------------------------------------------------
-   Ejercicio 18. Demostrar que
-      l1 ++ (l2 ++ (l3 ++ l4)) = ((l1 ++ l2) ++ l3) ++ l4.
+   Ejercicio 3.4.4. Demostrar que
+      xs ++ (ys ++ (zs ++ vs)) = ((xs ++ ys) ++ zs) ++ vs.
    ------------------------------------------------------------------ *)
 
-Theorem conc_asociativa4 : forall l1 l2 l3 l4 : ListaNat,
-  l1 ++ (l2 ++ (l3 ++ l4)) = ((l1 ++ l2) ++ l3) ++ l4.
+Theorem conc_asociativa4 : forall xs ys zs vs : ListaNat,
+  xs ++ (ys ++ (zs ++ vs)) = ((xs ++ ys) ++ zs) ++ vs.
 Proof.
-  intros l1 l2 l3 l4. rewrite conc_asociativa. rewrite conc_asociativa. reflexivity.
+  intros xs ys zs vs.      (* xs, ys, zs, vs : ListaNat
+                              ============================
+                              xs ++ (ys ++ (zs ++ vs)) = 
+                              ((xs ++ ys) ++ zs) ++ vs *)
+  rewrite conc_asociativa. (* xs ++ (ys ++ (zs ++ vs)) = 
+                              (xs ++ ys) ++ (zs ++ vs) *)
+  rewrite conc_asociativa. (* xs ++ (ys ++ (zs ++ vs)) =
+                              xs ++ (ys ++ (zs ++ vs)) *)
+  reflexivity.
 Qed.
 
 (* ---------------------------------------------------------------------
