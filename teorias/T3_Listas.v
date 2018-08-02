@@ -1134,18 +1134,28 @@ Proof.
 Qed.
 
 (* ---------------------------------------------------------------------
-   Ejercicio 23. Demostrar que cada número natural es menor o igual que
-   su siguiente. 
+   Ejercicio 3.4.9. Demostrar que cada número natural es menor o igual
+   que su siguiente. 
    ------------------------------------------------------------------ *)
 
-Theorem ble_n_Sn : forall n,
+Theorem menor_o_igual_n_Sn: forall n:nat,
   menor_o_igual n (S n) = true.
 Proof.
-  intros n. induction n as [| n' IHn'].
-  - (* 0 *)
-    simpl.  reflexivity.
-  - (* S n' *)
-    simpl.  rewrite IHn'.  reflexivity.
+  intros n.                (* n : nat
+                              ============================
+                              menor_o_igual n (S n) = true *)
+  induction n as [|n' HI]. 
+  -                        (* 
+                              ============================
+                              menor_o_igual 0 1 = true *)
+    reflexivity.
+  -                        (* n' : nat
+                              HI : menor_o_igual n' (S n') = true
+                              ============================
+                              menor_o_igual (S n') (S (S n')) = true *)
+    simpl.                 (* menor_o_igual n' (S n') = true *)
+    rewrite HI.            (* true = true *)
+    reflexivity.
 Qed.
 
 (* ---------------------------------------------------------------------
@@ -1160,7 +1170,7 @@ Proof.
   induction s as [|x xs HI].
   - reflexivity.
   - simpl. destruct x.
-    + rewrite ble_n_Sn. reflexivity.
+    + rewrite menor_o_igual_n_Sn. reflexivity.
     + simpl. rewrite HI. reflexivity.
 Qed.    
 
