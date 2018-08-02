@@ -1159,19 +1159,48 @@ Proof.
 Qed.
 
 (* ---------------------------------------------------------------------
-   Ejercicio 24. Demostrar que al borrar una ocurrencia de 0 de un
+   Ejercicio 3.4.10. Demostrar que al borrar una ocurrencia de 0 de un
    multiconjunto el número de ocurrencias de 0 en el resultado es menor
    o igual que en el original.
    ------------------------------------------------------------------ *)
 
-Theorem remove_decreases_nOcurrencias: forall (s : multiconjunto),
-  menor_o_igual (nOcurrencias 0 (eliminaUna 0 s)) (nOcurrencias 0 s) = true.
+Theorem remove_decreases_nOcurrencias: forall (xs : multiconjunto),
+  menor_o_igual (nOcurrencias 0 (eliminaUna 0 xs)) (nOcurrencias 0 xs) = true.
 Proof.
-  induction s as [|x xs HI].
-  - reflexivity.
-  - simpl. destruct x.
-    + rewrite menor_o_igual_n_Sn. reflexivity.
-    + simpl. rewrite HI. reflexivity.
+  induction xs as [|x xs' HI].
+  -                               (* 
+                                     ============================
+                                     menor_o_igual (nOcurrencias 0 (eliminaUna 0 [])) 
+                                                   (nOcurrencias 0 []) 
+                                     = true *)
+    reflexivity.
+  -                               (* x : nat
+                                     xs' : ListaNat
+                                     HI: menor_o_igual (nOcurrencias 0 (eliminaUna 0 xs'))
+                                                        (nOcurrencias 0 xs') 
+                                         = true 
+                                     ============================
+                                     menor_o_igual (nOcurrencias 0 (eliminaUna 0 (x::xs')))
+                                                    (nOcurrencias 0 (x :: xs')) 
+                                     = true *)
+    destruct x.
+    +                             (* menor_o_igual (nOcurrencias 0 (eliminaUna 0 (0::xs')))
+                                                   (nOcurrencias 0 (0 :: xs')) 
+                                     = true *)
+      simpl.                      (* menor_o_igual (nOcurrencias 0 xs') 
+                                                   (S (nOcurrencias 0 xs')) 
+                                     = true *)
+      rewrite menor_o_igual_n_Sn. (* true = true *)
+      reflexivity.
+    +                             (* menor_o_igual (nOcurrencias 0 
+                                                     (eliminaUna 0 (S x :: xs')))
+                                                   (nOcurrencias 0 (S x :: xs')) 
+                                     = true *)
+      simpl.                      (* menor_o_igual (nOcurrencias 0 (eliminaUna 0 xs')) 
+                                                   (nOcurrencias 0 xs') 
+                                     = true *)
+      rewrite HI.                 (* true = true *)
+      reflexivity.
 Qed.    
 
 (* ---------------------------------------------------------------------
