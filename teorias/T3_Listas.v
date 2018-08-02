@@ -1015,18 +1015,45 @@ Proof.
 Qed.
 
 (* ---------------------------------------------------------------------
-   Ejercicio 19. Demostrar que al concatenar dos listas no aparecen ni
+   Ejercicio 3.4.5. Demostrar que al concatenar dos listas no aparecen ni
    desaparecen ceros. 
    ------------------------------------------------------------------ *)
 
-Lemma noCeros_conc : forall l1 l2 : ListaNat,
-  noCeros (l1 ++ l2) = (noCeros l1) ++ (noCeros l2).
+Lemma noCeros_conc : forall xs ys : ListaNat,
+  noCeros (xs ++ ys) = (noCeros xs) ++ (noCeros ys).
 Proof.
-  intros l1 l2. induction l1 as [|x xs HI].
-  - reflexivity.
-  - simpl. destruct x.
-    + rewrite HI. reflexivity.
-    + simpl. rewrite HI. reflexivity.
+  intros xs ys.                (* xs, ys : ListaNat
+                                  ============================
+                                  noCeros (xs ++ ys) = 
+                                  noCeros xs ++ noCeros ys *)
+  induction xs as [|x xs' HI]. 
+  -                            (* ys : ListaNat
+                                  ============================
+                                  noCeros ([] ++ ys) = 
+                                  noCeros [] ++ noCeros ys *)
+    reflexivity.
+  -                            (* x : nat
+                                  xs', ys : ListaNat
+                                  HI : noCeros (xs' ++ ys) = 
+                                       noCeros xs' ++ noCeros ys
+                                  ============================
+                                  noCeros ((x :: xs') ++ ys) = 
+                                  noCeros (x :: xs') ++ noCeros ys *)
+    destruct x.
+    +                          (* noCeros ((0 :: xs') ++ ys) = 
+                                  noCeros (0 :: xs') ++ noCeros ys *)
+      simpl.                   (* noCeros (xs' ++ ys) = 
+                                  noCeros xs' ++ noCeros ys *)
+      rewrite HI.              (* noCeros xs' ++ noCeros ys = 
+                                  noCeros xs' ++ noCeros ys *)
+      reflexivity.
+    +                          (* noCeros ((S x :: xs') ++ ys) = 
+                                  noCeros (S x :: xs') ++ noCeros ys *)
+      simpl.                   (* S x :: noCeros (xs' ++ ys) = 
+                                  (S x :: noCeros xs') ++ noCeros ys *)
+      rewrite HI.              (* S x :: (noCeros xs' ++ noCeros ys) = 
+                                  (S x :: noCeros xs') ++ noCeros ys *)
+      reflexivity.
 Qed.
 
 (* ---------------------------------------------------------------------
