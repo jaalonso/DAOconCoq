@@ -914,13 +914,21 @@ Qed.
 Theorem conc_nil: forall xs:ListaNat,
   xs ++ [] = xs.
 Proof.
-  intros xs.
+  intros xs.                    (* xs : ListaNat
+                                   ============================
+                                   xs ++ [ ] = xs *)
   induction xs as [| x xs' HI]. 
-  -
+  -                             (* 
+                                   ============================
+                                   [ ] ++ [ ] = [ ] *)
     reflexivity.
-  -
-    simpl.
-    rewrite HI.
+  -                             (* x : nat
+                                   xs' : ListaNat
+                                   HI : xs' ++ [ ] = xs'
+                                   ============================
+                                   (x :: xs') ++ [ ] = x :: xs' *)
+    simpl.                      (* x :: (xs' ++ [ ]) = x :: xs' *)
+    rewrite HI.                 (* x :: xs' = x :: xs' *)
     reflexivity.
 Qed.
 
