@@ -1057,27 +1057,29 @@ Proof.
 Qed.
 
 (* ---------------------------------------------------------------------
-   Ejercicio 20. Definir la función
-      beq_ListaNat : ListaNat -> ListaNat -> bool
-   tal que (beq_ListaNat xs ys) se verifica si las listas xs e ys son
+   Ejercicio 3.4.6. Definir la función
+      iguales_lista : ListaNat -> ListaNat -> bool
+   tal que (iguales_lista xs ys) se verifica si las listas xs e ys son
    iguales. Por ejemplo,
-      beq_ListaNat nil nil         = true.
-      beq_ListaNat [1;2;3] [1;2;3] = true.
-      beq_ListaNat [1;2;3] [1;2;4] = false. 
+      iguales_lista nil nil         = true.
+      iguales_lista [1;2;3] [1;2;3] = true.
+      iguales_lista [1;2;3] [1;2;4] = false. 
    ------------------------------------------------------------------ *)
 
-Fixpoint beq_ListaNat (l1 l2 : ListaNat) : bool:=
-  match l1, l2 with
-  | nil,   nil   => true
-  | x::xs, y::ys => iguales_nat x y && beq_ListaNat xs ys
-  | _, _         => false
+Fixpoint iguales_lista (xs ys : ListaNat) : bool:=
+  match xs, ys with
+  | nil,    nil    => true
+  | x::xs', y::ys' => iguales_nat x y && iguales_lista xs' ys'
+  | _, _           => false
  end.
 
-Example prop_beq_ListaNat1: (beq_ListaNat nil nil = true).
+Example prop_iguales_lista1: (iguales_lista nil nil = true).
 Proof. reflexivity. Qed.
-Example prop_beq_ListaNat2: beq_ListaNat [1;2;3] [1;2;3] = true.
+
+Example prop_iguales_lista2: iguales_lista [1;2;3] [1;2;3] = true.
 Proof. reflexivity. Qed.
-Example prop_beq_ListaNat3: beq_ListaNat [1;2;3] [1;2;4] = false.
+
+Example prop_iguales_lista3: iguales_lista [1;2;3] [1;2;4] = false.
 Proof. reflexivity. Qed.
 
 (* ---------------------------------------------------------------------
@@ -1085,8 +1087,8 @@ Proof. reflexivity. Qed.
    reflexiva. 
    ------------------------------------------------------------------ *)
 
-Theorem beq_ListaNat_refl : forall l:ListaNat,
-  true = beq_ListaNat l l.
+Theorem iguales_lista_refl : forall l:ListaNat,
+  true = iguales_lista l l.
 Proof.
   induction l as [|n xs HI].
   - reflexivity.
