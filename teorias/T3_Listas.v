@@ -1204,18 +1204,52 @@ Proof.
 Qed.    
 
 (* ---------------------------------------------------------------------
-   Ejercicio 25. Escribir un teorema con las funciones nOcurrencias y suma de los
-   multiconjuntos. 
+   Ejercicio 3.4.11. Escribir un teorema con las funciones nOcurrencias
+   y suma de los multiconjuntos. 
    ------------------------------------------------------------------ *)
 
-Theorem multiconjunto_nOcurrencias_sum: forall n : nat, forall b1 b2 : multiconjunto,
-  nOcurrencias n b1 + nOcurrencias n b2 = nOcurrencias n (suma b1 b2).
+Theorem nOcurrencias_suma:
+  forall x : nat, forall xs ys : multiconjunto,
+   nOcurrencias x (suma xs ys) = nOcurrencias x xs + nOcurrencias x ys.
 Proof.
-  intros n b1 b2. induction b1 as [|b bs HI].
-  - reflexivity.
-  - simpl. destruct (iguales_nat b n).
-    + simpl. rewrite HI. reflexivity.
-    + rewrite HI. reflexivity.
+  intros x xs ys.                (* x : nat
+                                    xs, ys : multiconjunto
+                                    ============================
+                                    nOcurrencias x (suma xs ys) = 
+                                    nOcurrencias x xs + nOcurrencias x ys *)
+  induction xs as [|x' xs' HI].
+  -                              (* x : nat
+                                    ys : multiconjunto
+                                    ============================
+                                    nOcurrencias x (suma [ ] ys) = 
+                                    nOcurrencias x [ ] + nOcurrencias x ys *)
+    reflexivity.
+  -                              (* x, x' : nat
+                                    xs' : ListaNat
+                                    ys : multiconjunto
+                                    HI : nOcurrencias x (suma xs' ys) = 
+                                         nOcurrencias x xs' + nOcurrencias x ys
+                                    ============================
+                                    nOcurrencias x (suma (x' :: xs') ys) = 
+                                    nOcurrencias x (x' :: xs') + nOcurrencias x ys *)
+    simpl.                       (* (if iguales_nat x' x
+                                        then S (nOcurrencias x (suma xs' ys))
+                                        else nOcurrencias x (suma xs' ys)) 
+                                    =
+                                    (if iguales_nat x' x 
+                                        then S (nOcurrencias x xs') 
+                                        else nOcurrencias x xs') + nOcurrencias x ys *)
+    destruct (iguales_nat x' x). 
+    +                            (* S (nOcurrencias x (suma xs' ys)) = 
+                                    S (nOcurrencias x xs') + nOcurrencias x ys *)
+      rewrite HI.                (* S (nOcurrencias x xs' + nOcurrencias x ys) = 
+                                    S (nOcurrencias x xs') + nOcurrencias x ys *)
+      reflexivity.
+    +                            (* nOcurrencias x (suma xs' ys) = 
+                                    nOcurrencias x xs' + nOcurrencias x ys *)
+      rewrite HI.                (* nOcurrencias x xs' + nOcurrencias x ys = 
+                                    nOcurrencias x xs' + nOcurrencias x ys *)
+      reflexivity.
 Qed.
 
 (* ---------------------------------------------------------------------
