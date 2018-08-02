@@ -970,15 +970,29 @@ Proof.
 Qed.
 
 (* ---------------------------------------------------------------------
-   Ejercicio 17. Demostrar que inversa es involutiva.
+   Ejercicio 3.4.3. Demostrar que inversa es involutiva; es decir,
+      inversa (inversa xs) = xs.
    ------------------------------------------------------------------ *)
 
-Theorem rev_involutive : forall l : ListaNat,
-  inversa (inversa l) = l.
+Theorem inversa_involutiva: forall xs:ListaNat,
+  inversa (inversa xs) = xs.
 Proof.
-  induction l as [|x xs HI].
-  - reflexivity.
-  - simpl. rewrite inversa_conc. rewrite HI. reflexivity.
+  induction xs as [|x xs' HI]. 
+  -                            (* 
+                                  ============================
+                                  inversa (inversa [ ]) = [ ] *)
+    reflexivity.
+  -                            (* x : nat
+                                  xs' : ListaNat
+                                  HI : inversa (inversa xs') = xs'
+                                  ============================
+                                  inversa (inversa (x :: xs')) = x :: xs' *)
+    simpl.                     (* inversa (inversa xs' ++ [x]) = x :: xs' *)
+    rewrite inversa_conc.      (* inversa [x] ++ inversa (inversa xs') = 
+                                  x :: xs' *)
+    simpl.                     (* x :: inversa (inversa xs') = x :: xs' *)
+    rewrite HI.                (* x :: xs' = x :: xs' *)
+    reflexivity.
 Qed.
 
 (* ---------------------------------------------------------------------
@@ -1114,7 +1128,7 @@ Qed.
 Theorem rev_injective : forall (l1 l2 : ListaNat),
   inversa l1 = inversa l2 -> l1 = l2.
 Proof.
-  intros. rewrite <- rev_involutive, <- H, rev_involutive. reflexivity.
+  intros. rewrite <- inversa_involutiva, <- H, inversa_involutiva. reflexivity.
 Qed.
 
 (* =====================================================================
