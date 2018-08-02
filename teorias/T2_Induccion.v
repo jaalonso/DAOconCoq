@@ -381,25 +381,26 @@ Qed.
 
 (* ---------------------------------------------------------------------
    Ejercicio 3.3. Demostrar que
-      forall n:nat, true = iguales_nat n n.
+      forall n:nat, iguales_nat n n = true.
    ------------------------------------------------------------------ *)
 
-Theorem iguales_n_n: forall n : nat, true = iguales_nat n n.
+Theorem iguales_nat_refl: forall n : nat,
+    iguales_nat n n = true.
 Proof.
   intros n.                  (* n : nat
                                 ============================
-                                true = iguales_nat n n *)
+                                iguales_nat n n = true *)
   induction n as [|n' IHn']. 
   -                          (* 
                                 ============================
-                                true = iguales_nat 0 0 *)
+                                iguales_nat 0 0 = true *)
     reflexivity.
   -                          (* n' : nat
-                                IHn' : true = iguales_nat n' n'
+                                IHn' : iguales_nat n' n' = true
                                 ============================
-                                true = iguales_nat (S n') (S n') *)
-    simpl.                   (* true = iguales_nat n' n' *)
-    rewrite <- IHn'.         (* true = true *)
+                                iguales_nat (S n') (S n') = true *)
+    simpl.                   (* iguales_nat n' n' = true *)
+    rewrite <- IHn'.          (* true = true *)
     reflexivity.
 Qed.
 
