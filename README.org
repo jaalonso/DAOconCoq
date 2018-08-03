@@ -19,6 +19,7 @@ Una primera versión de estos apuntes se han usado este año en el
 * Temas
 + [[https://github.com/jaalonso/DAOconCoq/blob/master/teorias/T1_PF_en_Coq.v][Tema 1: Programación funcional y métodos elementales de demostración en Coq]].
 + [[https://github.com/jaalonso/DAOconCoq/blob/master/teorias/T2_Induccion.v][Tema 2: Demostraciones por inducción sobre los números naturales en Coq]].
++ [[https://github.com/jaalonso/DAOconCoq/blob/master/teorias/T3_Listas.v][Tema 3: Datos estructurados en Coq]].
 
 * Libro
 Todos los temas están recopilados en el libro
