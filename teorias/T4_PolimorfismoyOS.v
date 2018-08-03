@@ -402,29 +402,71 @@ Qed.
 
 (* ---------------------------------------------------------------------
    Ejercicio 1.1.4. Demostrar que
-      inversa (l1 ++ l2) = inversa l2 ++ inversa l1.
+      inversa (xs ++ ys) = inversa ys ++ inversa xs.
    ------------------------------------------------------------------ *)
 
-Theorem inversa_conc_distr: forall X (l1 l2 : list X),
-  inversa (l1 ++ l2) = inversa l2 ++ inversa l1.
+Theorem inversa_conc: forall X (xs ys : list X),
+  inversa (xs ++ ys) = inversa ys ++ inversa xs.
 Proof.
-  intros X l1 l2.
-  induction l1.
-  + simpl. rewrite conc_nil. reflexivity.
-  + simpl. rewrite IHl1, conc_asociativa. reflexivity.
+  intros X xs ys.              (* X : Type
+                                  xs, ys : list X
+                                  ============================
+                                  inversa (xs ++ ys) = 
+                                  inversa ys ++ inversa xs *)
+  induction xs as [|x xs' HI]. 
+  -                            (* X : Type
+                                  ys : list X
+                                  ============================
+                                  inversa ([ ] ++ ys) = 
+                                  inversa ys ++ inversa [ ] *)
+    simpl.
+    rewrite conc_nil.
+    reflexivity.
+  -                            (* X : Type
+                                  x : X
+                                  xs', ys : list X
+                                  HI : inversa (xs' ++ ys) = 
+                                       inversa ys ++ inversa xs'
+                                  ============================
+                                  inversa ((x :: xs') ++ ys) = 
+                                  inversa ys ++ inversa (x :: xs') *)
+    simpl.                     (* inversa (xs' ++ ys) ++ [x] = 
+                                  inversa ys ++ (inversa xs' ++ [x]) *)
+    rewrite HI.                (* (inversa ys ++ inversa xs') ++ [x] = 
+                                  inversa ys ++ (inversa xs' ++ [x]) *)
+    rewrite conc_asociativa.   (* (inversa ys ++ inversa xs') ++ [x] = 
+                                  (inversa ys ++ inversa xs') ++ [x] *)
+    reflexivity.
 Qed.
 
 (* ---------------------------------------------------------------------
-   Ejercicio. Demostrar que
-      inversa (inversa l) = l.
+   Ejercicio 1.1.5. Demostrar que la inversa es involutiva; es decir,
+      inversa (inversa xs) = xs.
    ------------------------------------------------------------------ *)
 
-Theorem inversa_involutive : forall X : Type, forall l : list X,
-  inversa (inversa l) = l.
+Theorem inversa_involutiva : forall X : Type, forall xs : list X,
+  inversa (inversa xs) = xs.
 Proof.
-  induction l.
-  + reflexivity.
-  + simpl. rewrite inversa_conc_distr, IHl. reflexivity.
+  intros X xs.                 (* X : Type
+                                  xs : list X
+                                  ============================
+                                  inversa (inversa xs) = xs *)
+  induction xs as [|x xs' HI]. 
+  +                            (* X : Type
+                                  ============================
+                                  inversa (inversa [ ]) = [ ] *)
+    reflexivity.
+  +                            (* X : Type
+                                  x : X
+                                  xs' : list X
+                                  HI : inversa (inversa xs') = xs'
+                                  ============================
+                                  inversa (inversa (x :: xs')) = x :: xs' *)
+    simpl.                     (* inversa (inversa xs' ++ [x]) = x :: xs' *)
+    rewrite inversa_conc.      (* inversa [x] ++ inversa (inversa xs') = 
+                                  x :: xs' *)
+    rewrite HI.                (* inversa [x] ++ xs' = x :: xs' *)
+    reflexivity.
 Qed.
 
 (* =====================================================================
@@ -432,33 +474,34 @@ Qed.
    ================================================================== *)
 
 (* ---------------------------------------------------------------------
-   Ejemplo. Definir el tipo prod (X Y) con el constructor pair tal que 
-   (pair x y) es el par cuyas componentes son x e y.
+   Ejemplo 1.2.1. Definir el tipo prod (X Y) con el constructor par tal
+   que (par x y) es el par cuyas componentes son x e y.
    ------------------------------------------------------------------ *)
 
 Inductive prod (X Y : Type) : Type :=
-| pair : X -> Y -> prod X Y.
+  | par : X -> Y -> prod X Y.
 
-Arguments pair {X} {Y} _ _.
+Arguments par {X} {Y} _ _.
 
 (* ---------------------------------------------------------------------
-   Ejemplo. Definir la abinversaiatura
-      "( x , y )" para (pair x y).
+   Ejemplo 1.2.2. Definir la abreviaturas
+      "( x , y )" para (par x y).
    ------------------------------------------------------------------ *)
 
-Notation "( x , y )" := (pair x y).
+Notation "( x , y )" := (par x y).
 
 (* ---------------------------------------------------------------------
-   Ejemplo. Definir la abinversaiatura
+   Ejemplo 1.2.3. Definir la abreviatura
       "X * Y" para (prod X Y) 
    ------------------------------------------------------------------ *)
 
 Notation "X * Y" := (prod X Y) : type_scope.
 
 (* ---------------------------------------------------------------------
-   Ejemplo. Definir la función
+   Ejemplo 1.2.4. Definir la función
       fst {X Y : Type} (p : X * Y) : X
-   tal que (fst p) es la primera componente del par p.
+   tal que (fst p) es la primera componente del par p. Por ejemplo,
+      fst (par 3 5) = 3
    ------------------------------------------------------------------ *)
 
 Definition fst {X Y : Type} (p : X * Y) : X :=
@@ -466,10 +509,17 @@ Definition fst {X Y : Type} (p : X * Y) : X :=
   | (x, y) => x
   end.
 
+Compute (fst (par 3 5)).
+(* = 3 : nat*)
+
+Example prop_fst: fst (par 3 5) = 3.
+Proof. reflexivity. Qed.
+
 (* ---------------------------------------------------------------------
-   Ejemplo. Definir la función
+   Ejemplo 2.2.5. Definir la función
       snd {X Y : Type} (p : X * Y) 
-   tal que (snd p) es la segunda componente del par p.
+   tal que (snd p) es la segunda componente del par p. Por ejemplo,
+      snd (par 3 5) = 5 
    ------------------------------------------------------------------ *)
 
 Definition snd {X Y : Type} (p : X * Y) : Y :=
@@ -477,41 +527,52 @@ Definition snd {X Y : Type} (p : X * Y) : Y :=
   | (x, y) => y
   end.
 
+Compute (snd (par 3 5)).
+(* = 5 : nat*)
+
+Example prop_snd: snd (par 3 5) = 5.
+Proof. reflexivity. Qed.
+
 (* ---------------------------------------------------------------------
-   Ejercicio. Definir la función
-      combine {X Y : Type} (lx : list X) (ly : list Y) : list (X*Y) 
-   tal que (combine lx ly) es la lista obtenida emparejando los
-   elementos de lx y ly (como zip de Haskell).
+   Ejercicio 2.2.1. Definir la función
+      empareja {X Y : Type} (xs : list X) (ys : list Y) : list (X*Y) 
+   tal que (empareja xs ys) es la lista obtenida emparejando los
+   elementos de xs y ys. Por ejemplo,
+      empareja [2;6] [3;5;7]     = [(2, 3); (6, 5)].
+      empareja [2;6;4;8] [3;5;7] = [(2, 3); (6, 5); (4, 7)].
    ------------------------------------------------------------------ *)
 
-Fixpoint combine {X Y : Type} (lx : list X) (ly : list Y) : list (X*Y) :=
-  match lx, ly with
+Fixpoint empareja {X Y : Type} (xs : list X) (ys : list Y) : list (X*Y) :=
+  match xs, ys with
   | []     , _       => []
   | _      , []      => []
-  | x :: tx, y :: ty => (x, y) :: (combine tx ty)
+  | x :: tx, y :: ty => (x, y) :: (empareja tx ty)
   end.
 
+Compute (empareja [2;6] [3;5;7]).
+(* = [(2, 3); (6, 5)] : list (nat * nat)*)
+Compute (empareja [2;6;4;8] [3;5;7]).
+(* = [(2, 3); (6, 5); (4, 7)] : list (nat * nat)*)
+
+Example prop_combina1: empareja [2;6] [3;5;7] = [(2, 3); (6, 5)].
+Proof. reflexivity. Qed.
+
+Example prop_combina2: empareja [2;6;4;8] [3;5;7] = [(2,3);(6, 5);(4,7)].
+Proof. reflexivity. Qed.
+
 (* ---------------------------------------------------------------------
-   Ejercicio. Calcular el resultado de 
-      Check combine
+   Ejercicio 2.2.2. Evaluar la expresión
+      Check @empareja
    ------------------------------------------------------------------ *)
 
-Check @combine.
+Check @empareja.
 (* ==> forall X Y : Type, list X -> list Y -> list (X * Y)*)
 
 (* ---------------------------------------------------------------------
-   Ejercicio. Calcular el resultado de 
-      Compute (combine [1;2] [false;false;true;true]).
-   ------------------------------------------------------------------ *)
-
-Compute (combine [1;2] [false;false;true;true]).
-(* ==> [(1, false); (2, false)] : list (nat * bool) *)
-
-(* ---------------------------------------------------------------------
-   Ejercicio. Definir la función
+   Ejercicio 2.2.3. Definir la función
       split {X Y : Type} (l : list (X*Y)) : (list X) * (list Y)
-   tal que (split l) es el par de lista (lx,ly) cuyo emparejamiento es
-   l. (La función split es como unzip de Haskell). Por ejemplo,
+   tal que (split l) es el par de lista (xs,ys) cuyo emparejamiento es
+   l. Por ejemplo,
       split [(1,false);(2,false)] = ([1;2],[false;false]).
    ------------------------------------------------------------------ *)
 
@@ -715,8 +776,8 @@ Proof. reflexivity. Qed.
    Ejercicio. Definir la función
       partition : forall X : Type,
                   (X -> bool) -> list X -> list X * list X
-   tal que (patition p l) es el par de lista (lx,ly) tal que lx es la
-   lista de los elementos de l que cumplen p y ly la de las que no lo
+   tal que (patition p l) es el par de lista (xs,ys) tal que xs es la
+   lista de los elementos de l que cumplen p y ys la de las que no lo
    cumplen. Por ejemplo,
       partition oddb [1;2;3;4;5]         = ([1;3;5], [2;4]).
       partition (fun x => false) [5;9;0] = ([], [5;9;0]).
