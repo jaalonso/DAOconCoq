@@ -96,9 +96,10 @@
   \setcounter{section}{0}
   \chapter*{#1}
   \addcontentsline{toc}{chapter}{#1}}
-\newcommand{\teoria}[1]{\VerbatimInput[% frame=single,
-                                         firstline=0]
-                                        {../teorias/#1}}
+% \newcommand{\teoria1}[1]{\VerbatimInput[% frame=single,
+%                                          firstline=0]
+%                                         {../teorias/#1}}
+\newcommand{\teoria}[1]{\inputminted{coq}{../teorias/#1}}
 
   
 %%% Local Variables: 
