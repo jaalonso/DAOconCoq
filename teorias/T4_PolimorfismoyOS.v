@@ -570,20 +570,24 @@ Check @empareja.
 
 (* ---------------------------------------------------------------------
    Ejercicio 2.2.3. Definir la función
-      split {X Y : Type} (l : list (X*Y)) : (list X) * (list Y)
-   tal que (split l) es el par de lista (xs,ys) cuyo emparejamiento es
-   l. Por ejemplo,
-      split [(1,false);(2,false)] = ([1;2],[false;false]).
+      desempareja {X Y : Type} (ps : list (X*Y)) : (list X) * (list Y)
+   tal que (desempareja ps) es el par de lista (xs,ys) cuyo
+   emparejamiento es l. Por ejemplo,
+      desempareja [(1,false);(2,false)] = ([1;2],[false;false]).
    ------------------------------------------------------------------ *)
 
-Fixpoint split {X Y : Type} (l : list (X*Y)) : (list X) * (list Y) :=
- match l with
- | []          => ([], [])
- | (x, y) :: t => let s := split t in (x :: fst s, y :: snd s)
+Fixpoint desempareja {X Y:Type} (ps:list (X*Y)) : (list X) * (list Y) :=
+  match ps with
+  | []            => ([], [])
+  | (x, y) :: ps' => let ps'' := desempareja ps'
+                    in (x :: fst ps'', y :: snd ps'')
 end.
 
-Example prop_split:
-  split [(1,false);(2,false)] = ([1;2],[false;false]).
+Compute (desempareja [(2, 3); (6, 5)]).
+(* = ([2; 6], [3; 5]) : list nat * list nat*)
+
+Example prop_desempareja:
+  desempareja [(2, 3); (6, 5)] = ([2; 6], [3; 5]).
 Proof. reflexivity. Qed.
 
 (* =====================================================================
@@ -591,60 +595,67 @@ Proof. reflexivity. Qed.
    ================================================================== *)
 
 (* ---------------------------------------------------------------------
-   Ejemplo. Definir el tipo (option X) con los constructores Some y None
-   tales que 
+   Ejemplo 1.3.1. Definir el tipo (Opcional X) con los constructores Some
+   y None tales que 
    + (Some x) es un valor de tipo X.
    + None es el valor nulo.
    ------------------------------------------------------------------ *)
 
-Inductive option (X:Type) : Type :=
-  | Some : X -> option X
-  | None : option X.
+Inductive Opcional (X:Type) : Type :=
+  | Some : X -> Opcional X
+  | None : Opcional X.
 
 Arguments Some {X} _.
 Arguments None {X}.
 
 (* ---------------------------------------------------------------------
-   Ejercicio. Definir la función
-      nth_error {X : Type} (l : list X) (n : nat) : option X :=
-   tal que (nth_error l n) es el n-ésimo elemento de l. Por ejemplo, 
-      nth_error [4;5;6;7] 0 = Some 4.
-      nth_error [[1];[2]] 1 = Some [2].
-      nth_error [true] 2    = None.
+   Ejercicio 1.3.1. Definir la función
+      nthOpcional {X : Type} (xs : list X) (n : nat) : Opcional X :=
+   tal que (nthOpcional xs n) es el n-ésimo elemento de xs o None
+   si la lista tiene menos de n elementos. Por ejemplo, 
+      nthOpcional [4;5;6;7] 0 = Some 4.
+      nthOpcional [[1];[2]] 1 = Some [2].
+      nthOpcional [true] 2    = None.
    ------------------------------------------------------------------ *)
 
-Fixpoint nth_error {X : Type} (l : list X) (n : nat) : option X :=
-  match l with
-  | []      => None
-  | a :: l' => if beq_nat n O then Some a else nth_error l' (pred n)
+Fixpoint nthOpcional {X : Type} (xs : list X) (n : nat) : Opcional X :=
+  match xs with
+  | []       => None
+  | x :: xs' => if iguales_nat n O
+               then Some x
+               else nthOpcional xs' (pred n)
   end.
 
-Example prop_nth_error1 : nth_error [4;5;6;7] 0 = Some 4.
+Example prop_nthOpcional1 : nthOpcional [4;5;6;7] 0 = Some 4.
 Proof. reflexivity. Qed.
-Example prop_nth_error2 : nth_error [[1];[2]] 1 = Some [2].
+
+Example prop_nthOpcional2 : nthOpcional [[1];[2]] 1 = Some [2].
 Proof. reflexivity. Qed.
-Example prop_nth_error3 : nth_error [true] 2 = None.
+
+Example prop_nthOpcional3 : nthOpcional [true] 2 = None.
 Proof. reflexivity. Qed.
 
 (* ---------------------------------------------------------------------
-   Ejercicio. Definir la función
-      hd_error {X : Type} (l : list X) : option X
-   tal que (hd_error l) es el primer elemento de l. Por ejemplo,
-      hd_error [1;2]     = Some 1.
-      hd_error [[1];[2]] = Some [1].
+   Ejercicio 1.3.2. Definir la función
+      primeroOpcional {X : Type} (xs : list X) : Opcional X
+   tal que (primeroOpcional xs) es el primer elemento de xs, si xs es no
+   vacía; o es None, en caso contrario. Por ejemplo,
+      primeroOpcional [1;2]     = Some 1.
+      primeroOpcional [[1];[2]] = Some [1].
    ------------------------------------------------------------------ *)
 
-Definition hd_error {X : Type} (l : list X) : option X :=
- match l with 
+Definition primeroOpcional {X : Type} (xs : list X) : Opcional X :=
+ match xs with 
     | []     => None
     | x :: _ => Some x
  end.
 
-Check @hd_error.
+Check @primeroOpcional.
 
-Example prop_hd_error1 : hd_error [1;2] = Some 1.
- Proof. reflexivity. Qed.
-Example prop_hd_error2 : hd_error  [[1];[2]]  = Some [1].
+Example prop_primeroOpcional1 : primeroOpcional [1;2] = Some 1.
+Proof. reflexivity. Qed.
+
+Example prop_primeroOpcional2 : primeroOpcional  [[1];[2]]  = Some [1].
  Proof. reflexivity. Qed.
 
 (* =====================================================================
@@ -656,22 +667,23 @@ Example prop_hd_error2 : hd_error  [[1];[2]]  = Some [1].
    ================================================================== *)
 
 (* ---------------------------------------------------------------------
-   Ejemplo. Definir la función 
-      doit3times {X:Type} (f:X->X) (n:X) : X 
-   tal que (doit3times f) aplica 3 veces la función f. Por ejemplo,
-      doit3times minustwo 9 = 3.
-      doit3times negb true  = false.
+   Ejemplo 2.1.1. Definir la función 
+      aplica3veces {X : Type} (f : X -> X) (n : X) : X 
+   tal que (aplica3veces f) aplica 3 veces la función f. Por ejemplo,
+      aplica3veces menosDos 9     = 3.
+      aplica3veces negacion true  = false.
    ------------------------------------------------------------------ *)
 
-Definition doit3times {X:Type} (f:X->X) (n:X) : X :=
+Definition aplica3veces {X : Type} (f : X -> X) (n : X) : X :=
   f (f (f n)).
 
-Check @doit3times.
-(* ===> doit3times : forall X : Type, (X -> X) -> X -> X *)
+Check @aplica3veces.
+(* ===> aplica3veces : forall X : Type, (X -> X) -> X -> X *)
 
-Example prop_doit3times: doit3times minustwo 9 = 3.
+Example prop_aplica3veces: aplica3veces menosDos 9 = 3.
 Proof. reflexivity.  Qed.
-Example prop_doit3times': doit3times negb true = false.
+
+Example prop_aplica3veces': aplica3veces negacion true = false.
 Proof. reflexivity.  Qed.
 
 (* =====================================================================
@@ -679,52 +691,66 @@ Proof. reflexivity.  Qed.
    ================================================================== *)
 
 (* ---------------------------------------------------------------------
-   Ejemplo. Definir la función
-      filter {X:Type} (test: X->bool) (l:list X) : (list X)
-   tal que (filter p l) es la lista de los elementos de l que verifican
-   p. Por ejemplo,
-      filter evenb [1;2;3;4] = [2;4].
+   Ejemplo 2.2.1. Definir la función
+      filtra {X : Type} (p : X -> bool) (xs : list X) : (list X)
+   tal que (filtra p xs) es la lista de los elementos de xs que
+   verifican p. Por ejemplo,
+      filtra esPar [1;2;3;4] = [2;4].
    ------------------------------------------------------------------ *)
 
-
-Fixpoint filter {X:Type} (test: X->bool) (l:list X)
-                : (list X) :=
-  match l with
-  | []     => []
-  | h :: t => if test h then h :: (filter test t)
-                       else       filter test t
+Fixpoint filtra {X : Type} (p : X -> bool) (xs : list X) : (list X) :=
+  match xs with
+  | []       => []
+  | x :: xs' => if p x
+               then x :: (filtra p xs')
+               else filtra p xs'
   end.
 
-Example prop_filter1: filter evenb [1;2;3;4] = [2;4].
-Proof. reflexivity.  Qed.
-
-Definition longitud_is_1 {X : Type} (l : list X) : bool :=
-  beq_nat (longitud l) 1.
-
-Example prop_filter2:
-    filter longitud_is_1
-           [ [1; 2]; [3]; [4]; [5;6;7]; []; [8] ]
-  = [ [3]; [4]; [8] ].
+Example prop_filtra1: filtra esPar [1;2;3;4] = [2;4].
 Proof. reflexivity.  Qed.
 
 (* ---------------------------------------------------------------------
-   Ejercicio. Definir la función
-      countoddmembers' (l:list nat) : nat 
-   tal que countoddmembers' l) es el número de elementos impares de
-   l. Por ejemplo,
-      countoddmembers' [1;0;3;1;4;5] = 4.
-      countoddmembers' [0;2;4]       = 0.
-      countoddmembers' nil           = 0.
+   Ejemplo 2.2.2. Definir la función
+      unitarias {X : Type} (xss : list (list X)) : list (list X) :=
+   tal que (unitarias xss) es la lista de listas unitarias de xss. Por
+   ejemplo, 
+      unitarias [[1;2];[3];[4];[5;6;7];[];[8]] = [[3];[4];[8]]
    ------------------------------------------------------------------ *)
 
-Definition countoddmembers' (l:list nat) : nat :=
-  longitud (filter oddb l).
+Definition esUnitaria {X : Type} (xs : list X) : bool :=
+  iguales_nat (longitud xs) 1.
 
-Example prop_countoddmembers'1:   countoddmembers' [1;0;3;1;4;5] = 4.
+Definition unitarias {X : Type} (xss : list (list X)) : list (list X) :=
+  filtra esUnitaria xss.
+  
+Compute (unitarias [[1; 2]; [3]; [4]; [5;6;7]; []; [8]]).
+(* = [[3]; [4]; [8]] : list (list nat)*)
+
+Example prop_unitarias:
+  unitarias [[1; 2]; [3]; [4]; [5;6;7]; []; [8]]
+  = [[3]; [4]; [8]].
 Proof. reflexivity.  Qed.
-Example prop_countoddmembers'2:   countoddmembers' [0;2;4] = 0.
+
+(* ---------------------------------------------------------------------
+   Ejercicio 2.2.3. Definir la función
+      nImpares (xs : list nat) : nat 
+   tal que nImpares xs) es el número de elementos impares de xs. Por
+   ejemplo, 
+      nImpares [1;0;3;1;4;5] = 4.
+      nImpares [0;2;4]       = 0.
+      nImpares nil           = 0.
+   ------------------------------------------------------------------ *)
+
+Definition nImpares (xs : list nat) : nat :=
+  longitud (filtra esImpar xs).
+
+Example prop_nImpares1:   nImpares [1;0;3;1;4;5] = 4.
 Proof. reflexivity.  Qed.
-Example prop_countoddmembers'3:   countoddmembers' nil = 0.
+
+Example prop_nImpares2:   nImpares [0;2;4] = 0.
+Proof. reflexivity.  Qed.
+
+Example prop_nImpares3:   nImpares nil = 0.
 Proof. reflexivity.  Qed.
 
 (* =====================================================================
@@ -732,65 +758,63 @@ Proof. reflexivity.  Qed.
    ================================================================== *)
 
 (* ---------------------------------------------------------------------
-   Ejemplo. Demostrar que
-      doit3times (fun n => n * n) 2 = 256.
+   Ejemplo 2.3.1. Demostrar que
+      aplica3veces (fun n => n * n) 2 = 256.
    ------------------------------------------------------------------ *)
 
 Example prop_anon_fun':
-  doit3times (fun n => n * n) 2 = 256.
+  aplica3veces (fun n => n * n) 2 = 256.
 Proof. reflexivity.  Qed.
 
 (* ---------------------------------------------------------------------
-   Ejemplo. Calcular
-      filter (fun l => beq_nat (longitud l) 1)
+   Ejemplo 2.3.2. Calcular
+      filtra (fun xs => iguales_nat (longitud xs) 1)
              [ [1; 2]; [3]; [4]; [5;6;7]; []; [8] ]
    ------------------------------------------------------------------ *)
 
-Example prop_filter2':
-    filter (fun l => beq_nat (longitud l) 1)
-           [ [1; 2]; [3]; [4]; [5;6;7]; []; [8] ]
-  = [ [3]; [4]; [8] ].
-Proof. reflexivity.  Qed.
+Compute (filtra (fun xs => iguales_nat (longitud xs) 1)
+                [ [1; 2]; [3]; [4]; [5;6;7]; []; [8] ]).
+(* = [[3]; [4]; [8]] : list (list nat)*)
 
 (* ---------------------------------------------------------------------
-   Ejercicio. Definir la función
-      filter_even_gt7 (l : list nat) : list nat
-   tal que (filter_even_gt7 l) es la lista de los elemntos de l que son
-   pares y mayores que 7. Por ejemplo,
-      filter_even_gt7 [1;2;6;9;10;3;12;8] = [10;12;8].
-      filter_even_gt7 [5;2;6;19;129]      = [].
+   Ejercicio 2.3.3. Definir la función
+      filtra_pares_menores7 (xs : list nat) : list nat
+   tal que (filtra_pares_mayores7 xs) es la lista de los elementos de xs
+   que son pares y mayores que 7. Por ejemplo,
+      filtra_pares_mayores7 [1;2;6;9;10;3;12;8] = [10;12;8].
+      filtra_pares_mayores7 [5;2;6;19;129]      = [].
    ------------------------------------------------------------------ *)
 
-Definition filter_even_gt7 (l : list nat) : list nat :=
-  filter (fun x => evenb x && leb 7 x) l.
+Definition filtra_pares_mayores7 (xs : list nat) : list nat :=
+  filtra (fun x => esPar x && menor_o_igual 7 x) xs.
 
-Example prop_filter_even_gt7_1 :
-  filter_even_gt7 [1;2;6;9;10;3;12;8] = [10;12;8].
- Proof. reflexivity. Qed.
+Example prop_filtra_pares_mayores7_1 :
+  filtra_pares_mayores7 [1;2;6;9;10;3;12;8] = [10;12;8].
+Proof. reflexivity. Qed.
 
-Example prop_filter_even_gt7_2 :
-  filter_even_gt7 [5;2;6;19;129] = [].
+Example prop_filtra_pares_mayores7_2 :
+  filtra_pares_mayores7 [5;2;6;19;129] = [].
 Proof. reflexivity. Qed.
 
 (* ---------------------------------------------------------------------
-   Ejercicio. Definir la función
-      partition : forall X : Type,
-                  (X -> bool) -> list X -> list X * list X
-   tal que (patition p l) es el par de lista (xs,ys) tal que xs es la
-   lista de los elementos de l que cumplen p y ys la de las que no lo
+   Ejercicio 2.3.4. Definir la función
+      partition {X : Type} (p : X -> bool) (xs : list X) : list X * list X
+   tal que (patition p xs) es el par de listas (ys,zs) donde xs es la
+   lista de los elementos de xs que cumplen p y zs la de las que no lo
    cumplen. Por ejemplo,
-      partition oddb [1;2;3;4;5]         = ([1;3;5], [2;4]).
+      partition esImpar [1;2;3;4;5]         = ([1;3;5], [2;4]).
       partition (fun x => false) [5;9;0] = ([], [5;9;0]).
    ------------------------------------------------------------------ *)
 
 Definition partition {X : Type}
-                     (test : X -> bool)
-                     (l : list X)
+                     (p : X -> bool)
+                     (xs : list X)
                    : list X * list X :=
-  (filter test l, filter (fun x => negb (test x)) l).
+  (filtra p xs, filtra (fun x => negacion (p x)) xs).
 
-Example prop_partition1: partition oddb [1;2;3;4;5] = ([1;3;5], [2;4]).
+Example prop_partition1: partition esImpar [1;2;3;4;5] = ([1;3;5], [2;4]).
 Proof. reflexivity. Qed.
+
 Example prop_partition2: partition (fun x => false) [5;9;0] = ([], [5;9;0]).
 Proof. reflexivity. Qed.
 
@@ -799,89 +823,152 @@ Proof. reflexivity. Qed.
    ================================================================== *)
 
 (* ---------------------------------------------------------------------
-   Ejercicio. Definir la función
-      map {X Y:Type} (f:X->Y) (l:list X) : (list Y) 
-   tal que (map f l) es la lista obtenida aplicando f a todos los
-   elementos de l. Por ejemplo,
+   Ejercicio 2.4.1. Definir la función
+      map {X Y:Type} (f : X -> Y) (xs:list X) : list Y 
+   tal que (map f xs) es la lista obtenida aplicando f a todos los
+   elementos de xs. Por ejemplo,
       map (fun x => plus 3 x) [2;0;2] = [5;3;5].
-      map oddb [2;1;2;5] = [false;true;false;true].
-      map (fun n => [evenb n;oddb n]) [2;1;2;5]
+      map esImpar [2;1;2;5] = [false;true;false;true].
+      map (fun n => [evenb n;esImpar n]) [2;1;2;5]
         = [[true;false];[false;true];[true;false];[false;true]].
    ------------------------------------------------------------------ *)
 
-Fixpoint map {X Y:Type} (f:X->Y) (l:list X) : (list Y) :=
-  match l with
-  | []     => []
-  | h :: t => (f h) :: (map f t)
+Fixpoint map {X Y:Type} (f : X -> Y) (xs : list X) : list Y :=
+  match xs with
+  | []       => []
+  | x :: xs' => f x :: map f xs'
   end.
 
-Example prop_map1: map (fun x => plus 3 x) [2;0;2] = [5;3;5].
+Example prop_map1:
+  map (fun x => plus 3 x) [2;0;2] = [5;3;5].
 Proof. reflexivity.  Qed.
 
 Example prop_map2:
-  map oddb [2;1;2;5] = [false;true;false;true].
+  map esImpar [2;1;2;5] = [false;true;false;true].
 Proof. reflexivity.  Qed.
 
 Example prop_map3:
-    map (fun n => [evenb n;oddb n]) [2;1;2;5]
+    map (fun n => [esPar n ; esImpar n]) [2;1;2;5]
   = [[true;false];[false;true];[true;false];[false;true]].
 Proof. reflexivity.  Qed.
 
 (* ---------------------------------------------------------------------
-   Ejercicio. Demostrar que
+   Ejercicio 2.4.2. Demostrar que
       map f (inversa l) = inversa (map f l).
    ------------------------------------------------------------------ *)
 
-Lemma map_conc_distr : forall (X Y : Type) (f : X -> Y) (l t : list X),
-    map f (l ++ t) = map f l ++ map f t.
+Lemma map_conc: forall (X Y : Type) (f : X -> Y) (xs ys : list X),
+    map f (xs ++ ys) = map f xs ++ map f ys.
 Proof.
-  intros X Y f l t.
-  induction l.
-  + reflexivity.
-  + simpl. rewrite IHl. reflexivity.
+  intros X Y f xs ys.          (* X : Type
+                                  Y : Type
+                                  f : X -> Y
+                                  xs, ys : list X
+                                  ============================
+                                  map f (xs ++ ys) = map f xs ++ map f ys *)
+  induction xs as [|x xs' HI]. 
+  +                            (* X : Type
+                                  Y : Type
+                                  f : X -> Y
+                                  ys : list X
+                                  ============================
+                                  map f ([ ] ++ ys) = map f [ ] ++ map f ys *)
+    reflexivity.
+  +                            (* X : Type
+                                  Y : Type
+                                  f : X -> Y
+                                  x : X
+                                  xs', ys : list X
+                                  HI : map f (xs' ++ ys) = 
+                                       map f xs' ++ map f ys
+                                  ============================
+                                  map f ((x :: xs') ++ ys) = 
+                                  map f (x :: xs') ++ map f ys *)
+    simpl.                     (* f x :: map f (xs' ++ ys) = 
+                                  f x :: (map f xs' ++ map f ys) *)
+    rewrite HI.                (* f x :: (map f xs' ++ map f ys) = 
+                                  f x :: (map f xs' ++ map f ys) *)
+    reflexivity.
 Qed.
 
-Theorem map_inversa : forall (X Y : Type) (f : X -> Y) (l : list X),
-  map f (inversa l) = inversa (map f l).
+Theorem map_inversa : forall (X Y : Type) (f : X -> Y) (xs : list X),
+  map f (inversa xs) = inversa (map f xs).
 Proof.
-  intros X Y f l.
-  induction l.
-  + reflexivity.
-  + simpl. rewrite map_conc_distr, IHl. reflexivity.
+  intros X Y f xs.             (* X : Type
+                                  Y : Type
+                                  f : X -> Y
+                                  xs : list X
+                                  ============================
+                                  map f (inversa xs) = inversa (map f xs) *)
+  induction xs as [|x xs' HI]. 
+  +                            (* X : Type
+                                  Y : Type
+                                  f : X -> Y
+                                  ============================
+                                  map f (inversa [ ]) = inversa (map f [ ]) *)
+    reflexivity.
+  +                            (* X : Type
+                                  Y : Type
+                                  f : X -> Y
+                                  x : X
+                                  xs' : list X
+                                  HI : map f (inversa xs') = inversa (map f xs')
+                                  ============================
+                                  map f (inversa (x :: xs')) = 
+                                  inversa (map f (x :: xs')) *)
+    simpl.                     (* map f (inversa xs' ++ [x]) = 
+                                  inversa (map f xs') ++ [f x] *)
+    rewrite map_conc.          (* map f (inversa xs') ++ map f [x] = 
+                                  inversa (map f xs') ++ [f x] *)
+    rewrite HI.                (* inversa (map f xs') ++ map f [x] = 
+                                  inversa (map f xs') ++ [f x] *)
+    reflexivity.
 Qed.
 
 (* ---------------------------------------------------------------------
-   Ejercicio. Definir la función
-      flat_map {X Y:Type} (f:X -> list Y) (l:list X) : (list Y)
-   tal que (flat_map f l) es la concatenación de las listas obtenidas
+   Ejercicio 2.4.3. Definir la función
+      conc_map {X Y : Type} (f : X -> list Y) (xs :list X) : (list Y)
+   tal que (conc_map f xs) es la concatenación de las listas obtenidas
    aplicando f a l. Por ejemplo,
-      flat_map (fun n => [n;n;n]) [1;5;4] = [1; 1; 1; 5; 5; 5; 4; 4; 4].
+      conc_map (fun n => [n;n;n]) [1;5;4] = [1; 1; 1; 5; 5; 5; 4; 4; 4].
    ------------------------------------------------------------------ *)
 
-Fixpoint flat_map {X Y:Type} (f:X -> list Y) (l:list X) 
-                   : (list Y) :=
-   match l with
-  | [] => []
-  | x :: t => f x ++ flat_map f t
+Fixpoint conc_map {X Y : Type} (f : X -> list Y) (xs : list X) : (list Y) :=
+   match xs with
+  | []       => []
+  | x :: xs' => f x ++ conc_map f xs'
   end.
 
-Example prop_flat_map1:
-  flat_map (fun n => [n;n;n]) [1;5;4]
+Example prop_conc_map:
+  conc_map (fun n => [n;n;n]) [1;5;4]
   = [1; 1; 1; 5; 5; 5; 4; 4; 4].
 Proof. reflexivity. Qed.
 
 (* ---------------------------------------------------------------------
-   Ejercicio. Definir la función
-      option_map {X Y : Type} (f : X -> Y) (xo : option X) : option Y
-   tal que (option_map f xo) es la aplicación de f a xo.
+   Ejercicio 2.4.4. Definir la función
+      map_opcional {X Y : Type} (f : X -> Y) (o : Opcional X) : Opcional Y
+   tal que (map_opcional f o) es la aplicación de f a o. Por ejemplo,
+      map_opcional S (Some 3) = Some 4
+      map_opcional S None     = None
    ------------------------------------------------------------------ *)
 
-Definition option_map {X Y : Type} (f : X -> Y) (xo : option X)
-                      : option Y :=
-  match xo with
+Definition map_opcional {X Y : Type} (f : X -> Y) (o : Opcional X)
+                        : Opcional Y :=
+  match o with
     | None   => None
     | Some x => Some (f x)
   end.
+
+Compute (map_opcional S (Some 3)).
+(* = Some 4 : Opcional nat*)
+Compute (map_opcional S None).
+(* = None : Opcional nat*)
+
+Example prop_map_opcional1: map_opcional S (Some 3) = Some 4.
+Proof. reflexivity. Qed.
+
+Example prop_map_opcional2: map_opcional S None = None.
+Proof. reflexivity. Qed.
 
 (* =====================================================================
    §§ 2.5. Plegados (fold)  
@@ -957,17 +1044,17 @@ Check plus.
       plus3 : nat -> nat
    tal que (plus3 x) es tres más x. Por ejemplo,
       plus3 4               = 7.
-      doit3times plus3 0    = 9.
-      doit3times (plus 3) 0 = 9.
+      aplica3veces plus3 0    = 9.
+      aplica3veces (plus 3) 0 = 9.
    ------------------------------------------------------------------ *)
 
 Definition plus3 := plus 3.
 
 Example prop_plus3 :    plus3 4 = 7.
 Proof. reflexivity.  Qed.
-Example prop_plus3' :   doit3times plus3 0 = 9.
+Example prop_plus3' :   aplica3veces plus3 0 = 9.
 Proof. reflexivity.  Qed.
-Example prop_plus3'' :  doit3times (plus 3) 0 = 9.
+Example prop_plus3'' :  aplica3veces (plus 3) 0 = 9.
 Proof. reflexivity.  Qed.
 
 (* =====================================================================
@@ -1077,7 +1164,7 @@ Qed.
 
 (* ---------------------------------------------------------------------
    Ejercicio. Demostrar que
-      forall X n l, longitud l = n -> @nth_error X l n = None
+      forall X n l, longitud l = n -> @nthOpcional X l n = None
    ------------------------------------------------------------------ *)
 
 (* ---------------------------------------------------------------------
@@ -1128,7 +1215,7 @@ Definition zero : nat :=
    tal que three es el número tres de Church.
    ------------------------------------------------------------------ *)
 
-Definition three : nat := @doit3times.
+Definition three : nat := @aplica3veces.
 
 (* ---------------------------------------------------------------------
    Ejercicio. Definir la función
