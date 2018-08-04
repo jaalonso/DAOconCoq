@@ -83,6 +83,13 @@ Abort.
 
 * Tácticas de demostración 
 
++ =apply H= 
+  + si el objetivo coincide con la hipótesis =H=, lo demuestra;
+  + si =H= es una implicación,
+    + si el objetivo coincide con la conclusión de =H=, lo sustituye por
+      su premisa y
+    + si el objetivo coincide con la premisa de =H=, lo sustituye por
+      su conclusión.
 + =assert (H: P)=: Incluyed la demostración de la propiedad P y continúa
   la demostración añadiendo como premisa la propiedad P con nombre H. 
 + =destruct b=: Distingue dos casos según que b sea True o False.
