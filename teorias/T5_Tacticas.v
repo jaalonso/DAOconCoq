@@ -1,58 +1,81 @@
 (* T5: Tácticas básicas *)
 
+Set Warnings "-notation-overridden,-parsing".
 Require Export T4_PolimorfismoyOS.
 
+(* El contenido del tema es
+   1. La táctica 'apply'
+   2. La táctica 'apply ... with ...'
+   3. La táctica 'inversion'
+   4. Uso de tácticas sobre las hipótesis
+   5. Control de la hipótesis de inducción  
+   6. Expansión de definiciones 
+   7. Uso de 'destruct' sobre expresiones compuestas
+   8. Resumen de tácticas básicas 
+   9. Ejercicios 
+*)
+
 (* =====================================================================
-   § La táctica apply
+   § 1. La táctica 'apply'
    ================================================================== *)
 
 (* ---------------------------------------------------------------------
-   Ejemplo de demostración donde el objetivo coincide con alguna
-   hipótesis. 
+   Ejemplo 1.1. Demostrar que 
+          n = m  ->
+          [n;o] = [n;p] ->
+          [n;o] = [m;p].
    ------------------------------------------------------------------ *)
 
 (* Demostración sin apply *)
-Theorem silly1 : forall (n m o p : nat),
+Theorem artificial_1a : forall (n m o p : nat),
     n = m  ->
     [n;o] = [n;p] ->
     [n;o] = [m;p].
 Proof.
-  intros n m o p eq1 eq2.
-  (* [n; o] = [m; p] *)
-  rewrite <- eq1.
-  (* [n; o] = [n; p] *)
-  rewrite eq2.
-  (* [n; p] = [n; p] *)
+  intros n m o p H1 H2. (* n, m, o, p : nat
+                           H1 : n = m
+                           H2 : [n; o] = [n; p]
+                           ============================
+                           [n; o] = [m; p] *)
+  rewrite <- H1.         (* [n; o] = [n; p] *)
+  rewrite H2.           (* [n; p] = [n; p] *)
   reflexivity.
 Qed.
 
 (* Demostración con apply *)
-Theorem silly1' : forall (n m o p : nat),
+Theorem artificial_1b : forall (n m o p : nat),
     n = m  ->
     [n;o] = [n;p] ->
     [n;o] = [m;p].
 Proof.
-  intros n m o p eq1 eq2.
-  (* [n; o] = [m; p] *)
-  rewrite <- eq1.
-  (* [n; o] = [n; p] *)
-  apply eq2.
+  intros n m o p H1 H2. (* n, m, o, p : nat
+                           H1 : n = m
+                           H2 : [n; o] = [n; p]
+                           ============================
+                           [n; o] = [m; p] *)
+  rewrite <- H1.         (* [n; o] = [n; p] *)
+  apply H2.
 Qed.
 
 (* ---------------------------------------------------------------------
-   Ejemplo de aplicación de apply con hipótesis condicionales.
+   Ejemplo 1.2. Demostrar que 
+      n = m  ->
+      (forall (q r : nat), q = r -> [q;o] = [r;p]) ->
+      [n;o] = [m;p].
    ------------------------------------------------------------------ *)
 
-Theorem silly2 : forall (n m o p : nat),
+Theorem artificial2 : forall (n m o p : nat),
     n = m  ->
     (forall (q r : nat), q = r -> [q;o] = [r;p]) ->
     [n;o] = [m;p].
 Proof.
-  intros n m o p eq1 eq2.
-  (* [n; o] = [m; p] *)
-  apply eq2.
-  (* n = m *)
-  apply eq1.
+  intros n m o p H1 H2. (* n, m, o, p : nat
+                           H1 : n = m
+                           H2 : forall q r : nat, q = r -> [q; o] = [r; p]
+                           ============================
+                           [n; o] = [m; p] *)
+  apply H2.             (* n = m *)
+  apply H1.
 Qed.
 
 (* ---------------------------------------------------------------------
@@ -60,7 +83,7 @@ Qed.
    cuantificadores. 
    ------------------------------------------------------------------ *)
 
-Theorem silly2a : forall (n m : nat),
+Theorem artificial2a : forall (n m : nat),
     (n,n) = (m,m)  ->
     (forall (q r : nat), (q,q) = (r,r) -> [q] = [r]) ->
     [n] = [m].
@@ -79,7 +102,7 @@ Qed.
       oddb 4 = true.
    ------------------------------------------------------------------ *)
 
-Theorem silly_ex :
+Theorem artificial_ex :
   (forall n, evenb n = true -> oddb (S n) = true) ->
   evenb 3 = true ->
   oddb 4 = true.
@@ -90,7 +113,7 @@ Proof.
    Ejemplo e necesidad de usar symmetry antes de apply.
    ------------------------------------------------------------------ *)
 
-Theorem silly3_firsttry : forall (n : nat),
+Theorem artificial3_firsttry : forall (n : nat),
     true = beq_nat n 5  ->
     beq_nat (S (S n)) 7 = true.
 Proof.
@@ -114,7 +137,7 @@ Proof.
   (* FILL IN HERE *) Admitted.
 
 (* =====================================================================
-   § La táctica apply ... with ...
+   § 2. La táctica 'apply ... with ...'
    ================================================================== *)
 
 (* ---------------------------------------------------------------------
@@ -205,7 +228,7 @@ Proof.
   (* FILL IN HERE *) Admitted.
 
 (* =====================================================================
-   § La táctica inversión
+   § 3. La táctica 'inversion'
    ================================================================== *)
 
 (* ---------------------------------------------------------------------
@@ -349,7 +372,7 @@ Proof.
 Qed.
 
 (* =====================================================================
-   § Uso de tácticas sobre las hipótesis
+   § 4. Uso de tácticas sobre las hipótesis
    ================================================================== *)
 
 (* ---------------------------------------------------------------------
@@ -371,7 +394,7 @@ Qed.
    Ejemplo de "razonamiento hacia adelante" con "apply L in H".
    ------------------------------------------------------------------ *)
 
-Theorem silly3' : forall (n : nat),
+Theorem artificial3' : forall (n : nat),
   (beq_nat n 5 = true -> beq_nat (S (S n)) 7 = true) ->
   true = beq_nat n 5  ->
   true = beq_nat (S (S n)) 7.
@@ -407,7 +430,7 @@ Proof.
   (* FILL IN HERE *) Admitted.
 
 (* =====================================================================
-   § Control de la hipótesis de inducción  
+   § 5. Control de la hipótesis de inducción  
    ================================================================== *)
 
 (* ---------------------------------------------------------------------
@@ -553,7 +576,7 @@ Proof.
   (* FILL IN HERE *) Admitted.
 
 (* =====================================================================
-   § Expnasión de definiciones 
+   § 6. Expansión de definiciones 
    ================================================================== *)
 
 (* ---------------------------------------------------------------------
@@ -580,7 +603,7 @@ Qed.
 
 Definition foo (x: nat) := 5.
 
-Fact silly_fact_1 : forall m, foo m + 1 = foo (m + 1) + 1.
+Fact artificial_fact_1 : forall m, foo m + 1 = foo (m + 1) + 1.
 Proof.
   intros m.
   simpl.
@@ -597,14 +620,14 @@ Definition bar x :=
   | S _ => 5
   end.
 
-Fact silly_fact_2_FAILED : forall m, bar m + 1 = bar (m + 1) + 1.
+Fact artificial_fact_2_FAILED : forall m, bar m + 1 = bar (m + 1) + 1.
 Proof.
   intros m.
   simpl. (* No hace nada *)
 Abort.
 
 (* Demostración con destruct *)
-Fact silly_fact_2 : forall m, bar m + 1 = bar (m + 1) + 1.
+Fact artificial_fact_2 : forall m, bar m + 1 = bar (m + 1) + 1.
 Proof.
   intros m.
   destruct m.
@@ -613,7 +636,7 @@ Proof.
 Qed.
 
 (* Demostración con unfold *)
-Fact silly_fact_2' : forall m, bar m + 1 = bar (m + 1) + 1.
+Fact artificial_fact_2' : forall m, bar m + 1 = bar (m + 1) + 1.
 Proof.
   intros m.
   unfold bar.
@@ -623,22 +646,22 @@ Proof.
 Qed.
 
 (* =====================================================================
-   § Uso de destruct sobre expresiones compuestas
+   § 7. Uso de 'destruct' sobre expresiones compuestas
    ================================================================== *)
 
 (* ---------------------------------------------------------------------
    Ejemplos de uso de destruct sobre expresiones compuestas.
    ------------------------------------------------------------------ *)
 
-Definition sillyfun (n : nat) : bool :=
+Definition artificialfun (n : nat) : bool :=
   if      beq_nat n 3 then false
   else if beq_nat n 5 then false
   else                     false.
 
-Theorem sillyfun_false : forall (n : nat),
-    sillyfun n = false.
+Theorem artificialfun_false : forall (n : nat),
+    artificialfun n = false.
 Proof.
-  intros n. unfold sillyfun.
+  intros n. unfold artificialfun.
   destruct (beq_nat n 3).
     - (* beq_nat n 3 = true *) reflexivity.
     - (* beq_nat n 3 = false *) destruct (beq_nat n 5).
@@ -685,26 +708,26 @@ Proof.
    Ejemplo de precauciones al usar destruct para no perder información.
    ------------------------------------------------------------------ *)
 
-Definition sillyfun1 (n : nat) : bool :=
+Definition artificialfun1 (n : nat) : bool :=
   if      beq_nat n 3 then true
   else if beq_nat n 5 then true
   else                     false.
 
-Theorem sillyfun1_odd_FAILED : forall (n : nat),
-    sillyfun1 n = true ->
+Theorem artificialfun1_odd_FAILED : forall (n : nat),
+    artificialfun1 n = true ->
     oddb n = true.
 Proof.
-  intros n eq. unfold sillyfun1 in eq.
+  intros n eq. unfold artificialfun1 in eq.
   destruct (beq_nat n 3).
   (* Falso por falta de información *)
 Abort.
 
 (* Solución usando destruct con eqn *)
-Theorem sillyfun1_odd : forall (n : nat),
-    sillyfun1 n = true ->
+Theorem artificialfun1_odd : forall (n : nat),
+    artificialfun1 n = true ->
     oddb n = true.
 Proof.
-  intros n eq. unfold sillyfun1 in eq.
+  intros n eq. unfold artificialfun1 in eq.
   destruct (beq_nat n 3) eqn:Heqe3.
     - (* e3 = true *) apply beq_nat_true in Heqe3.
       rewrite -> Heqe3. reflexivity.
@@ -729,7 +752,7 @@ Proof.
   (* FILL IN HERE *) Admitted.
 
 (* =====================================================================
-   § Resumen de tácticas básicas 
+   § 8. Resumen de tácticas básicas 
    ================================================================== *)
 
 (* Tácticas básicas:
@@ -782,7 +805,7 @@ Proof.
      hypothesis in the goal formula *)
 
 (* =====================================================================
-   § Ejercicios 
+   § 9. Ejercicios 
    ================================================================== *)
 
 (* ---------------------------------------------------------------------
