@@ -975,31 +975,30 @@ Proof. reflexivity. Qed.
    ================================================================== *)
 
 (* ---------------------------------------------------------------------
-   Ejemplo. Definir la función
-      fold {X Y:Type} (f: X->Y->Y) (l:list X) (b:Y) : Y
-   tal que (fold f l b) es el plegado de l con la operación f a partir
+   Ejemplo 2.5.1. Definir la función
+      fold {X Y:Type} (f: X -> Y- > Y) (xs : list X) (b : Y) : Y
+   tal que (fold f xs b) es el plegado de xs con la operación f a partir
    del elemento b. Por ejemplo,
-      fold mult [1;2;3;4] 1                 = 24.
-      fold andb [true;true;false;true] true = false.
-      fold conc  [[1];[];[2;3];[4]] []       = [1;2;3;4].
+      fold mult [1;2;3;4] 1                       = 24.
+      fold conjuncion [true;true;false;true] true = false.
+      fold conc  [[1];[];[2;3];[4]] []            = [1;2;3;4].
    ------------------------------------------------------------------ *)
 
-Fixpoint fold {X Y:Type} (f: X->Y->Y) (l:list X) (b:Y)
-                         : Y :=
-  match l with
+Fixpoint fold {X Y:Type} (f: X -> Y -> Y) (xs : list X) (b : Y) : Y :=
+  match xs with
   | nil    => b
-  | h :: t => f h (fold f t b)
+  | x :: xs' => f x (fold f xs' b)
   end.
 
-Check (fold andb).
-(* ===> fold andb : list bool -> bool -> bool *)
+Check (fold conjuncion).
+(* ===> fold conjuncion : list bool -> bool -> bool *)
 
-Example fold_example1 :
+Example fold_example1:
   fold mult [1;2;3;4] 1 = 24.
 Proof. reflexivity. Qed.
 
 Example fold_example2 :
-  fold andb [true;true;false;true] true = false.
+  fold conjuncion [true;true;false;true] true = false.
 Proof. reflexivity. Qed.
 
 Example fold_example3 :
@@ -1011,50 +1010,44 @@ Proof. reflexivity. Qed.
    ================================================================== *)
 
 (* ---------------------------------------------------------------------
-   Ejemplo. Definir la función
-      constfun {X: Type} (x: X) : nat->X
-   tal que (constfun x) es la función que a todos los naturales le
-   asigna el x. Por ejemplo, si se define 
-      Definition ftrue := constfun true.
-   entonces,
-      ftrue 0         = true.
-      (constfun 5) 99 = 5.
+   Ejemplo 2.6.1. Definir la función
+      constante {X : Type} (x : X) : nat -> X
+   tal que (constante x) es la función que a todos los naturales le
+   asigna el x. Por ejemplo, 
+      (constante 5) 99 = 5.
    ------------------------------------------------------------------ *)
 
-Definition constfun {X: Type} (x: X) : nat->X :=
-  fun (k:nat) => x.
+Definition constante {X : Type} (x : X) : nat -> X :=
+  fun (k : nat) => x.
 
-Definition ftrue := constfun true.
-
-Example constfun_example1 : ftrue 0 = true.
-Proof. reflexivity. Qed.
-
-Example constfun_example2 : (constfun 5) 99 = 5.
+Example prop_constante: (constante 5) 99 = 5.
 Proof. reflexivity. Qed.
 
 (* ---------------------------------------------------------------------
-   Ejemplo. Calcular el tipo de plus.
+   Ejemplo 2.6.2. Calcular el tipo de plus.
    ------------------------------------------------------------------ *)
 
 Check plus.
 (* ==> nat -> nat -> nat *)
 
 (* ---------------------------------------------------------------------
-   Ejemplo. Definir la función
+   Ejemplo 2.6.3. Definir la función
       plus3 : nat -> nat
    tal que (plus3 x) es tres más x. Por ejemplo,
-      plus3 4               = 7.
+      plus3 4                 = 7.
       aplica3veces plus3 0    = 9.
       aplica3veces (plus 3) 0 = 9.
    ------------------------------------------------------------------ *)
 
 Definition plus3 := plus 3.
 
-Example prop_plus3 :    plus3 4 = 7.
+Example prop_plus3a: plus3 4 = 7.
 Proof. reflexivity.  Qed.
-Example prop_plus3' :   aplica3veces plus3 0 = 9.
+
+Example prop_plus3b: aplica3veces plus3 0 = 9.
 Proof. reflexivity.  Qed.
-Example prop_plus3'' :  aplica3veces (plus 3) 0 = 9.
+
+Example prop_plus3c: aplica3veces (plus 3) 0 = 9.
 Proof. reflexivity.  Qed.
 
 (* =====================================================================
@@ -1064,244 +1057,319 @@ Proof. reflexivity.  Qed.
 Module Exercises.
 
 (* ---------------------------------------------------------------------
-   Ejercicio. Definir, usando fold, la función
-      fold_longitud {X : Type} (l : list X) : nat
-   tal que (fold_longitud l) es la longitud de l. Por ejemplo,
-      fold_longitud [4;7;0] = 3.
+   Ejercicio 3.1. Definir, usando fold, la función
+      longitudF {X : Type} (xs : list X) : nat
+   tal que (longitudF xs) es la longitud de xs. Por ejemplo,
+      longitudF [4;7;0] = 3.
    ------------------------------------------------------------------ *)
   
-Definition fold_longitud {X : Type} (l : list X) : nat :=
-  fold (fun _ n => S n) l 0.
+Definition longitudF {X : Type} (xs : list X) : nat :=
+  fold (fun _ n => S n) xs 0.
 
-Example prop_fold_longitud1 : fold_longitud [4;7;0] = 3.
+Example prop_longitudF1: longitudF [4;7;0] = 3.
 Proof. reflexivity. Qed.
 
 (* ---------------------------------------------------------------------
-   Ejemplo. Demostrar que
-      fold_longitud l = longitud l.
+   Ejemplo 3.2. Demostrar que
+      longitudF l = longitud l.
    ------------------------------------------------------------------ *)
 
-Theorem fold_longitud_correct : forall X (l : list X),
-  fold_longitud l = longitud l.
+Theorem longitudF_longitud: forall X (xs : list X),
+  longitudF xs = longitud xs.
 Proof.
-  intros X l.
-  unfold fold_longitud.
-  induction l.
-  - reflexivity.
-  - simpl. rewrite IHl. reflexivity.
+  intros X xs.                 (* X : Type
+                                  xs : list X
+                                  ============================
+                                  longitudF xs = longitud xs *)
+  unfold longitudF.            (* fold (fun (_ : X) (n : nat) => S n) xs 0 = 
+                                  longitud xs *)
+  induction xs as [|x xs' HI]. 
+  -                            (* X : Type
+                                  ============================
+                                  fold (fun (_ : X) (n : nat) => S n) [ ] 0 = 
+                                  longitud [ ] *)
+    reflexivity.
+  -                            (* X : Type
+                                  x : X
+                                  xs' : list X
+                                  HI : fold (fun (_:X) (n:nat) => S n) xs' 0 =
+                                       longitud xs'
+                                  ============================
+                                  fold (fun (_:X) (n:nat) => S n) (x::xs') 0 = 
+                                  longitud (x :: xs') *)
+    simpl.                     (* S (fold (fun (_:X) (n:nat) => S n) xs' 0) = 
+                                  S (longitud xs') *)
+    rewrite HI.                (* S (longitud xs') = S (longitud xs') *)
+    reflexivity.
 Qed.
 
 (* ---------------------------------------------------------------------
-   Ejercicio. Definir, usando fold, la función
-      fold_map {X Y:Type} (f : X -> Y) (l : list X) : list Y
-   tal que (fold_map f l) es la lista obtenida aplicando f a los
+   Ejercicio 3.2. Definir, usando fold, la función
+      mapF {X Y : Type} (f : X -> Y) (xs : list X) : list Y
+   tal que (mapF f xs) es la lista obtenida aplicando f a los
    elementos de l.
    ------------------------------------------------------------------ *)
 
-Definition fold_map {X Y:Type} (f : X -> Y) (l : list X) : list Y :=
-   fold (fun x t => (f x) :: t)  l [].
-
+Definition mapF {X Y : Type} (f : X -> Y) (xs : list X) : list Y :=
+   fold (fun x t => (f x) :: t)  xs [].
 
 (* ---------------------------------------------------------------------
-   Ejemplo. Demostrar que fold_map es equivalente a map.
+   Ejercicio 3.4. Demostrar que mapF es equivalente a map.
    ------------------------------------------------------------------ *)
 
-Theorem fold_map_correct : forall (X Y : Type) (f : X -> Y) (l : list X),
-     fold_map f l = map f l.
+Theorem mapF_correct : forall (X Y : Type) (f : X -> Y) (xs : list X),
+    mapF f xs = map f xs.
 Proof.
-  intros X Y f l.
-  unfold fold_map.
-  induction l.
-  - reflexivity.
-  - simpl. rewrite IHl. reflexivity.
+  intros X Y f xs.             (* X : Type
+                                  Y : Type
+                                  f : X -> Y
+                                  xs : list X
+                                  ============================
+                                  mapF f xs = map f xs *)
+  unfold mapF.                 (* fold (fun (x:X) (t:list Y) => f x::t) xs [] 
+                                  = map f xs *)
+  induction xs as [|x xs' HI]. 
+  -                            (* X : Type
+                                  Y : Type
+                                  f : X -> Y
+                                  ============================
+                                  fold (fun (x:X) (t:list Y) => f x :: t) [] []
+                                  = map f [ ] *)
+    reflexivity.
+  -                            (* X : Type
+                                  Y : Type
+                                  f : X -> Y
+                                  x : X
+                                  xs' : list X
+                                  HI : fold (fun (x:X) (t:list Y) => f x :: t) 
+                                            xs' [ ] 
+                                       = map f xs'
+                                  ============================
+                                  fold (fun (x0:X) (t:list Y) => f x0 :: t) 
+                                       (x :: xs') [ ] 
+                                  = map f (x :: xs') *)
+    simpl.                     (* f x :: fold (fun (x0:X) (t:list Y) => 
+                                               f x0 :: t) xs' [ ] 
+                                  = f x :: map f xs' *)
+    rewrite HI.                (* f x :: map f xs' = f x :: map f xs' *)
+    reflexivity.
 Qed.
 
 (* ---------------------------------------------------------------------
-   Ejemplo. Definir la función
-      prod_curry {X Y Z : Type} (f : X * Y -> Z) (x : X) (y : Y) : Z
-   tal que (prod_curry f x y) es la versión curryficada de f.
+   Ejemplo 3.5. Definir la función
+      curry {X Y Z : Type} (f : X * Y -> Z) (x : X) (y : Y) : Z
+   tal que (curry f x y) es la versión curryficada de f. Por ejemplo,
+      curry fst 3 5 = 3.
    ------------------------------------------------------------------ *)
 
-Definition prod_curry {X Y Z : Type}
+Definition curry {X Y Z : Type}
   (f : X * Y -> Z) (x : X) (y : Y) : Z := f (x, y).
 
-(* ---------------------------------------------------------------------
-   Ejercicio. Definir la función
-      prod_uncurry {X Y Z : Type} (f : X -> Y -> Z) (p : X * Y) : Z
-   tal que (prod_uncurry f p) es la versión incurryficada de f.
-   ------------------------------------------------------------------ *)
+Compute (curry fst 3 5).
+(* = 3 : nat*)
 
-Definition prod_uncurry {X Y Z : Type}
-  (f : X -> Y -> Z) (p : X * Y) : Z := f (fst p) (snd p).
-
-Check @prod_curry.
-Check @prod_uncurry.
-
-(* ---------------------------------------------------------------------
-   Ejercicio. Demostrar que
-      prod_curry (prod_uncurry f) x y = f x y
-   ------------------------------------------------------------------ *)
-
-Theorem uncurry_curry : forall (X Y Z : Type)
-                        (f : X -> Y -> Z)
-                        x y,
-  prod_curry (prod_uncurry f) x y = f x y.
+Example prop_curry: curry fst 3 5 = 3.
 Proof. reflexivity. Qed.
 
 (* ---------------------------------------------------------------------
-   Ejercicio. Demostrar que
-      prod_uncurry (prod_curry f) p = f p.
+   Ejercicio 3.6. Definir la función
+      uncurry {X Y Z : Type} (f : X -> Y -> Z) (p : X * Y) : Z
+   tal que (uncurry f p) es la versión incurryficada de f.
+   ------------------------------------------------------------------ *)
+
+Definition uncurry {X Y Z : Type}
+  (f : X -> Y -> Z) (p : X * Y) : Z := f (fst p) (snd p).
+
+Compute (uncurry mult (2,5)).
+(* = 10 : nat*)
+
+Example prop_uncurry: uncurry mult (2,5) = 10.
+Proof. reflexivity. Qed.
+
+(* ---------------------------------------------------------------------
+   Ejercicio 3.7. Calcular el tipo de las funcciones curry y uncurry.
+   ------------------------------------------------------------------ *)
+
+Check @curry.
+(* ===> forall X Y Z : Type, (X * Y -> Z) -> X -> Y -> Z *)
+
+Check @uncurry.
+(* forall X Y Z : Type, (X -> Y -> Z) -> X * Y -> Z *)
+
+(* ---------------------------------------------------------------------
+   Ejercicio 3.8. Demostrar que
+      curry (uncurry f) x y = f x y
+   ------------------------------------------------------------------ *)
+
+Theorem uncurry_curry : forall (X Y Z : Type)
+                          (f : X -> Y -> Z)
+                          x y,
+  curry (uncurry f) x y = f x y.
+Proof. reflexivity. Qed.
+
+(* ---------------------------------------------------------------------
+   Ejercicio 3.9. Demostrar que
+      uncurry (curry f) p = f p.
    ------------------------------------------------------------------ *)
 
 Theorem curry_uncurry : forall (X Y Z : Type)
-                        (f : (X * Y) -> Z) (p : X * Y),
-  prod_uncurry (prod_curry f) p = f p.
+                          (f : (X * Y) -> Z)
+                          (p : X * Y),
+  uncurry (curry f) p = f p.
 Proof.
-  intros.
-  destruct p.
-  reflexivity.
+  intros.      (* X : Type
+                  Y : Type
+                  Z : Type
+                  f : X * Y -> Z
+                  p : X * Y
+                  ============================
+                  uncurry (curry f) p = f p *)
+  destruct p.  (* uncurry (curry f) (x, y) = f (x, y) *)
+  reflexivity. 
 Qed.
-
-(* ---------------------------------------------------------------------
-   Ejercicio. Demostrar que
-      forall X n l, longitud l = n -> @nthOpcional X l n = None
-   ------------------------------------------------------------------ *)
-
-(* ---------------------------------------------------------------------
-   Ejercicio. En los siguientes ejercicios se trabajará con la
-   definición de Church de los números naturales: el número natural n es
-   la función que toma como argumento una función f y devuelve como
-   valor la aplicación de n veces la función f. 
-   ------------------------------------------------------------------ *)
 
 Module Church.
 
 (* ---------------------------------------------------------------------
-   Ejercicio. Definir el tipo nat para los números naturales de Church. 
+   Ejercicio 3.11.1. En los siguientes ejercicios se trabajará con la
+   definición de Church de los números naturales: el número natural n es
+   la función que toma como argumento una función f y devuelve como
+   valor la aplicación de n veces la función f. 
+
+   Definir el tipo nat para los números naturales de Church. 
    ------------------------------------------------------------------ *)
   
 Definition nat := forall X : Type, (X -> X) -> X -> X.
 
 (* ---------------------------------------------------------------------
-   Ejercicio. Definir la función
-      one : nat
-   tal que one es el número uno de Church.
+   Ejercicio 3.11.2. Definir la función
+      uno : nat
+   tal que uno es el número uno de Church.
    ------------------------------------------------------------------ *)
 
-Definition one : nat :=
+Definition uno : nat :=
   fun (X : Type) (f : X -> X) (x : X) => f x.
 
 (* ---------------------------------------------------------------------
-   Ejercicio. Definir la función
-      two : nat
-   tal que two es el número dos de Church.
+   Ejercicio 3.11.3. Definir la función
+      dos : nat
+   tal que dos es el número dos de Church.
    ------------------------------------------------------------------ *)
 
-Definition two : nat :=
+Definition dos : nat :=
   fun (X : Type) (f : X -> X) (x : X) => f (f x).
 
 (* ---------------------------------------------------------------------
-   Ejercicio. Definir la función
-      zero : nat
-   tal que zero es el número cero de Church.
+   Ejercicio 3.11.4. Definir la función
+      cero : nat
+   tal que cero es el número cero de Church.
    ------------------------------------------------------------------ *)
 
-Definition zero : nat :=
+Definition cero : nat :=
   fun (X : Type) (f : X -> X) (x : X) => x.
 
 (* ---------------------------------------------------------------------
-   Ejercicio. Definir la función
-      three : nat
-   tal que three es el número tres de Church.
+   Ejercicio 3.11.5. Definir la función
+      tres : nat
+   tal que tres es el número tres de Church.
    ------------------------------------------------------------------ *)
 
-Definition three : nat := @aplica3veces.
+Definition tres : nat := @aplica3veces.
 
 (* ---------------------------------------------------------------------
-   Ejercicio. Definir la función
-      succ (n : nat) : nat
-   tal que (succ n) es el siguiente del número n de Church. Por ejemplo, 
-      succ zero = one.
-      succ one  = two.
-      succ two  = three.
+   Ejercicio 3.11.5. Definir la función
+      suc (n : nat) : nat
+   tal que (suc n) es el siguiente del número n de Church. Por ejemplo, 
+      suc cero = uno.
+      suc uno  = dos.
+      suc dos  = tres.
    ------------------------------------------------------------------ *)
 
-Definition succ (n : nat) : nat :=
+Definition suc (n : nat) : nat :=
    fun (X : Type) (f : X -> X) (x : X) => f (n X f x).
 
-Example succ_1 : succ zero = one.
+Example prop_suc_1: suc cero = uno.
 Proof. reflexivity. Qed.
 
-Example succ_2 : succ one = two.
+Example prop_suc_2: suc uno = dos.
 Proof. reflexivity. Qed.
 
-Example succ_3 : succ two = three.
+Example prop_suc_3: suc dos = tres.
 Proof. reflexivity. Qed.
 
 (* ---------------------------------------------------------------------
-   Ejercicio. Definir la función
-      plus (n m : nat) : nat
-   tal que (plus n m) es la suma de n y m. Por ejemplo,
-      plus zero one             = one.
-      plus two three            = plus three two.
-      plus (plus two two) three = plus one (plus three three).
+   Ejercicio 3.11.6. Definir la función
+      suma (n m : nat) : nat
+   tal que (suma n m) es la suma de n y m. Por ejemplo,
+      suma cero uno            = uno.
+      suma dos tres            = suma tres dos.
+      suma (suma dos dos) tres = suma uno (suma tres tres).
    ------------------------------------------------------------------ *)
 
-Definition plus (n m : nat) : nat :=
+Definition suma (n m : nat) : nat :=
   fun (X : Type) (f : X -> X) (x : X) => m X f (n X f x).
 
-Example plus_1 : plus zero one = one.
+Example prop_suma_1 : suma cero uno = uno.
 Proof. reflexivity. Qed.
 
-Example plus_2 : plus two three = plus three two.
+Example prop_suma_2 : suma dos tres = suma tres dos.
 Proof. reflexivity. Qed.
 
-Example plus_3 :
-  plus (plus two two) three = plus one (plus three three).
+Example prop_suma_3 :
+  suma (suma dos dos) tres = suma uno (suma tres tres).
 Proof. reflexivity. Qed.
 
 (* ---------------------------------------------------------------------
-   Ejercicio. Definir la función
-      mult (n m : nat) : nat
-   tal que (mult n m) es el producto de n y m. Por ejemplo,
-      mult one one = one.
-      mult zero (plus three three) = zero.
-      mult two three = plus three three.
+   Ejercicio 3.11.7. Definir la función
+      producto (n m : nat) : nat
+   tal que (producto n m) es el producto de n y m. Por ejemplo,
+      producto uno uno               = uno.
+      producto cero (suma tres tres) = cero.
+      producto dos tres              = suma tres tres.
    ------------------------------------------------------------------ *)
 
-Definition mult (n m : nat) : nat :=
+Definition producto (n m : nat) : nat :=
    fun (X : Type) (f : X -> X) (x : X) => n X (m X f) x.
 
-Example mult_1 : mult one one = one.
+Example prop_producto_1: producto uno uno = uno.
 Proof. reflexivity. Qed.
 
-Example mult_2 : mult zero (plus three three) = zero.
+Example prop_producto_2: producto cero (suma tres tres) = cero.
 Proof. reflexivity. Qed.
 
-Example mult_3 : mult two three = plus three three.
+Example prop_producto_3: producto dos tres = suma tres tres.
 Proof. reflexivity. Qed.
 
 (* ---------------------------------------------------------------------
-   Ejercicio. Definir la función
-      exp (n m : nat) : nat
-   tal que (exp n m) es la potencia m-ésima de n. Por ejemplo, 
-      exp two two = plus two two.
-      exp three two = plus (mult two (mult two two)) one.
-      exp three zero = one.
+   Ejercicio 3.11.8. Definir la función
+      potencia (n m : nat) : nat
+   tal que (potencia n m) es la potencia m-ésima de n. Por ejemplo, 
+      potencia dos dos   = suma dos dos.
+      potencia tres dos  = suma (producto dos (producto dos dos)) uno.
+      potencia tres cero = uno.
    ------------------------------------------------------------------ *)
 
-Definition exp (n m : nat) : nat :=
+Definition potencia (n m : nat) : nat :=
   ( fun (X : Type) (f : X -> X) (x : X) => (m (X -> X) (n X) f) x).
 
-Example exp_1 : exp two two = plus two two.
+Example prop_potencia_1: potencia dos dos = suma dos dos.
 Proof. reflexivity. Qed.
 
-Example exp_2 : exp three two = plus (mult two (mult two two)) one.
+Example prop_potencia_2:
+  potencia tres dos = suma (producto dos (producto dos dos)) uno.
 Proof. reflexivity. Qed.
 
-Example exp_3 : exp three zero = one.
+Example prop_potencia_3: potencia tres cero = uno.
 Proof. reflexivity. Qed.
 
 End Church.
 
 End Exercises.
+
+(* =====================================================================
+   § Bibliografía
+   ================================================================== *)
+
+(*
+ + "Polymorphism and higher-order functions" de Peirce et als. 
+   http://bit.ly/2Mj5gMf *)
