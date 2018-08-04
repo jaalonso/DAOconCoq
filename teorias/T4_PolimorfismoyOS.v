@@ -2,6 +2,27 @@
 
 Require Export T3_Listas.
 
+(* El contenido de la teoría es
+   1. Polimorfismo
+      1. Listas polimórficas  
+         1. Inferencia de tipos
+         2. Síntesis de los tipos de los argumentos  
+         3. Argumentos implícitos  
+         4. Explicitación de argumentos  
+         5. Ejercicios  
+      2. Polimorfismo de pares  
+      3. Resultados opcionales polimórficos  
+   2. Funciones como datos
+      1. Funciones de orden superior 
+      2. Filtrado  
+      3. Funciones anónimas  
+      4. Aplicación a todos los elementos (map)
+      5. Plegados (fold)  
+      6. Funciones que construyen funciones  
+   3. Ejercicios 
+   4. Bibliografía
+*)
+
 (* =====================================================================
    § 1. Polimorfismo
    ================================================================== *)
