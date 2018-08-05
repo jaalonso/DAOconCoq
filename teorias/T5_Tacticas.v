@@ -1,4 +1,4 @@
-(* T5: Tácticas básicas *)
+(* T5: Tácticas básicas de Coq *)
 
 Set Warnings "-notation-overridden,-parsing".
 Require Export T4_PolimorfismoyOS.
@@ -58,6 +58,10 @@ Proof.
 Qed.
 
 (* ---------------------------------------------------------------------
+   Nota. Uso de la táctica 'apply'.
+   ------------------------------------------------------------------ *)
+
+(* ---------------------------------------------------------------------
    Ejemplo 1.2. Demostrar que 
       n = m  ->
       (forall (q r : nat), q = r -> [q;o] = [r;p]) ->
@@ -79,8 +83,15 @@ Proof.
 Qed.
 
 (* ---------------------------------------------------------------------
-   Ejemplo de aplicación de apply con hipótesis condicionales y
-   cuantificadores. 
+   Nota. Uso de la táctica 'apply' en hipótesis condicionales y
+   razonamiento hacia atrás
+   ------------------------------------------------------------------ *)
+
+(* ---------------------------------------------------------------------
+   Ejemplo 1.3. Demostrar que 
+      (n,n) = (m,m)  ->
+      (forall (q r : nat), (q,q) = (r,r) -> [q] = [r]) ->
+      [n] = [m].
    ------------------------------------------------------------------ *)
 
 Theorem artificial2a : forall (n m : nat),
@@ -88,53 +99,75 @@ Theorem artificial2a : forall (n m : nat),
     (forall (q r : nat), (q,q) = (r,r) -> [q] = [r]) ->
     [n] = [m].
 Proof.
-  intros n m eq1 eq2.
-  (* [n] = [m] *)
-  apply eq2.
-  (* (n, n) = (m, m) *)
-  apply eq1.
+  intros n m H1 H2. (* n, m : nat
+                       H1 : (n, n) = (m, m)
+                       H2 : forall q r : nat, (q, q) = (r, r) -> [q] = [r]
+                       ============================
+                       [n] = [m] *)
+  apply H2.         (* (n, n) = (m, m) *)
+  apply H1.
 Qed.
 
 (* ---------------------------------------------------------------------
-   Ejercicio 1. Demostrar, sin usar simpl, que
+   Ejercicio 1.1. Demostrar, sin usar simpl, que
       (forall n, evenb n = true -> oddb (S n) = true) ->
       evenb 3 = true ->
       oddb 4 = true.
    ------------------------------------------------------------------ *)
 
 Theorem artificial_ex :
-  (forall n, evenb n = true -> oddb (S n) = true) ->
-  evenb 3 = true ->
-  oddb 4 = true.
+  (forall n, esPar n = true -> esImpar (S n) = true) ->
+  esPar 3 = true ->
+  esImpar 4 = true.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros H1 H2. (* H1 : forall n : nat, esPar n = true -> esImpar (S n) = true
+                   H2 : esPar 3 = true
+                   ============================
+                   esImpar 4 = true *)
+  apply H1.     (* esPar 3 = true *)
+  apply H2.
+Qed.
 
 (* ---------------------------------------------------------------------
-   Ejemplo e necesidad de usar symmetry antes de apply.
+   Ejemplo 1.4. Demostrar que 
+      true = iguales_nat n 5  ->
+      iguales_nat (S (S n)) 7 = true.
    ------------------------------------------------------------------ *)
 
 Theorem artificial3_firsttry : forall (n : nat),
-    true = beq_nat n 5  ->
-    beq_nat (S (S n)) 7 = true.
+    true = iguales_nat n 5  ->
+    iguales_nat (S (S n)) 7 = true.
 Proof.
-  intros n H.
-  (* beq_nat (S (S n)) 7 = true *)
-  symmetry.
-  (* true = beq_nat (S (S n)) 7 *)
-  simpl.
-  (* true = beq_nat n 5 *)
+  intros n H. (* n : nat
+                 H : true = iguales_nat n 5
+                 ============================
+                 iguales_nat (S (S n)) 7 = true *)
+  symmetry.   (* true = iguales_nat (S (S n)) 7 *)
+  simpl.      (* true = iguales_nat n 5 *)
   apply H.
 Qed.
 
 (* ---------------------------------------------------------------------
-   Ejercicio 2. Demostrar
-      forall (l l' : list nat), l = rev l' -> l' = rev l.
+   Nota. Necesidad de usar symmetry antes de apply.
    ------------------------------------------------------------------ *)
 
-Theorem rev_exercise1:
-  forall (l l' : list nat), l = rev l' -> l' = rev l.
+(* ---------------------------------------------------------------------
+   Ejercicio 1.2. Demostrar
+      forall (xs ys : list nat), 
+       xs = inversa ys -> ys = inversa xs.
+   ------------------------------------------------------------------ *)
+
+Theorem inversa2: forall (xs ys : list nat),
+    xs = inversa ys -> ys = inversa xs.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros xs ys H.           (* xs, ys : list nat
+                               H : xs = inversa ys
+                               ============================
+                               ys = inversa xs *)
+  rewrite H.                (* ys = inversa (inversa ys) *)
+  symmetry.                 (* inversa (inversa ys) = ys *)
+  apply inversa_involutiva. 
+Qed.
 
 (* =====================================================================
    § 2. La táctica 'apply ... with ...'
@@ -305,17 +338,17 @@ Proof.
    son disjuntos.
    ------------------------------------------------------------------ *)
 
-Theorem beq_nat_0_l : forall n,
-    beq_nat 0 n = true -> n = 0.
+Theorem iguales_nat_0_l : forall n,
+    iguales_nat 0 n = true -> n = 0.
 Proof.
   intros n.
-  (* beq_nat 0 n = true -> n = 0 *)
+  (* iguales_nat 0 n = true -> n = 0 *)
   destruct n as [| n'].
-  - (* beq_nat 0 0 = true -> 0 = 0 *)
+  - (* iguales_nat 0 0 = true -> 0 = 0 *)
     intros H.
     (* 0 = 0 *)
     reflexivity.
-  - (* beq_nat 0 (S n') = true -> S n' = 0 *)
+  - (* iguales_nat 0 (S n') = true -> S n' = 0 *)
     simpl.
     (* false = true -> S n' = 0 *)
     intros H.
@@ -380,13 +413,13 @@ Qed.
    ------------------------------------------------------------------ *)
 
 Theorem S_inj : forall (n m : nat) (b : bool),
-    beq_nat (S n) (S m) = b  ->
-    beq_nat n m = b.
+    iguales_nat (S n) (S m) = b  ->
+    iguales_nat n m = b.
 Proof.
   intros n m b H.
-  (* H : beq_nat (S n) (S m) = b *)
+  (* H : iguales_nat (S n) (S m) = b *)
   simpl in H.
-  (* H : beq_nat n m = b *)
+  (* H : iguales_nat n m = b *)
   apply H.
 Qed.
 
@@ -395,19 +428,19 @@ Qed.
    ------------------------------------------------------------------ *)
 
 Theorem artificial3' : forall (n : nat),
-  (beq_nat n 5 = true -> beq_nat (S (S n)) 7 = true) ->
-  true = beq_nat n 5  ->
-  true = beq_nat (S (S n)) 7.
+  (iguales_nat n 5 = true -> iguales_nat (S (S n)) 7 = true) ->
+  true = iguales_nat n 5  ->
+  true = iguales_nat (S (S n)) 7.
 Proof.
   intros n eq H.
-  (* eq : beq_nat n 5 = true -> beq_nat (S (S n)) 7 = true
-     H : true = beq_nat n 5 *)
+  (* eq : iguales_nat n 5 = true -> iguales_nat (S (S n)) 7 = true
+     H : true = iguales_nat n 5 *)
   symmetry in H.
-  (* H : beq_nat n 5 = true *)
+  (* H : iguales_nat n 5 = true *)
   apply eq in H.
-  (* H : beq_nat (S (S n)) 7 = true *)
+  (* H : iguales_nat (S (S n)) 7 = true *)
   symmetry in H.
-  (* H : true = beq_nat (S (S n)) 7 *)
+  (* H : true = iguales_nat (S (S n)) 7 *)
   apply H.
 Qed.
 
@@ -505,11 +538,11 @@ Qed.
 (* ---------------------------------------------------------------------
    Ejercicio 7. Demostrar que
       forall n m,
-        beq_nat n m = true -> n = m.
+        iguales_nat n m = true -> n = m.
    ------------------------------------------------------------------ *)
 
-Theorem beq_nat_true : forall n m,
-    beq_nat n m = true -> n = m.
+Theorem iguales_nat_true : forall n m,
+    iguales_nat n m = true -> n = m.
 Proof.
   (* FILL IN HERE *) Admitted.
 
@@ -557,7 +590,7 @@ Theorem beq_id_true : forall x y,
   beq_id x y = true -> x = y.
 Proof.
   intros [m] [n]. simpl. intros H.
-  assert (H' : m = n). { apply beq_nat_true. apply H. }
+  assert (H' : m = n). { apply iguales_nat_true. apply H. }
   rewrite H'. reflexivity.
 Qed.
 
@@ -654,19 +687,19 @@ Qed.
    ------------------------------------------------------------------ *)
 
 Definition artificialfun (n : nat) : bool :=
-  if      beq_nat n 3 then false
-  else if beq_nat n 5 then false
+  if      iguales_nat n 3 then false
+  else if iguales_nat n 5 then false
   else                     false.
 
 Theorem artificialfun_false : forall (n : nat),
     artificialfun n = false.
 Proof.
   intros n. unfold artificialfun.
-  destruct (beq_nat n 3).
-    - (* beq_nat n 3 = true *) reflexivity.
-    - (* beq_nat n 3 = false *) destruct (beq_nat n 5).
-      + (* beq_nat n 5 = true *) reflexivity.
-      + (* beq_nat n 5 = false *) reflexivity.
+  destruct (iguales_nat n 3).
+    - (* iguales_nat n 3 = true *) reflexivity.
+    - (* iguales_nat n 3 = false *) destruct (iguales_nat n 5).
+      + (* iguales_nat n 5 = true *) reflexivity.
+      + (* iguales_nat n 5 = false *) reflexivity.
 Qed.
 
 (* ---------------------------------------------------------------------
@@ -709,32 +742,32 @@ Proof.
    ------------------------------------------------------------------ *)
 
 Definition artificialfun1 (n : nat) : bool :=
-  if      beq_nat n 3 then true
-  else if beq_nat n 5 then true
+  if      iguales_nat n 3 then true
+  else if iguales_nat n 5 then true
   else                     false.
 
 Theorem artificialfun1_odd_FAILED : forall (n : nat),
     artificialfun1 n = true ->
-    oddb n = true.
+    esImpar n = true.
 Proof.
   intros n eq. unfold artificialfun1 in eq.
-  destruct (beq_nat n 3).
+  destruct (iguales_nat n 3).
   (* Falso por falta de información *)
 Abort.
 
 (* Solución usando destruct con eqn *)
 Theorem artificialfun1_odd : forall (n : nat),
     artificialfun1 n = true ->
-    oddb n = true.
+    esImpar n = true.
 Proof.
   intros n eq. unfold artificialfun1 in eq.
-  destruct (beq_nat n 3) eqn:Heqe3.
-    - (* e3 = true *) apply beq_nat_true in Heqe3.
+  destruct (iguales_nat n 3) eqn:Heqe3.
+    - (* e3 = true *) apply iguales_nat_true in Heqe3.
       rewrite -> Heqe3. reflexivity.
     - (* e3 = false *)
-      destruct (beq_nat n 5) eqn:Heqe5.
+      destruct (iguales_nat n 5) eqn:Heqe5.
         + (* e5 = true *)
-          apply beq_nat_true in Heqe5.
+          apply iguales_nat_true in Heqe5.
           rewrite -> Heqe5. reflexivity.
         + (* e5 = false *) inversion eq.
 Qed.
@@ -811,28 +844,28 @@ Proof.
 (* ---------------------------------------------------------------------
    Ejercicio 11. Demostrar que
       forall (n m : nat),
-        beq_nat n m = beq_nat m n.
+        iguales_nat n m = iguales_nat m n.
    ------------------------------------------------------------------ *)
 
-Theorem beq_nat_sym :
+Theorem iguales_nat_sym :
   forall (n m : nat),
-    beq_nat n m = beq_nat m n.
+    iguales_nat n m = iguales_nat m n.
 Proof.
   (* FILL IN HERE *) Admitted.
 
 (* ---------------------------------------------------------------------
    Ejercicio 12. Demostrar que
         forall n m p,
-          beq_nat n m = true ->
-          beq_nat m p = true ->
-          beq_nat n p = true.
+          iguales_nat n m = true ->
+          iguales_nat m p = true ->
+          iguales_nat n p = true.
    ------------------------------------------------------------------ *)
 
-Theorem beq_nat_trans :
+Theorem iguales_nat_trans :
   forall n m p,
-    beq_nat n m = true ->
-    beq_nat m p = true ->
-    beq_nat n p = true.
+    iguales_nat n m = true ->
+    iguales_nat m p = true ->
+    iguales_nat n p = true.
 Proof.
   (* FILL IN HERE *) Admitted.
 
@@ -878,19 +911,25 @@ Proof.
    tales que 
    + (forallb p xs) se verifica si todos los elementos de xs cumplen
      p. Por ejemplo, 
-        forallb oddb [1;3;5;7;9]   = true
+        forallb esImpar [1;3;5;7;9]   = true
         forallb negb [false;false] = true
-        forallb evenb [0;2;4;5]    = false
-        forallb (beq_nat 5) []     = true
+        forallb esPar [0;2;4;5]    = false
+        forallb (iguales_nat 5) []     = true
    + (existsb p xs) se verifica si algún elemento de xs cumple p. Por
      ejemplo, 
-        existsb (beq_nat 5) [0;2;3;6]         = false
+        existsb (iguales_nat 5) [0;2;3;6]         = false
         existsb (andb true) [true;true;false] = true
-        existsb oddb [1;0;0;0;0;3]            = true
-        existsb evenb []                      = false
+        existsb esImpar [1;0;0;0;0;3]            = true
+        existsb esPar []                      = false
 
    Redefinir, usando forallb y negb, la función existsb' y demostrar su
    equivalencia con existsb.
    ------------------------------------------------------------------ *)
 
 
+(* =====================================================================
+   § Bibliografía
+   ================================================================== *)
+
+(*
+ + "More Basic Tactics" de Peirce et als. http://bit.ly/2LYFTlZ *)
