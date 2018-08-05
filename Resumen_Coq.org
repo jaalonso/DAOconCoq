@@ -105,4 +105,5 @@ Abort.
 + =rewrite H=: Sustituye el término izquierdo de H por el derecho.
 + =rewrite <-H=: Sustituye el término derecho de H por el izquierdo.
 + =simpl=: Simplifica las expresiones.
++ =symmetry=: Cambia un objetivo de la forma ~s=t~ en ~t=s~.
 + =unfold f= expande la definición de la función =f=.
