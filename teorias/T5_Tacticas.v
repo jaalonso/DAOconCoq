@@ -174,91 +174,124 @@ Qed.
    ================================================================== *)
 
 (* ---------------------------------------------------------------------
-   Ejemplo. Con dos reescrituras.
+   Ejemplo 2.1. Demostrar que
+      forall (a b c d e f : nat),
+       [a;b] = [c;d] ->
+       [c;d] = [e;f] ->
+       [a;b] = [e;f].
    ------------------------------------------------------------------ *)
 
-Example trans_eq_example : forall (a b c d e f : nat),
+Example ejemplo_con_transitiva: forall (a b c d e f : nat),
     [a;b] = [c;d] ->
     [c;d] = [e;f] ->
     [a;b] = [e;f].
 Proof.
-  intros a b c d e f eq1 eq2.
-  (* [a; b] = [e; f] *)
-  rewrite -> eq1.
-  (* [c; d] = [e; f] *)
-  rewrite -> eq2.
-  (* [e; f] = [e; f] *)
+  intros a b c d e f H1 H2. (* a, b, c, d, e, f : nat
+                               H1 : [a; b] = [c; d]
+                               H2 : [c; d] = [e; f]
+                               ============================
+                               [a; b] = [e; f] *)
+  rewrite -> H1.             (* [c; d] = [e; f] *)
+  rewrite -> H2.             (* [e; f] = [e; f] *)
   reflexivity.
 Qed.
 
 (* ---------------------------------------------------------------------
-   Ejemplo de lema para simplificar la demostración anterior.
+   Ejemplo 2.2. Demostrar que
+      forall (X : Type) (n m o : X),
+       n = m -> m = o -> n = o.
    ------------------------------------------------------------------ *)
 
-Theorem trans_eq : forall (X:Type) (n m o : X),
+Theorem igualdad_transitiva : forall (X:Type) (n m o : X),
     n = m -> m = o -> n = o.
 Proof.
-  intros X n m o eq1 eq2.
-  (* n = o *)
-  rewrite -> eq1.
-  (* m = o *)
-  rewrite -> eq2.
-  (* o = o *)
+  intros X n m o H1 H2. (* X : Type
+                           n, m, o : X
+                           H1 : n = m
+                           H2 : m = o
+                           ============================
+                           n = o *)
+  rewrite -> H1.         (* m = o *)
+  rewrite -> H2.         (* o = o *)
   reflexivity.
 Qed.
 
 (* ---------------------------------------------------------------------
-   Ejemplo. De simplificación de la prueba usando el lema.
+   Nota. El ejercicio 2.2 es una generalización del 2.1, sus
+   demostraciones son isomorfas y se puede usar el 2.2 en la
+   demostración del 2.1.
    ------------------------------------------------------------------ *)
 
-Example trans_eq_example' : forall (a b c d e f : nat),
+(* ---------------------------------------------------------------------
+   Ejemplo 2.3. Demostrar que
+      forall (X : Type) (n m o : X),
+       n = m -> m = o -> n = o.
+   ------------------------------------------------------------------ *)
+
+(* 1ª demostración *)
+Example ejemplo_con_transitiva' : forall (a b c d e f : nat),
     [a;b] = [c;d] ->
     [c;d] = [e;f] ->
     [a;b] = [e;f].
 Proof.
-  intros a b c d e f eq1 eq2.
-  (* [a; b] = [e; f] *)
-  apply trans_eq with (m:=[c;d]).
-  (* [a; b] = [c; d]
-     [c; d] = [e; f] *) 
-  apply eq1.
-  (* [c; d] = [e; f] *)
-  apply eq2.
+  intros a b c d e f H1 H2.                  (* a, b, c, d, e, f : nat
+                                                H1 : [a; b] = [c; d]
+                                                H2 : [c; d] = [e; f]
+                                                ============================
+                                                [a; b] = [e; f] *)
+  apply igualdad_transitiva with (m:=[c;d]).
+  -                                          (* [a; b] = [c; d] *)
+    apply H1.
+  -                                          (* [c; d] = [e; f] *)
+    apply H2.
 Qed.
 
-(* ---------------------------------------------------------------------
-   Ejemplo. Simplificación de la prueba anterior.
-   ------------------------------------------------------------------ *)
-
-Example trans_eq_example'' : forall (a b c d e f : nat),
+(* 2ª demostración *)
+Example ejemplo_con_transitiva'' : forall (a b c d e f : nat),
     [a;b] = [c;d] ->
     [c;d] = [e;f] ->
     [a;b] = [e;f].
 Proof.
-  intros a b c d e f eq1 eq2.
-  (* [a; b] = [e; f] *)
-  apply trans_eq with [c;d].
-  (* [a; b] = [c; d]
-     [c; d] = [e; f] *) 
-  apply eq1.
-  (* [c; d] = [e; f] *)
-  apply eq2.
+  intros a b c d e f H1 H2.             (* a, b, c, d, e, f : nat
+                                           H1 : [a; b] = [c; d]
+                                           H2 : [c; d] = [e; f]
+                                           ============================
+                                           [a; b] = [e; f] *)
+  apply igualdad_transitiva with [c;d].
+  -                                     (* [a; b] = [c; d] *)
+    apply H1.
+  -                                     (* [c; d] = [e; f] *)
+    apply H2.
 Qed.
 
 (* ---------------------------------------------------------------------
-   Ejercicio 3. Demostrar que
+   Nota. Uso de la táctica 'apply ... whith ...'
+   ------------------------------------------------------------------ *)
+
+(* ---------------------------------------------------------------------
+   Ejercicio 2.1. Demostrar que
       forall (n m o p : nat),
-        m = (minustwo o) ->
+        m = (menosDos o) ->
         (n + p) = m ->
-        (n + p) = (minustwo o).
+        (n + p) = (menosDos o).
    ------------------------------------------------------------------ *)
 
-Example trans_eq_exercise : forall (n m o p : nat),
-     m = (minustwo o) ->
-     (n + p) = m ->
-     (n + p) = (minustwo o).
+Example ejercicio_igualdad_transitiva: forall (n m o p : nat),
+    m = (menosDos o) ->
+    (n + p) = m ->
+    (n + p) = (menosDos o).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n m o p H1 H2.             (* n, m, o, p : nat
+                                       H1 : m = menosDos o
+                                       H2 : n + p = m
+                                       ============================
+                                       n + p = menosDos o *)
+  apply igualdad_transitiva with m. 
+  -                                 (* n + p = m *)
+    apply H2.
+  -                                 (* m = menosDos o *)
+    apply H1.
+Qed.
 
 (* =====================================================================
    § 3. La táctica 'inversion'
