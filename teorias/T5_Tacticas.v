@@ -324,125 +324,203 @@ Qed.
    ------------------------------------------------------------------ *)
 
 (* ---------------------------------------------------------------------
-   Ejemplo de inversión generando varias hipótesis.
+   Ejemplo 3.2. Demostrar que
+      forall (n m o : nat),
+       [n; m] = [o; o] -> [n] = [m].
    ------------------------------------------------------------------ *)
 
-Theorem inversion_ex1 : forall (n m o : nat),
+Theorem inversion_ej1: forall (n m o : nat),
     [n; m] = [o; o] ->
     [n] = [m].
 Proof.
-  intros n m o H.
-  (* n : nat
-     m : nat
-     o : nat
-     H : [n; m] = [o; o] *)
-  inversion H.
-  (* H1 : n = o
-     H2 : m = o *)
+  intros n m o H. (* n, m, o : nat
+                     H : [n; m] = [o; o]
+                     ============================
+                     [n] = [m] *)
+  inversion H.    (* n, m, o : nat
+                     H : [n; m] = [o; o]
+                     H1 : n = o
+                     H2 : m = o
+                     ============================
+                     [o] = [o] *)
   reflexivity.
 Qed.
 
-
 (* ---------------------------------------------------------------------
-   Ejemplo de nombramiento de las hipótesis generadas por inversión.
+   Ejemplo 3.3. Demostrar que
+      forall (n m : nat),
+       [n] = [m] ->
+       n = m.
    ------------------------------------------------------------------ *)
 
-Theorem inversion_ex2 : forall (n m : nat),
+Theorem inversion_ej2: forall (n m : nat),
     [n] = [m] ->
     n = m.
 Proof.
-  intros n m H.
-  (* n : nat
-     m : nat
-     H : [n] = [m] *)
-  inversion H as [Hnm].
-  (* Hnm : n = m *)
+  intros n m H.         (* n, m : nat
+                           H : [n] = [m]
+                           ============================
+                           n = m *)
+  inversion H as [Hnm]. (* n, m : nat
+                           H : [n] = [m]
+                           Hnm : n = m
+                           ============================
+                           m = m *)
   reflexivity.
 Qed.
 
 (* ---------------------------------------------------------------------
-   Ejercicio 4. Demostrar que
-      forall (X : Type) (x y z : X) (l j : list X),
-        x :: y :: l = z :: j ->
-        y :: l = x :: j ->
+   Nota. Nombramiento de las hipótesis generadas por inversión.
+   ------------------------------------------------------------------ *)
+
+(* ---------------------------------------------------------------------
+   Ejercicio 3.1. Demostrar que
+      forall (X : Type) (x y z : X) (xs ys : list X),
+        x :: y :: xs = z :: ys ->
+        y :: xs = x :: ys ->
         x = y.
    ------------------------------------------------------------------ *)
 
-Example inversion_ex3 : forall (X : Type) (x y z : X) (l j : list X),
-  x :: y :: l = z :: j ->
-  y :: l = x :: j ->
+Example inversion_ej3 : forall (X : Type) (x y z : X) (xs ys : list X),
+  x :: y :: xs = z :: ys ->
+  y :: xs = x :: ys ->
   x = y.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros X x y z xs ys H1 H2. (* X : Type
+                                 x, y, z : X
+                                 xs, ys : list X
+                                 H1 : x :: y :: xs = z :: ys
+                                 H2 : y :: xs = x :: ys
+                                 ============================
+                                 x = y *)
+  inversion H1.               (* X : Type
+                                 x, y, z : X
+                                 xs, ys : list X
+                                 H1 : x :: y :: xs = z :: ys
+                                 H2 : y :: xs = x :: ys
+                                 H0 : x = z
+                                 H3 : y :: xs = ys
+                                 ============================
+                                 z = y *)
+  inversion H2.               (* xs, ys : list X
+                                 H1 : x :: y :: xs = z :: ys
+                                 H2 : y :: xs = x :: ys
+                                 H0 : x = z
+                                 H3 : y :: xs = ys
+                                 H4 : y = x
+                                 H5 : xs = ys
+                                 ============================
+                                 z = x *)
+  symmetry.                   (* x = z *)
+  apply H0.
+Qed.
 
 (* ---------------------------------------------------------------------
-   Ejemplo de demostración por inversión basada en que los constructores
-   son disjuntos.
+   Ejemplo 3.4. Demostrar que
+      forall n:nat,
+       iguales_nat 0 n = true -> n = 0.
    ------------------------------------------------------------------ *)
 
-Theorem iguales_nat_0_l : forall n,
+Theorem iguales_nat_0_n: forall n:nat,
     iguales_nat 0 n = true -> n = 0.
 Proof.
-  intros n.
-  (* iguales_nat 0 n = true -> n = 0 *)
-  destruct n as [| n'].
-  - (* iguales_nat 0 0 = true -> 0 = 0 *)
-    intros H.
-    (* 0 = 0 *)
+  intros n.             (* n : nat
+                           ============================
+                           iguales_nat 0 n = true -> n = 0 *)
+  destruct n as [| n']. 
+  -                     (* 
+                           ============================
+                           iguales_nat 0 0 = true -> 0 = 0 *)
+    intros H.           (* H : iguales_nat 0 0 = true
+                           ============================
+                           0 = 0 *)
     reflexivity.
-  - (* iguales_nat 0 (S n') = true -> S n' = 0 *)
-    simpl.
-    (* false = true -> S n' = 0 *)
-    intros H.
-    (* S n' = 0 *)
+  -                     (* n' : nat
+                           ============================
+                           iguales_nat 0 (S n') = true -> S n' = 0 *)
+    simpl.              (* n' : nat
+                           ============================
+                           false = true -> S n' = 0 *)
+    intros H.           (* n' : nat
+                           H : false = true
+                           ============================
+                           S n' = 0 *)
     inversion H.
 Qed.
 
 (* ---------------------------------------------------------------------
-   Ejemplos de demostración por inversión sobre los booleanos.
+   Ejemplo 3.5. Demostrar que
+      forall (n : nat),
+       S n = O -> 2 + 2 = 5.
    ------------------------------------------------------------------ *)
 
-Theorem inversion_ex4 : forall (n : nat),
+Theorem inversion_ej4: forall (n : nat),
     S n = O ->
     2 + 2 = 5.
 Proof.
-  intros n contra.
-  inversion contra.
-Qed.
-
-Theorem inversion_ex5 : forall (n m : nat),
-    false = true ->
-    [n] = [m].
-Proof.
-  intros n m contra.
-  inversion contra.
+  intros n H.  (* n : nat
+                  H : S n = 0
+                  ============================
+                  2 + 2 = 5 *)
+  inversion H.
 Qed.
 
 (* ---------------------------------------------------------------------
-   Ejercicio 5. Demostrar que
-      forall (X : Type) (x y z : X) (l j : list X),
-        x :: y :: l = [] ->
-        y :: l = z :: j ->
+   Ejemplo 3.6. Demostrar que
+      forall (n m : nat),
+       false = true -> [n] = [m].
+   ------------------------------------------------------------------ *)
+
+Theorem inversion_ej5: forall (n m : nat),
+    false = true -> [n] = [m].
+Proof.
+  intros n m H. (* n, m : nat
+                   H : false = true
+                   ============================
+                   [n] = [m] *)
+  inversion H.
+Qed.
+
+(* ---------------------------------------------------------------------
+   Ejercicio 3.2. Demostrar que
+      forall (X : Type) (x y z : X) (xs ys : list X),
+        x :: y :: xs = [] ->
+        y :: xs = z :: ys ->
         x = z.
    ------------------------------------------------------------------ *)
 
-Example inversion_ex6 :
-  forall (X : Type) (x y z : X) (l j : list X),
-    x :: y :: l = [] ->
-    y :: l = z :: j ->
+Example inversion_ej6 :
+  forall (X : Type) (x y z : X) (xs ys : list X),
+    x :: y :: xs = [] ->
+    y :: xs = z :: ys ->
     x = z.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros X x y z xs ys H. (* X : Type
+                             x, y, z : X
+                             xs, ys : list X
+                             H : x :: y :: xs = [ ]
+                             ============================
+                             y :: xs = z :: ys -> x = z *)
+  inversion H.
+Qed.  
 
 (* ---------------------------------------------------------------------
-   Ejemplo de lema que usaremos más tarde.
+   Ejemplo 3.7. Demostrar que
+      forall (A B : Type) (f: A -> B) (x y: A),
+       x = y -> f x = f y.
    ------------------------------------------------------------------ *)
 
-Theorem f_equal : forall (A B : Type) (f: A -> B) (x y: A),
+Theorem funcional: forall (A B : Type) (f: A -> B) (x y: A),
     x = y -> f x = f y.
 Proof.
-  intros A B f x y eq.
-  rewrite eq.
+  intros A B f x y H. (* A : Type
+                         B : Type
+                         f : A -> B
+                         x, y : A
+                         H : x = y
+                         ============================
+                         f x = f y *)
+  rewrite H.          (* f y = f y *)
   reflexivity.
 Qed.
 
@@ -451,130 +529,356 @@ Qed.
    ================================================================== *)
 
 (* ---------------------------------------------------------------------
-   Ejemplo de demostración con "simpl in ..."
+   Ejemplo 4.1. Demostrar que
+      forall (n m : nat) (b : bool),
+       iguales_nat (S n) (S m) = b  ->
+       iguales_nat n m = b.
    ------------------------------------------------------------------ *)
 
-Theorem S_inj : forall (n m : nat) (b : bool),
+Theorem S_inj: forall (n m : nat) (b : bool),
     iguales_nat (S n) (S m) = b  ->
     iguales_nat n m = b.
 Proof.
-  intros n m b H.
-  (* H : iguales_nat (S n) (S m) = b *)
-  simpl in H.
-  (* H : iguales_nat n m = b *)
+  intros n m b H. (* n, m : nat
+                     b : bool
+                     H : iguales_nat (S n) (S m) = b
+                     ============================
+                     iguales_nat n m = b *)
+  simpl in H.     (* n, m : nat
+                     b : bool
+                     H : iguales_nat n m = b
+                     ============================
+                     iguales_nat n m = b *)
   apply H.
 Qed.
 
 (* ---------------------------------------------------------------------
-   Ejemplo de "razonamiento hacia adelante" con "apply L in H".
+   Nota. Uso de táctica 'simpl in ...'
    ------------------------------------------------------------------ *)
 
-Theorem artificial3' : forall (n : nat),
+(* ---------------------------------------------------------------------
+   Ejemplo 4.1. Demostrar que
+      forall (n : nat),
+       (iguales_nat n 5 = true -> iguales_nat (S (S n)) 7 = true) ->
+       true = iguales_nat n 5  ->
+       true = iguales_nat (S (S n)) 7.
+   ------------------------------------------------------------------ *)
+
+Theorem artificial3': forall (n : nat),
   (iguales_nat n 5 = true -> iguales_nat (S (S n)) 7 = true) ->
   true = iguales_nat n 5  ->
   true = iguales_nat (S (S n)) 7.
 Proof.
-  intros n eq H.
-  (* eq : iguales_nat n 5 = true -> iguales_nat (S (S n)) 7 = true
-     H : true = iguales_nat n 5 *)
-  symmetry in H.
-  (* H : iguales_nat n 5 = true *)
-  apply eq in H.
-  (* H : iguales_nat (S (S n)) 7 = true *)
-  symmetry in H.
-  (* H : true = iguales_nat (S (S n)) 7 *)
-  apply H.
+  intros n H1 H2. (* n : nat
+                     H1 : iguales_nat n 5 = true -> 
+                          iguales_nat (S (S n)) 7 = true
+                     H2 : true = iguales_nat n 5
+                     ============================
+                     true = iguales_nat (S (S n)) 7 *)
+  symmetry in H2. (* n : nat
+                     H1 : iguales_nat n 5 = true -> 
+                          iguales_nat (S (S n)) 7 = true
+                     H2 : iguales_nat n 5 = true
+                     ============================
+                     true = iguales_nat (S (S n)) 7 *)
+  apply H1 in H2. (* n : nat
+                     H1 : iguales_nat n 5 = true -> 
+                          iguales_nat (S (S n)) 7 = true
+                     H2 : iguales_nat (S (S n)) 7 = true
+                     ============================
+                     true = iguales_nat (S (S n)) 7 *)
+  symmetry in H2. (* n : nat
+                     H1 : iguales_nat n 5 = true -> 
+                          iguales_nat (S (S n)) 7 = true
+                     H2 : true = iguales_nat (S (S n)) 7
+                     ============================
+                     true = iguales_nat (S (S n)) 7 *)
+  apply H2.
 Qed.
 
 (* ---------------------------------------------------------------------
-   Ejercicio 6. Demostrar
-      forall n m,
+   Nota. Uso de las tácticas 'apply H1 in H2' y 'symemetry in H'.
+   ------------------------------------------------------------------ *)
+
+(* ---------------------------------------------------------------------
+   Ejercicio 4.1. Demostrar
+      forall n m : nat,
         n + n = m + m ->
         n = m.
 
-   Nota: Usar plus_n_Sm
+   Nota: Usar suma_s_Sm.
    ------------------------------------------------------------------ *)
 
-Theorem plus_n_n_injective :
-  forall n m,
+Theorem suma_n_n_inyectiva:
+  forall n m : nat,
     n + n = m + m ->
     n = m.
 Proof.
-  intros n.
-  induction n as [| n'].
-  (* FILL IN HERE *) Admitted.
+  intros n.                      (* n : nat
+                                    ============================
+                                    forall m : nat, n + n = m + m -> n = m *)
+  induction n as [| n' HI]. 
+  -                              (* 
+                                    ============================
+                                    forall m : nat, 0 + 0 = m + m -> 0 = m *)
+    intros m H1.                 (* m : nat
+                                    H1 : 0 + 0 = m + m
+                                    ============================
+                                    0 = m *)
+    destruct m.
+    +                            (* H1 : 0 + 0 = 0 + 0
+                                    ============================
+                                    0 = 0 *)
+      reflexivity.
+    +                            (* m : nat
+                                    H1 : 0 + 0 = S m + S m
+                                    ============================
+                                    0 = S m *)
+      inversion H1.
+  -                              (* n' : nat
+                                    HI : forall m : nat, n' + n' = m + m
+                                                         -> n' = m
+                                    ============================
+                                    forall m : nat, S n' + S n' = m + m 
+                                                    -> S n' = m *)
+    intros m H2.                 (* n' : nat
+                                    HI : forall m : nat, n' + n' = m + m 
+                                                         -> n' = m
+                                    m : nat
+                                    H2 : S n' + S n' = m + m
+                                    ============================
+                                    S n' = m *)
+    destruct m.
+    +                            (* n' : nat
+                                    HI : forall m : nat, n' + n' = m + m 
+                                                         -> n' = m
+                                    H2 : S n' + S n' = 0 + 0
+                                    ============================
+                                    S n' = 0 *)
+      inversion H2.
+    +                            (* n' : nat
+                                    HI : forall m : nat, n' + n' = m + m 
+                                                         -> n' = m
+                                    m : nat
+                                    H2 : S n' + S n' = S m + S m
+                                    ============================
+                                    S n' = S m *)
+      inversion H2.              (* n' : nat
+                                    HI : forall m : nat, n' + n' = m + m 
+                                         -> n' = m
+                                    m : nat
+                                    H2 : S n' + S n' = S m + S m
+                                    H0 : n' + S n' = m + S m
+                                    ============================
+                                    S n' = S m *)
+      rewrite <- suma_n_Sm in H0. (* n' : nat
+                                    HI : forall m : nat, n' + n' = m + m 
+                                                         -> n' = m
+                                    m : nat
+                                    H2 : S n' + S n' = S m + S m
+                                    H0 : S (n' + n') = m + S m
+                                    ============================
+                                    S n' = S m *)
+      symmetry in H0.            (* n' : nat
+                                    HI : forall m : nat, n' + n' = m + m 
+                                                         -> n' = m
+                                    m : nat
+                                    H2 : S n' + S n' = S m + S m
+                                    H0 : m + S m = S (n' + n')
+                                    ============================
+                                    S n' = S m *)
+      rewrite <- suma_n_Sm in H0. (* n' : nat
+                                    HI : forall m : nat, n' + n' = m + m 
+                                                         -> n' = m
+                                    m : nat
+                                    H2 : S n' + S n' = S m + S m
+                                    H0 : S (m + m) = S (n' + n')
+                                    ============================
+                                    S n' = S m *)
+      inversion H0.              (* n' : nat
+                                    HI : forall m : nat, n' + n' = m + m 
+                                                         -> n' = m
+                                    m : nat
+                                    H2 : S n' + S n' = S m + S m
+                                    H0 : S (m + m) = S (n' + n')
+                                    H1 : m + m = n' + n'
+                                    ============================
+                                    S n' = S m *)
+      symmetry in H1.            (* n' : nat
+                                    HI : forall m : nat, n' + n' = m + m 
+                                                         -> n' = m
+                                    m : nat
+                                    H2 : S n' + S n' = S m + S m
+                                    H0 : S (m + m) = S (n' + n')
+                                    H1 : n' + n' = m + m
+                                    ============================
+                                    S n' = S m *)
+      apply HI in H1.            (* n' : nat
+                                    HI : forall m : nat, n' + n' = m + m 
+                                                         -> n' = m
+                                    m : nat
+                                    H2 : S n' + S n' = S m + S m
+                                    H0 : S (m + m) = S (n' + n')
+                                    H1 : n' = m
+                                    ============================
+                                    S n' = S m *)
+      rewrite <- H1.             (* n' : nat
+                                    HI : forall m : nat, n' + n' = m + m 
+                                                         -> n' = m
+                                    m : nat
+                                    H2 : S n' + S n' = S m + S m
+                                    H0 : S (m + m) = S (n' + n')
+                                    H1 : n' = m
+                                    ============================
+                                    S n' = S n' *)
+      reflexivity.
+Qed.    
 
 (* =====================================================================
    § 5. Control de la hipótesis de inducción  
    ================================================================== *)
 
 (* ---------------------------------------------------------------------
-   Ejemplo de necesidad de controlar la hipótesis de inducción.
+   Ejemplo 5.1. Demostrar que
+      forall n m : nat,
+       doble n = doble m -> n = m.
    ------------------------------------------------------------------ *)
 
-Theorem double_injective_FAILED : forall n m,
-    double n = double m ->
+
+(* 1ª intento *)
+Theorem doble_inyectiva_FAILED : forall n m : nat,
+    doble n = doble m ->
     n = m.
 Proof.
-  intros n m.
-  induction n as [| n'].
-  - (* double 0 = double m -> 0 = m *)
-    simpl.
-    (* 0 = double m -> 0 = m *)
-    intros eq.
-    (* 0 = m *)
-    destruct m as [| m'].
-    + (* 0 = O *)
+  intros n m.             (* n, m : nat
+                             ============================
+                             doble n = doble m -> n = m *)
+  induction n as [| n' HI].
+  -                       (* m : nat
+                             ============================
+                             doble 0 = doble m -> 0 = m *)
+    simpl.                (* m : nat
+                             ============================
+                             0 = doble m -> 0 = m *)
+    intros H.             (* m : nat
+                             H : 0 = doble m
+                             ============================
+                             0 = m *)
+    destruct m as [| m']. 
+    +                     (* H : 0 = doble 0
+                             ============================
+                             0 = 0 *)
       reflexivity.
-    + (* 0 = S m' *)
-      inversion eq.
-  - (* double (S n') = double m -> S n' = m *)
-    intros eq.
-    (* S n' = m *) 
+    +                     (* m' : nat
+                             H : 0 = doble (S m')
+                             ============================
+                             0 = S m' *)
+      inversion H.
+  -                       (* n', m : nat
+                             HI : doble n' = doble m -> n' = m
+                             ============================
+                             doble (S n') = doble m -> S n' = m *)
+    intros H.             (* n', m : nat
+                             HI : doble n' = doble m -> n' = m
+                             H : doble (S n') = doble m
+                             ============================
+                             S n' = m *)
     destruct m as [| m'].
-    + (* S n' = 0 *)
-      inversion eq.
-    + (* S n' = S m' *)
-      apply f_equal.
-      (* n' = m' *)
+    +                     (* n' : nat
+                             HI : doble n' = doble 0 -> n' = 0
+                             H : doble (S n') = doble 0
+                             ============================
+                             S n' = 0 *)
+      simpl in H.         (* n' : nat
+                             HI : doble n' = doble 0 -> n' = 0
+                             H : S (S (doble n')) = 0
+                             ============================
+                             S n' = 0 *)
+      inversion H.
+    +                     (* n', m' : nat
+                             HI : doble n' = doble (S m') -> n' = S m'
+                             H : doble (S n') = doble (S m')
+                             ============================
+                             S n' = S m' *)
+      apply funcional.    (* n', m' : nat
+                             HI : doble n' = doble (S m') -> n' = S m'
+                             H : doble (S n') = doble (S m')
+                             ============================
+                             n' = m' *)
       Abort.
 
-Theorem double_injective : forall n m,
-    double n = double m ->
+(* 2º intento *)
+Theorem doble_inyectiva: forall n m,
+    doble n = doble m ->
     n = m.
 Proof.
-  intros n.
-  induction n as [| n'].
-  - (* forall m : nat, double 0 = double m -> 0 = m *)
-    simpl.
-    (* forall m : nat, 0 = double m -> 0 = m *)
-    intros m eq.
+  intros n.               (* n : nat
+                             ============================
+                             forall m : nat, doble n = doble m -> n = m *)
+  induction n as [| n' HI].
+  -                       (* 
+                             ============================
+                             forall m : nat, doble 0 = doble m -> 0 = m *)
+    simpl.                (* forall m : nat, 0 = doble m -> 0 = m *)
+    intros m H.           (* m : nat
+                             H : 0 = doble m
+                             ============================
+                             0 = m *)
     destruct m as [| m'].
-    + (* 0 = O *)
+    +                     (* H : 0 = doble 0
+                             ============================
+                             0 = 0 *)
       reflexivity.
-    + (* 0 = S m' *)
-      inversion eq.
-  - (* IHn' : forall m : nat, double n' = double m -> n' = m
-       forall m : nat, double (S n') = double m -> S n' = m *)
-    simpl.
-    (* forall m : nat, S (S (double n')) = double m -> S n' = m *)
-    intros m eq.
-    destruct m as [| m'].
-    + (* S n' = O *)
-      simpl.
-      inversion eq.
-    + (* S n' = S m' *)
-      apply f_equal.
-      (* n' = m' *)
-      apply IHn'.
-      (* double n' = double m' *)
-      inversion eq.
-      (* double n' = double n' *)
+    +                     (* m' : nat
+                             H : 0 = doble (S m')
+                             ============================
+                             0 = S m' *)
+      inversion H.
+  -                       (* n' : nat
+                             HI : forall m : nat, doble n' = doble m -> n' = m
+                             ============================
+                             forall m : nat, doble (S n') = doble m 
+                                             -> S n' = m *)
+    simpl.                (* forall m : nat, S (S (doble n')) = doble m 
+                                             -> S n' = m *)
+    intros m H.           (* n' : nat
+                             HI : forall m : nat, doble n' = doble m -> n' = m
+                             m : nat
+                             H : S (S (doble n')) = doble m
+                             ============================
+                             S n' = m *)
+    destruct m as [| m']. 
+    +                     (* n' : nat
+                             HI : forall m : nat, doble n' = doble m -> n' = m
+                             H : S (S (doble n')) = doble 0
+                             ============================
+                             S n' = 0 *)
+      simpl in H.         (* n' : nat
+                             HI : forall m : nat, doble n' = doble m -> n' = m
+                             H : S (S (doble n')) = 0
+                             ============================
+                             S n' = 0 *)
+      inversion H.
+    +                     (* n' : nat
+                             HI : forall m : nat, doble n' = doble m -> n' = m
+                             m' : nat
+                             H : S (S (doble n')) = doble (S m')
+                             ============================
+                             S n' = S m' *)
+      apply funcional.    (* n' = m' *)
+      apply HI.           (* doble n' = doble m' *)
+      inversion H.        (* n' : nat
+                             HI : forall m : nat, doble n' = doble m -> n' = m
+                             m' : nat
+                             H : S (S (doble n')) = doble (S m')
+                             H1 : doble n' = doble m'
+                             ============================
+                             doble n' = doble n' *)
       reflexivity.
 Qed.
 
 (* ---------------------------------------------------------------------
-   Comentario sobre la estrategia de generalización.
+   Nota. Uso de la estrategia de generalización.
    ------------------------------------------------------------------ *)
 
 (* ---------------------------------------------------------------------
@@ -591,8 +895,8 @@ Proof.
 (* ---------------------------------------------------------------------
    Ejemplo de problema por usar intros antes que induction.
    ------------------------------------------------------------------ *)
-Theorem double_injective_take2_FAILED : forall n m,
-    double n = double m ->
+Theorem doble_inyectiva_take2_FAILED : forall n m,
+    doble n = doble m ->
     n = m.
 Proof.
   intros n m.
@@ -602,15 +906,15 @@ Proof.
     + (* n = S n' *) inversion eq.
   - (* m = S m' *) intros eq. destruct n as [| n'].
     + (* n = O *) inversion eq.
-    + (* n = S n' *) apply f_equal.
+    + (* n = S n' *) apply funcional.
 Abort.
 
 (* ---------------------------------------------------------------------
    Ejemplo con la táctica "generalize dependent"
    ------------------------------------------------------------------ *)
 
-Theorem double_injective_take2 : forall n m,
-    double n = double m ->
+Theorem doble_inyectiva_take2 : forall n m,
+    doble n = doble m ->
     n = m.
 Proof.
   intros n m.
@@ -621,7 +925,7 @@ Proof.
     + (* n = S n' *) inversion eq.
   - (* m = S m' *) intros n eq. destruct n as [| n'].
     + (* n = O *) inversion eq.
-    + (* n = S n' *) apply f_equal. apply IHm'. inversion eq. reflexivity.
+    + (* n = S n' *) apply funcional. apply IHm'. inversion eq. reflexivity.
 Qed.
 
 (* ---------------------------------------------------------------------
