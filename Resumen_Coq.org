@@ -92,6 +92,8 @@ Abort.
       su conclusión.
 + =apply ... with ...=: Especifica los valores de las variables que no
   se pueden deducir por emparejamiento.
++ =apply H1 in H2=: Aplica la igualdad de la hipótesis =H1= a la
+  hipótesis =H2=.
 + =assert (H: P)=: Incluyed la demostración de la propiedad P y continúa
   la demostración añadiendo como premisa la propiedad P con nombre H. 
 + =destruct b=: Distingue dos casos según que b sea True o False.
@@ -110,4 +112,5 @@ Abort.
 + =simpl=: Simplifica el objetivo.
 + =simpl in H=: Simplifica la hipótesis =H=.
 + =symmetry=: Cambia un objetivo de la forma ~s=t~ en ~t=s~.
++ =symmetry in H=: Cambia la hipótesis =H= de la forma ~s=t~ en ~t=s~.
 + =unfold f= expande la definición de la función =f=.
