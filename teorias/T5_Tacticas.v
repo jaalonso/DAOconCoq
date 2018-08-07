@@ -298,21 +298,30 @@ Qed.
    ================================================================== *)
 
 (* ---------------------------------------------------------------------
-   Ejemplo de demostración con inversión sobre los naturales.
+   Ejemplo 3.1. Demostrar que
+      forall (n m : nat),
+       S n = S m -> n = m.
    ------------------------------------------------------------------ *)
 
-Theorem S_injective : forall (n m : nat),
+Theorem S_inyectiva: forall (n m : nat),
   S n = S m ->
   n = m.
 Proof.
-  intros n m H.
-  (* n : nat
-     m : nat
-     H : S n = S m *) 
-  inversion H.
-  (* H1 : n = m *)
+  intros n m H. (* n, m : nat
+                   H : S n = S m
+                   ============================
+                   n = m *)
+  inversion H.  (* n, m : nat
+                   H : S n = S m
+                   H1 : n = m
+                   ============================
+                   m = m *)
   reflexivity.
 Qed.
+
+(* ---------------------------------------------------------------------
+   Nota. Uso de la táctica 'inversion'
+   ------------------------------------------------------------------ *)
 
 (* ---------------------------------------------------------------------
    Ejemplo de inversión generando varias hipótesis.
