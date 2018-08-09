@@ -99,6 +99,8 @@ Abort.
 + =destruct b=: Distingue dos casos según que b sea True o False.
 + =destruct n as [| n1]=: Distingue dos casos según que =n= sea 0 o sea =S n1=. 
 + =destruct p as [n m]=: Sustituye el par =p= por =(n,m)=.
++ =generalize dependent x=: Mueve la variable =x= (y las que dependan de
+  ella) del contexto a una hipótesis explícita en el objetivo.
 + =induction n as [|n1 IHn1]=: Inicia una demostración por inducción
   sobre =n=. El caso base en ~n = 0~. El paso de la inducción consiste en
   suponer la propiedad para ~n1~ y demostrarla para ~S n1~. El nombre de la
