@@ -597,12 +597,14 @@ Check @empareja.
       desempareja [(1,false);(2,false)] = ([1;2],[false;false]).
    ------------------------------------------------------------------ *)
 
-Fixpoint desempareja {X Y:Type} (ps:list (X*Y)) : (list X) * (list Y) :=
+Fixpoint desempareja {X Y : Type} (ps : list (X*Y)) : (list X) * (list Y) :=
   match ps with
-  | []            => ([], [])
-  | (x, y) :: ps' => let ps'' := desempareja ps'
-                    in (x :: fst ps'', y :: snd ps'')
-end.
+  | [] => ([], [])
+  | (x, y) :: ps' =>
+      match desempareja ps' with
+      | (xs, ys) => (x :: xs, y :: ys)
+      end
+  end.
 
 Compute (desempareja [(2, 3); (6, 5)]).
 (* = ([2; 6], [3; 5]) : list nat * list nat*)
