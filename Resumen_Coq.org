@@ -99,6 +99,8 @@ Abort.
 + =destruct b=: Distingue dos casos según que b sea True o False.
 + =destruct n as [| n1]=: Distingue dos casos según que =n= sea 0 o sea =S n1=. 
 + =destruct p as [n m]=: Sustituye el par =p= por =(n,m)=.
++ =destruct e eqn: H=: Distingue casos según el valor de la expresión
+  =e= y lo añade al contexto la hipótesis =H=.
 + =generalize dependent x=: Mueve la variable =x= (y las que dependan de
   ella) del contexto a una hipótesis explícita en el objetivo.
 + =induction n as [|n1 IHn1]=: Inicia una demostración por inducción
@@ -115,4 +117,4 @@ Abort.
 + =simpl in H=: Simplifica la hipótesis =H=.
 + =symmetry=: Cambia un objetivo de la forma ~s=t~ en ~t=s~.
 + =symmetry in H=: Cambia la hipótesis =H= de la forma ~s=t~ en ~t=s~.
-+ =unfold f= expande la definición de la función =f=.
++ =unfold f= Expande la definición de la función =f=.
