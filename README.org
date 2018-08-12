@@ -21,6 +21,7 @@ Una primera versión de estos apuntes se han usado este año en el
 + [[https://github.com/jaalonso/DAOconCoq/blob/master/teorias/T2_Induccion.v][Tema 2: Demostraciones por inducción sobre los números naturales en Coq]].
 + [[https://github.com/jaalonso/DAOconCoq/blob/master/teorias/T3_Listas.v][Tema 3: Datos estructurados en Coq]].
 + [[https://github.com/jaalonso/DAOconCoq/blob/master/teorias/T4_PolimorfismoyOS.v][Tema 4: Polimorfismo y funciones de orden superior en Coq]].
++ [[https://github.com/jaalonso/DAOconCoq/blob/master/teorias/T5_Tacticas.v][Tema 5:Tácticas básicas de Coq]].
 
 * Libro
 Todos los temas están recopilados en el libro
