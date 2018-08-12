@@ -115,6 +115,7 @@ Abort.
 + =rewrite <-H=: Sustituye el término derecho de H por el izquierdo.
 + =simpl=: Simplifica el objetivo.
 + =simpl in H=: Simplifica la hipótesis =H=.
++ =split=: Sustituye el objetivo =P /\ Q= por los subobjetivos =P= y =Q=.
 + =symmetry=: Cambia un objetivo de la forma ~s=t~ en ~t=s~.
 + =symmetry in H=: Cambia la hipótesis =H= de la forma ~s=t~ en ~t=s~.
 + =unfold f= Expande la definición de la función =f=.
