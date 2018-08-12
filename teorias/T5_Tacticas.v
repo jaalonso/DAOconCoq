@@ -11,8 +11,8 @@ Require Export T4_PolimorfismoyOS.
    5. Control de la hipótesis de inducción  
    6. Expansión de definiciones 
    7. Uso de 'destruct' sobre expresiones compuestas
-   8. Resumen de tácticas básicas 
-   9. Ejercicios 
+   8. Ejercicios 
+   9. Resumen de tácticas básicas 
 *)
 
 (* =====================================================================
@@ -134,7 +134,7 @@ Qed.
       iguales_nat (S (S n)) 7 = true.
    ------------------------------------------------------------------ *)
 
-Theorem artificial3_firsttry : forall (n : nat),
+Theorem artificial3a: forall (n : nat),
     true = iguales_nat n 5  ->
     iguales_nat (S (S n)) 7 = true.
 Proof.
@@ -202,7 +202,7 @@ Qed.
        n = m -> m = o -> n = o.
    ------------------------------------------------------------------ *)
 
-Theorem igualdad_transitiva : forall (X:Type) (n m o : X),
+Theorem igualdad_transitiva: forall (X:Type) (n m o : X),
     n = m -> m = o -> n = o.
 Proof.
   intros X n m o H1 H2. (* X : Type
@@ -744,7 +744,6 @@ Qed.
        doble n = doble m -> n = m.
    ------------------------------------------------------------------ *)
 
-
 (* 1ª intento *)
 Theorem doble_inyectiva_FAILED : forall n m : nat,
     doble n = doble m ->
@@ -882,146 +881,529 @@ Qed.
    ------------------------------------------------------------------ *)
 
 (* ---------------------------------------------------------------------
-   Ejercicio 7. Demostrar que
-      forall n m,
+   Ejercicio 5.1. Demostrar que
+      forall n m : nat,
         iguales_nat n m = true -> n = m.
    ------------------------------------------------------------------ *)
 
-Theorem iguales_nat_true : forall n m,
+Theorem iguales_nat_true : forall n m : nat,
     iguales_nat n m = true -> n = m.
 Proof.
-  (* FILL IN HERE *) Admitted.
-
+  induction n as [|n' HIn'].
+  -                             (* 
+                                   ============================
+                                   forall m : nat, iguales_nat 0 m = true 
+                                              -> 0 = m *)
+    induction m as [|m' HIm'].
+    +                           (* 
+                                   ============================
+                                   iguales_nat 0 0 = true -> 0 = 0 *)
+      reflexivity.
+    +                           (* m' : nat
+                                   HIm' : iguales_nat 0 m' = true -> 0 = m'
+                                   ============================
+                                   iguales_nat 0 (S m') = true -> 0 = S m' *)
+      simpl.                    (* false = true -> 0 = S m' *)
+      intros H.                 (* m' : nat
+                                   HIm' : iguales_nat 0 m' = true -> 0 = m'
+                                   H : false = true
+                                   ============================
+                                   0 = S m' *)
+      inversion H.
+  -                             (* n' : nat
+                                   HIn' : forall m:nat, iguales_nat n' m = true
+                                                         -> n' = m
+                                   ============================
+                                   forall m : nat, iguales_nat (S n') m = true
+                                                   -> S n' = m *)
+    induction m as [|m' HIm'].
+    +                           (* n' : nat
+                                   HIn' : forall m:nat, iguales_nat n' m = true
+                                                         -> n' = m
+                                   ============================
+                                   iguales_nat (S n') 0 = true -> S n' = 0 *)
+      simpl.                    (* false = true -> S n' = 0 *)
+      intros H.                 (* n' : nat
+                                   HIn' : forall m:nat, iguales_nat n' m = true
+                                                        -> n' = m
+                                   H : false = true
+                                   ============================
+                                   S n' = 0 *)
+      inversion H.
+    +                           (* n' : nat
+                                   HIn' : forall m:nat, iguales_nat n' m = true
+                                                         -> n' = m
+                                   m' : nat
+                                   HIm' : iguales_nat (S n') m' = true 
+                                          -> S n' = m'
+                                   ============================
+                                   iguales_nat (S n') (S m') = true 
+                                   -> S n' = S m' *)
+      simpl.                    (* iguales_nat n' m' = true -> S n' = S m' *)
+      intros H.                 (* n' : nat
+                                   HIn' : forall m:nat, iguales_nat n' m = true
+                                                         -> n' = m
+                                   m' : nat
+                                   HIm' : iguales_nat (S n') m' = true 
+                                          -> S n' = m'
+                                   H : iguales_nat n' m' = true
+                                   ============================
+                                   S n' = S m' *)
+      apply HIn' in H.          (* n' : nat
+                                   HIn' : forall m:nat, iguales_nat n' m = true
+                                                         -> n' = m
+                                   m' : nat
+                                   HIm' : iguales_nat (S n') m' = true 
+                                          -> S n' = m'
+                                   H : n' = m'
+                                   ============================
+                                   S n' = S m' *)
+      rewrite H.                (* S m' = S m' *)
+      reflexivity.
+Qed.
+    
 (* ---------------------------------------------------------------------
-   Ejemplo de problema por usar intros antes que induction.
+   Ejemplo 5.2. Demostrar que
+      forall n m : nat,
+       doble n = doble m ->
+       n = m.
    ------------------------------------------------------------------ *)
-Theorem doble_inyectiva_take2_FAILED : forall n m,
+
+(* 1º intento *)
+Theorem doble_inyectiva_2a: forall n m : nat,
     doble n = doble m ->
     n = m.
 Proof.
-  intros n m.
-  induction m as [| m'].
-  - (* m = O *) simpl. intros eq. destruct n as [| n'].
-    + (* n = O *) reflexivity.
-    + (* n = S n' *) inversion eq.
-  - (* m = S m' *) intros eq. destruct n as [| n'].
-    + (* n = O *) inversion eq.
-    + (* n = S n' *) apply funcional.
+  intros n m.                   (* n, m : nat
+                                   ============================
+                                   doble n = doble m -> n = m *)
+  induction m as [| m' HI].
+  -                             (* n : nat
+                                   ============================
+                                   doble n = doble 0 -> n = 0 *)
+    simpl.                      (* doble n = 0 -> n = 0 *)
+    intros H.                   (* n : nat
+                                   H : doble n = 0
+                                   ============================
+                                   n = 0 *)
+    destruct n as [| n'].
+    +                           (* H : doble 0 = 0
+                                   ============================
+                                   0 = 0 *)
+      reflexivity.
+    +                           (* n' : nat
+                                   H : doble (S n') = 0
+                                   ============================
+                                   S n' = 0 *)
+      simpl in H.               (* n' : nat
+                                   H : S (S (doble n')) = 0
+                                   ============================
+                                   S n' = 0 *)
+      inversion H.
+  -                             (* n, m' : nat
+                                   HI : doble n = doble m' -> n = m'
+                                   ============================
+                                   doble n = doble (S m') -> n = S m' *)
+
+    intros H.                   (* n, m' : nat
+                                   HI : doble n = doble m' -> n = m'
+                                   H : doble n = doble (S m')
+                                   ============================
+                                   n = S m' *)
+    destruct n as [| n']. 
+    +                           (* m' : nat
+                                   HI : doble 0 = doble m' -> 0 = m'
+                                   H : doble 0 = doble (S m')
+                                   ============================
+                                   0 = S m' *)
+      simpl in H.               (* m' : nat
+                                   HI : doble 0 = doble m' -> 0 = m'
+                                   H : 0 = S (S (doble m'))
+                                   ============================
+                                   0 = S m' *)
+      inversion H.
+    +                           (* n', m' : nat
+                                   HI : doble (S n') = doble m' -> S n' = m'
+                                   H : doble (S n') = doble (S m')
+                                   ============================
+                                   S n' = S m' *)
+      apply funcional.          (* n' = m' *)
 Abort.
 
-(* ---------------------------------------------------------------------
-   Ejemplo con la táctica "generalize dependent"
-   ------------------------------------------------------------------ *)
-
-Theorem doble_inyectiva_take2 : forall n m,
+(* 2º intento *)
+Theorem doble_inyectiva_2 : forall n m,
     doble n = doble m ->
     n = m.
 Proof.
-  intros n m.
-  generalize dependent n.
-  induction m as [| m'].
-  - (* m = O *) simpl. intros n eq. destruct n as [| n'].
-    + (* n = O *) reflexivity.
-    + (* n = S n' *) inversion eq.
-  - (* m = S m' *) intros n eq. destruct n as [| n'].
-    + (* n = O *) inversion eq.
-    + (* n = S n' *) apply funcional. apply IHm'. inversion eq. reflexivity.
+  intros n m.               (* n, m : nat
+                               ============================
+                               doble n = doble m -> n = m *)
+  generalize dependent n.   (* m : nat
+                               ============================
+                               forall n : nat, doble n = doble m -> n = m *)
+  induction m as [| m' HI]. 
+  -                         (*  
+                               ============================
+                               forall n : nat, doble n = doble 0 -> n = 0 *)
+    simpl.                  (* forall n : nat, doble n = 0 -> n = 0 *)
+    intros n H.             (* n : nat
+                               H : doble n = 0
+                               ============================
+                               n = 0 *)
+    destruct n as [| n'].
+    +                       (* H : doble 0 = 0
+                               ============================
+                               0 = 0 *)
+      reflexivity.
+    +                       (* n' : nat
+                               H : doble (S n') = 0
+                               ============================
+                               S n' = 0 *)
+      simpl in H.           (* n' : nat
+                               H : S (S (doble n')) = 0
+                               ============================
+                               S n' = 0 *)
+      inversion H.
+  -                         (* m' : nat
+                               HI : forall n : nat, doble n = doble m' -> n = m'
+                               ============================
+                               forall n : nat, doble n = doble (S m') 
+                                               -> n = S m' *)
+    intros n H.             (* m' : nat
+                               HI : forall n : nat, doble n = doble m' -> n = m'
+                               n : nat
+                               H : doble n = doble (S m')
+                               ============================
+                               n = S m' *)
+    destruct n as [| n']. 
+    +                       (* m' : nat
+                               HI : forall n : nat, doble n = doble m' -> n = m'
+                               H : doble 0 = doble (S m')
+                               ============================
+                               0 = S m' *)
+      simpl in H.           (* m' : nat
+                               HI : forall n : nat, doble n = doble m' -> n = m'
+                               H : 0 = S (S (doble m'))
+                               ============================
+                               0 = S m' *)
+      inversion H.
+    +                       (* m' : nat
+                               HI : forall n : nat, doble n = doble m' -> n = m'
+                               n' : nat
+                               H : doble (S n') = doble (S m')
+                               ============================
+                               S n' = S m' *)
+      apply funcional.      (* n' = m' *)
+      apply HI.             (* doble n' = doble m' *)
+      simpl in H.           (* m' : nat
+                               HI : forall n : nat, doble n = doble m' -> n = m'
+                               n' : nat
+                               H : S (S (doble n')) = S (S (doble m'))
+                               ============================
+                               doble n' = doble m' *)
+      inversion H.          (* m' : nat
+                               HI : forall n : nat, doble n = doble m' -> n = m'
+                               n' : nat
+                               H : S (S (doble n')) = S (S (doble m'))
+                               H1 : doble n' = doble m'
+                               ============================
+                               doble n' = doble n' *)
+      reflexivity.
 Qed.
 
 (* ---------------------------------------------------------------------
-   Lema para iso posterior.
+   Nota. Uso de la táctica 'generalize dependent n'.
    ------------------------------------------------------------------ *)
 
-Theorem beq_id_true : forall x y,
-  beq_id x y = true -> x = y.
+(* ---------------------------------------------------------------------
+   Ejemplo 5.3. Demostrar que
+      forall x y : id,
+       iguales_id x y = true -> x = y.
+   ------------------------------------------------------------------ *)
+
+Theorem iguales_id_true: forall x y : id,
+  iguales_id x y = true -> x = y.
 Proof.
-  intros [m] [n]. simpl. intros H.
-  assert (H' : m = n). { apply iguales_nat_true. apply H. }
-  rewrite H'. reflexivity.
+  intros [m] [n].           (* m, n : nat
+                               ============================
+                               iguales_id (Id m) (Id n) = true -> Id m = Id n *)
+  simpl.                    (* iguales_nat m n = true -> Id m = Id n *)
+  intros H.                 (* m, n : nat
+                               H : iguales_nat m n = true
+                               ============================
+                               Id m = Id n *)
+  assert (H' : m = n).
+  -                         (* m, n : nat
+                               H : iguales_nat m n = true
+                               ============================
+                               m = n *)
+    apply iguales_nat_true. (* iguales_nat m n = true *)
+    apply H. 
+  -                         (* m, n : nat
+                               H : iguales_nat m n = true
+                               H' : m = n
+                               ============================
+                               Id m = Id n *)
+    rewrite H'.             (* Id n = Id n *)
+    reflexivity.
 Qed.
 
 (* ---------------------------------------------------------------------
-   Ejercicio 8. Demostra, por inducción sobre l,
-      forall (n : nat) (X : Type) (l : list X),
-        length l = n ->
-        nth_error l n = None.
+   Ejercicio 5.2. Demostrar, por inducción sobre l,
+      forall (n : nat) (X : Type) (xs : list X),
+        longitud xs = n ->
+        nthOpcional xs n = None.
    ------------------------------------------------------------------ *)
 
-Theorem nth_error_after_last:
-  forall (n : nat) (X : Type) (l : list X),
-    length l = n ->
-    nth_error l n = None.
+Theorem nthOpcional_None: forall (n : nat) (X : Type) (xs : list X),
+    longitud xs = n ->
+    nthOpcional xs n = None.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n X xs.               (* n : nat
+                                  X : Type
+                                  xs : list X
+                                  ============================
+                                  longitud xs = n -> nthOpcional xs n = None *)
+  generalize dependent n.       (* X : Type
+                                  xs : list X
+                                  ============================
+                                  forall n : nat, 
+                                   longitud xs = n -> nthOpcional xs n = None *)
+  induction xs as [|x xs' HI]. 
+  -                             (* X : Type
+                                  ============================
+                                  forall n : nat, 
+                                   longitud [] = n -> nthOpcional [] n = None *)
+    reflexivity.
+  -                             (* X : Type
+                                  x : X
+                                  xs' : list X
+                                  HI : forall n : nat, 
+                                        longitud xs' = n -> 
+                                        nthOpcional xs' n = None
+                                  ============================
+                                  forall n : nat, 
+                                   longitud (x :: xs') = n -> 
+                                   nthOpcional (x :: xs') n = None *)
+    destruct n as [|n'].
+    +                           (* X : Type
+                                  x : X
+                                  xs' : list X
+                                  HI : forall n : nat, 
+                                        longitud xs' = n -> 
+                                        nthOpcional xs' n = None
+                                  ============================
+                                  longitud (x :: xs') = 0 -> 
+                                  nthOpcional (x :: xs') 0 = None *)
+      intros H.                 (* X : Type
+                                  x : X
+                                  xs' : list X
+                                  HI : forall n : nat, 
+                                        longitud xs' = n -> 
+                                        nthOpcional xs' n = None
+                                  H : longitud (x :: xs') = 0
+                                  ============================
+                                  nthOpcional (x :: xs') 0 = None *)
+      simpl in H.               (* X : Type
+                                  x : X
+                                  xs' : list X
+                                  HI : forall n : nat, 
+                                        longitud xs' = n -> 
+                                        nthOpcional xs' n = None
+                                  H : S (longitud xs') = 0
+                                  ============================
+                                  nthOpcional (x :: xs') 0 = None *)
+      inversion H.
+    +                           (* X : Type
+                                  x : X
+                                  xs' : list X
+                                  HI : forall n : nat, 
+                                        longitud xs' = n -> 
+                                        nthOpcional xs' n = None
+                                  n' : nat
+                                  ============================
+                                  longitud (x :: xs') = S n' -> 
+                                  nthOpcional (x :: xs') (S n') = None *)
+      simpl.                    (* S (longitud xs') = S n' -> 
+                                   nthOpcional xs' n' = None *)
+      intros H.                 (* X : Type
+                                  x : X
+                                  xs' : list X
+                                  HI : forall n : nat, 
+                                        longitud xs' = n -> 
+                                        nthOpcional xs' n = None
+                                  n' : nat
+                                  H : S (longitud xs') = S n'
+                                  ============================
+                                  nthOpcional xs' n' = None *)
+      apply HI.                 (* longitud xs' = n' *)
+      inversion H.              (* X : Type
+                                  x : X
+                                  xs' : list X
+                                  HI : forall n : nat, 
+                                        longitud xs' = n -> 
+                                        nthOpcional xs' n = None
+                                  n' : nat
+                                  H : S (longitud xs') = S n'
+                                  H1 : longitud xs' = n'
+                                  ============================
+                                  longitud xs' = longitud xs' *)
+      reflexivity.
+Qed.
 
 (* =====================================================================
    § 6. Expansión de definiciones 
    ================================================================== *)
 
 (* ---------------------------------------------------------------------
-   Ejemplo de expansión de una definición con unfold.
+   Ejemplo 6.1. Definir la función
+      cuadrado : nata -> nat
+   tal que (cuadrado n) es el cuadrado de n.
    ------------------------------------------------------------------ *)
 
-Definition square n := n * n.
+Definition cuadrado (n:nat) : nat := n * n.
 
-Lemma square_mult : forall n m, square (n * m) = square n * square m.
+(* ---------------------------------------------------------------------
+   Ejemplo 6.2. Demostrar que
+      forall n m : nat,
+       cuadrado (n * m) = cuadrado n * cuadrado m.
+   ------------------------------------------------------------------ *)
+
+Lemma cuadrado_mult : forall n m : nat,
+    cuadrado (n * m) = cuadrado n * cuadrado m.
 Proof.
-  intros n m.
-  simpl. (* no hace nada *)
-  unfold square.
-  rewrite mult_assoc.
-  assert (H : n * m * n = n * n * m).
-  { rewrite mult_comm.
-    apply mult_assoc. }
-  rewrite H. rewrite mult_assoc. reflexivity.
+  intros n m.                            (* n, m : nat
+                                            ============================
+                                            cuadrado (n * m) = 
+                                            cuadrado n * cuadrado m *)
+  unfold cuadrado.                       (* (n * m) * (n * m) = 
+                                            (n * n) * (m * m) *)
+  rewrite producto_asociativa.           (* ((n * m) * n) * m = 
+                                            (n * n) * (m * m) *)
+  assert (H : (n * m) * n = (n * n) * m). 
+  -                                      (* (n * m) * n = (n * n) * m) *)
+    rewrite producto_conmutativa.        (* n * (n * m) = (n * n) * m *)
+    apply producto_asociativa.           
+  -                                      (* n, m : nat
+                                            H : (n * m) * n = (n * n) * m
+                                            ============================
+                                            ((n * m) * n) * m = 
+                                            (n * n) * (m * m) *)
+    rewrite H.                           (* ((n * n) * m) * m = 
+                                            (n * n) * (m * m) *)
+    rewrite producto_asociativa.         (* ((n * n) * m) * m = 
+                                            ((n * n) * m) * m *)
+    reflexivity.
 Qed.
 
 (* ---------------------------------------------------------------------
-   Ejemplo de expansión automática de definiciones.
+   Nota. Uso de la táctica 'unfold'
    ------------------------------------------------------------------ *)
 
-Definition foo (x: nat) := 5.
+(* ---------------------------------------------------------------------
+   Ejemplo 6.4. Definir la función
+      const5 : nat -> nat
+   tal que (const5 x) es el número 5.
+   ------------------------------------------------------------------ *)
 
-Fact artificial_fact_1 : forall m, foo m + 1 = foo (m + 1) + 1.
+Definition const5 (x: nat) : nat := 5.
+
+(* ---------------------------------------------------------------------
+   Ejemplo 6.5. Demostrar que
+      forall m : nat,
+       const5 m + 1 = const5 (m + 1) + 1.
+   ------------------------------------------------------------------ *)
+
+Fact prop_const5 : forall m : nat,
+    const5 m + 1 = const5 (m + 1) + 1.
 Proof.
-  intros m.
-  simpl.
-  reflexivity.
+  intros m.    (* m : nat
+                  ============================
+                  const5 m + 1 = const5 (m + 1) + 1 *)
+  simpl.       (* 6 = 6 *)
+  reflexivity. 
 Qed.
 
 (* ---------------------------------------------------------------------
-   Ejemplo de no expansión automática de definiciones.
+   Nota. Expansión automática de la definición de const5.
    ------------------------------------------------------------------ *)
 
-Definition bar x :=
+(* ---------------------------------------------------------------------
+   Ejemplo 6.6. Se coonsidera la siguiente definición
+      Definition const5b (x:nat) : nat :=
+        match x with
+        | O   => 5
+        | S _ => 5
+        end.
+
+   Demostrar que
+      forall m : nat,
+       const5b m + 1 = const5b (m + 1) + 1.
+   ------------------------------------------------------------------ *)
+
+Definition const5b (x:nat) : nat :=
   match x with
   | O   => 5
   | S _ => 5
   end.
 
-Fact artificial_fact_2_FAILED : forall m, bar m + 1 = bar (m + 1) + 1.
+(* 1º intento *)
+Fact prop_const5b_1: forall m : nat,
+    const5b m + 1 = const5b (m + 1) + 1.
 Proof.
-  intros m.
-  simpl. (* No hace nada *)
+  intros m. (* m : nat
+               ============================
+               const5b m + 1 = const5b (m + 1) + 1 *)
+  simpl.    (* const5b m + 1 = const5b (m + 1) + 1 *)
 Abort.
 
-(* Demostración con destruct *)
-Fact artificial_fact_2 : forall m, bar m + 1 = bar (m + 1) + 1.
+(* 1ª demostración *)
+Fact prop_const5b_2: forall m : nat,
+    const5b m + 1 = const5b (m + 1) + 1.
 Proof.
-  intros m.
+  intros m.      (* m : nat
+                    ============================
+                    const5b m + 1 = const5b (m + 1) + 1 *)
   destruct m.
-  - simpl. reflexivity.
-  - simpl. reflexivity.
+  -              (* 
+                    ============================
+                    const5b 0 + 1 = const5b (0 + 1) + 1 *)
+    simpl.       (* 6 = 6 *)
+    reflexivity. 
+  -              (* m : nat
+                    ============================
+                    const5b (S m) + 1 = const5b (S m + 1) + 1 *)
+    simpl.       (* 6 = 6 *)
+    reflexivity.
 Qed.
 
-(* Demostración con unfold *)
-Fact artificial_fact_2' : forall m, bar m + 1 = bar (m + 1) + 1.
+(* 2ª demostración *)
+Fact prop_const5b_3: forall m : nat,
+    const5b m + 1 = const5b (m + 1) + 1.
 Proof.
-  intros m.
-  unfold bar.
+  intros m.       (* m : nat
+                     ============================
+                     const5b m + 1 = const5b (m + 1) + 1 *)
+  unfold const5b. (* m : nat
+                     ============================
+                     match m with
+                     | 0 | _ => 5
+                     end + 1 = match m + 1 with
+                               | 0 | _ => 5
+                               end + 1 *)
   destruct m.
-  - reflexivity.
-  - reflexivity.
+  -               (* 
+                     ============================
+                     5 + 1 = match 0 + 1 with
+                             | 0 | _ => 5
+                             end + 1 *)
+    reflexivity.
+  -               (* m : nat
+                     ============================
+                     5 + 1 = match S m + 1 with
+                             | 0 | _ => 5
+                             end + 1 *)
+    reflexivity.
 Qed.
 
 (* =====================================================================
@@ -1029,249 +1411,1028 @@ Qed.
    ================================================================== *)
 
 (* ---------------------------------------------------------------------
-   Ejemplos de uso de destruct sobre expresiones compuestas.
+   Ejemplo 7.1. Se considera la siguiente definición 
+      Definition const_false (n : nat) : bool :=
+        if      iguales_nat n 3 then false
+        else if iguales_nat n 5 then false
+        else                         false.
+
+   Demostrar que
+      forall n : nat,
+       const_false n = false.
    ------------------------------------------------------------------ *)
 
-Definition artificialfun (n : nat) : bool :=
+Definition const_false (n : nat) : bool :=
   if      iguales_nat n 3 then false
   else if iguales_nat n 5 then false
-  else                     false.
+  else                         false.
 
-Theorem artificialfun_false : forall (n : nat),
-    artificialfun n = false.
+Theorem const_false_false : forall n : nat,
+    const_false n = false.
 Proof.
-  intros n. unfold artificialfun.
+  intros n.                     (* n : nat
+                                   ============================
+                                   const_false n = false *)
+  unfold const_false.           (* (if iguales_nat n 3 then false 
+                                   else if iguales_nat n 5 then false 
+                                   else false) =
+                                   false *)
   destruct (iguales_nat n 3).
-    - (* iguales_nat n 3 = true *) reflexivity.
-    - (* iguales_nat n 3 = false *) destruct (iguales_nat n 5).
-      + (* iguales_nat n 5 = true *) reflexivity.
-      + (* iguales_nat n 5 = false *) reflexivity.
+  -                             (* n : nat
+                                   ============================
+                                   false = false *)
+    reflexivity.
+  -                             (* n : nat
+                                   ============================
+                                   (if iguales_nat n 5 then false 
+                                   else false) = false *)
+    destruct (iguales_nat n 5). 
+    +                           (* n : nat
+                                   ============================
+                                   false = false *)
+      reflexivity.
+    +                           (* n : nat
+                                   ============================
+                                   false = false *)
+      reflexivity.
 Qed.
 
 (* ---------------------------------------------------------------------
-   Ejercicio 9. Se define la función split por
-      Fixpoint split {X Y : Type} (l : list (X*Y))
-                     : (list X) * (list Y) :=
-        match l with
-        | [] => ([], [])
-        | (x, y) :: t =>
-            match split t with
-            | (lx, ly) => (x :: lx, y :: ly)
-            end
-        end.
+   Ejemplo 7.2. Se considera la siguiente definición 
+      Definition ej (n : nat) : bool :=
+        if      iguales_nat n 3 then true
+        else if iguales_nat n 5 then true
+        else                     false.
 
-   Demostrar que split y combine son inversas; es decir,
-        forall X Y (l : list (X * Y)) l1 l2,
-          split l = (l1, l2) ->
-          combine l1 l2 = l.
+   Demostrar que
+      forall n : nat,
+       ej n = true -> esImpar n = true.
    ------------------------------------------------------------------ *)
 
-Fixpoint split {X Y : Type} (l : list (X*Y))
-               : (list X) * (list Y) :=
-  match l with
-  | [] => ([], [])
-  | (x, y) :: t =>
-      match split t with
-      | (lx, ly) => (x :: lx, y :: ly)
-      end
-  end.
-
-Theorem combine_split :
-  forall X Y (l : list (X * Y)) l1 l2,
-    split l = (l1, l2) ->
-    combine l1 l2 = l.
-Proof.
-  (* FILL IN HERE *) Admitted.
-
-(* ---------------------------------------------------------------------
-   Ejemplo de precauciones al usar destruct para no perder información.
-   ------------------------------------------------------------------ *)
-
-Definition artificialfun1 (n : nat) : bool :=
+Definition ej (n : nat) : bool :=
   if      iguales_nat n 3 then true
   else if iguales_nat n 5 then true
   else                     false.
 
-Theorem artificialfun1_odd_FAILED : forall (n : nat),
-    artificialfun1 n = true ->
+(* 1º intento *)
+Theorem ej_impar_a: forall n : nat,
+    ej n = true ->
     esImpar n = true.
 Proof.
-  intros n eq. unfold artificialfun1 in eq.
+  intros n H.                       (* n : nat
+                                       H : ej n = true
+                                       ============================
+                                       esImpar n = true *)
+  unfold ej in H. (* n : nat
+                                      H : (if iguales_nat n 3
+                                           then true
+                                           else if iguales_nat n 5 
+                                                then true 
+                                                else false) 
+                                          = true
+                                      ============================
+                                      esImpar n = true *)
   destruct (iguales_nat n 3).
-  (* Falso por falta de información *)
+  -                                (* n : nat
+                                      H : true = true
+                                      ============================
+                                      esImpar n = true *)
 Abort.
 
-(* Solución usando destruct con eqn *)
-Theorem artificialfun1_odd : forall (n : nat),
-    artificialfun1 n = true ->
+(* 2º intento *)
+Theorem ej_impar : forall n : nat,
+    ej n = true ->
     esImpar n = true.
 Proof.
-  intros n eq. unfold artificialfun1 in eq.
-  destruct (iguales_nat n 3) eqn:Heqe3.
-    - (* e3 = true *) apply iguales_nat_true in Heqe3.
-      rewrite -> Heqe3. reflexivity.
-    - (* e3 = false *)
-      destruct (iguales_nat n 5) eqn:Heqe5.
-        + (* e5 = true *)
-          apply iguales_nat_true in Heqe5.
-          rewrite -> Heqe5. reflexivity.
-        + (* e5 = false *) inversion eq.
+  intros n H.                             (* n : nat
+                                             H : ej n = true
+                                             ============================
+                                             esImpar n = true *)
+  unfold ej in H.                         (* n : nat
+                                             H : (if iguales_nat n 3
+                                                  then true
+                                                  else if iguales_nat n 5 
+                                                       then true else false) 
+                                                 = true
+                                             ============================
+                                             esImpar n = true *)
+  destruct (iguales_nat n 3) eqn: H3.
+  -                                       (* n : nat
+                                             H3 : iguales_nat n 3 = true
+                                             H : true = true
+                                             ============================
+                                             esImpar n = true *)
+    apply iguales_nat_true in H3.         (* n : nat
+                                             H3 : n = 3
+                                             H : true = true
+                                             ============================
+                                             esImpar n = true *)
+    rewrite H3.                           (* esImpar 3 = true *)
+    reflexivity.
+  -                                       (* n : nat
+                                             H3 : iguales_nat n 3 = false
+                                             H : (if iguales_nat n 5 
+                                                  then true else false) 
+                                                 = true
+                                             ============================
+                                             esImpar n = true *)
+    destruct (iguales_nat n 5) eqn:H5. 
+    +                                     (* n : nat
+                                             H3 : iguales_nat n 3 = false
+                                             H5 : iguales_nat n 5 = true
+                                             H : true = true
+                                             ============================
+                                             esImpar n = true *)
+      apply iguales_nat_true in H5.       (* n : nat
+                                             H3 : iguales_nat n 3 = false
+                                             H5 : n = 5
+                                             H : true = true
+                                             ============================
+                                             esImpar n = true *)
+      rewrite H5.                         (* esImpar 5 = true *)
+      reflexivity.
+    +                                     (* n : nat
+                                             H3 : iguales_nat n 3 = false
+                                             H5 : iguales_nat n 5 = false
+                                             H : false = true
+                                             ============================
+                                             esImpar n = true *)
+      inversion H.
 Qed.
 
 (* ---------------------------------------------------------------------
-   Ejercicio 10. Demostrar que
+   Nota. Uso de la táctica 'destruct e eqn: H'.
+   ------------------------------------------------------------------ *)
+
+(* ---------------------------------------------------------------------
+   Ejercicio 7.1. Demostrar que desempareja y empareja son inversas; es decir,
+        forall X Y (ps : list (X * Y)) xs ys,
+          desempareja ps = (xs, ys) ->
+          empareja xs ys = ps.
+   ------------------------------------------------------------------ *)
+
+Theorem empareja_desempareja: forall X Y (ps : list (X * Y)) xs ys,
+    desempareja ps = (xs, ys) ->
+    empareja xs ys = ps.
+Proof.
+  intros X Y ps.                       (* X : Type
+                                          Y : Type
+                                          ps : list (X * Y)
+                                          ============================
+                                          forall (xs : list X) (ys : list Y),
+                                           desempareja ps = (xs, ys) -> 
+                                           empareja xs ys = ps *)
+  induction ps as [|(x,y) ps' HI].
+  -                                    (* X : Type
+                                          Y : Type
+                                          ============================
+                                          forall (xs : list X) (ys : list Y),
+                                           desempareja [ ] = (xs, ys) -> 
+                                           empareja xs ys = [ ] *)
+    intros xs ys H.                    (* X : Type
+                                          Y : Type
+                                          xs : list X
+                                          ys : list Y
+                                          H : desempareja [ ] = (xs, ys)
+                                          ============================
+                                          empareja xs ys = [ ] *)
+    simpl in H.                        (* X : Type
+                                          Y : Type
+                                          xs : list X
+                                          ys : list Y
+                                          H : ([ ], [ ]) = (xs, ys)
+                                          ============================
+                                          empareja xs ys = [ ] *)
+    inversion H.                       (* X : Type
+                                          Y : Type
+                                          xs : list X
+                                          ys : list Y
+                                          H : ([ ], [ ]) = (xs, ys)
+                                          H1 : [ ] = xs
+                                          H2 : [ ] = ys
+                                          ============================
+                                          empareja [ ] [ ] = [ ] *)
+    simpl.                             (* [ ] = [ ] *)
+    reflexivity.
+  -                                    (* X : Type
+                                          Y : Type
+                                          x : X
+                                          y : Y
+                                          ps' : list (X * Y)
+                                          HI : forall (xs:list X) (ys:list Y),
+                                               desempareja ps' = (xs, ys) 
+                                               -> empareja xs ys = ps'
+                                          ============================
+                                          forall (xs : list X) (ys : list Y),
+                                           desempareja ((x,y)::ps') = (xs,ys) 
+                                           -> empareja xs ys = (x,y)::ps' *)
+    intros xs ys H.                    (* X : Type
+                                          Y : Type
+                                          x : X
+                                          y : Y
+                                          ps' : list (X * Y)
+                                          HI : forall (xs:list X) (ys:list Y),
+                                               desempareja ps' = (xs, ys) -> 
+                                               empareja xs ys = ps'
+                                          xs : list X
+                                          ys : list Y
+                                          H : desempareja ((x,y)::ps') = (xs,ys)
+                                          ============================
+                                          empareja xs ys = (x, y) :: ps' *)
+    destruct (desempareja ps') eqn: E. (* Y : Type
+                                          x : X
+                                          y : Y
+                                          ps' : list (X * Y)
+                                          l : list X
+                                          l0 : list Y
+                                          E : desempareja ps' = (l, l0)
+                                          HI : forall (xs:list X) (ys:list Y),
+                                               (l, l0) = (xs, ys) -> 
+                                               empareja xs ys = ps'
+                                          xs : list X
+                                          ys : list Y
+                                          H : desempareja ((x,y)::ps') = (xs,ys)
+                                          ============================
+                                          empareja xs ys = (x, y) :: ps' *)
+    simpl in H.                        (* X : Type
+                                          Y : Type
+                                          x : X
+                                          y : Y
+                                          ps' : list (X * Y)
+                                          l : list X
+                                          l0 : list Y
+                                          E : desempareja ps' = (l, l0)
+                                          HI : forall (xs: ist X) (ys:list Y),
+                                               (l, l0) = (xs, ys) ->
+                                               empareja xs ys = ps'
+                                          xs : list X
+                                          ys : list Y
+                                          H : match desempareja ps' with
+                                              | (xs, ys) => (x :: xs, y :: ys)
+                                              end = (xs, ys)
+                                          ============================
+                                          empareja xs ys = (x, y) :: ps' *)
+    rewrite E in H.                    (* X : Type
+                                          Y : Type
+                                          x : X
+                                          y : Y
+                                          ps' : list (X * Y)
+                                          l : list X
+                                          l0 : list Y
+                                          E : desempareja ps' = (l, l0)
+                                          HI : forall (xs:list X) (ys:list Y),
+                                               (l, l0) = (xs, ys) ->
+                                               empareja xs ys = ps'
+                                          xs : list X
+                                          ys : list Y
+                                          H : (x :: l, y :: l0) = (xs, ys)
+                                          ============================
+                                          empareja xs ys = (x, y) :: ps' *)
+    inversion H.                       (* X : Type
+                                          Y : Type
+                                          x : X
+                                          y : Y
+                                          ps' : list (X * Y)
+                                          l : list X
+                                          l0 : list Y
+                                          E : desempareja ps' = (l, l0)
+                                          HI : forall (xs:list X) (ys:list Y),
+                                               (l, l0) = (xs, ys) ->
+                                               empareja xs ys = ps'
+                                          xs : list X
+                                          ys : list Y
+                                          H : (x :: l, y :: l0) = (xs, ys)
+                                          H1 : x :: l = xs
+                                          H2 : y :: l0 = ys
+                                          ============================
+                                          empareja (x :: l) (y :: l0) = 
+                                          (x, y) :: ps' *)
+    simpl.                             (* (x, y) :: empareja l l0 = 
+                                          (x, y) :: ps' *)
+    rewrite HI.
+    +                                  (* X : Type
+                                          Y : Type
+                                          x : X
+                                          y : Y
+                                          ps' : list (X * Y)
+                                          l : list X
+                                          l0 : list Y
+                                          E : desempareja ps' = (l, l0)
+                                          HI : forall (xs:list X) (ys:list Y),
+                                               (l, l0) = (xs, ys) ->
+                                               empareja xs ys = ps'
+                                          xs : list X
+                                          ys : list Y
+                                          H : (x :: l, y :: l0) = (xs, ys)
+                                          H1 : x :: l = xs
+                                          H2 : y :: l0 = ys
+                                          ============================
+                                          (x, y) :: ps' = (x, y) :: ps' *)
+      reflexivity.
+    +                                  (*   X : Type
+                                          Y : Type
+                                          x : X
+                                          y : Y
+                                          ps' : list (X * Y)
+                                          l : list X
+                                          l0 : list Y
+                                          E : desempareja ps' = (l, l0)
+                                          HI : forall (xs:list X) (ys:list Y),
+                                               (l, l0) = (xs, ys) -> 
+                                               empareja xs ys = ps'
+                                          xs : list X
+                                          ys : list Y
+                                          H : (x :: l, y :: l0) = (xs, ys)
+                                          H1 : x :: l = xs
+                                          H2 : y :: l0 = ys
+                                          ============================
+                                          (l, l0) = (l, l0)
+ *)
+      reflexivity.
+Qed.
+
+(* ---------------------------------------------------------------------
+   Ejercicio 7.2. Demostrar que
       forall (f : bool -> bool) (b : bool),
         f (f (f b)) = f b.
    ------------------------------------------------------------------ *)
 
-Theorem bool_fn_applied_thrice :
+Theorem bool_tres_veces:
   forall (f : bool -> bool) (b : bool),
     f (f (f b)) = f b.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros f b.                    (* f : bool -> bool
+                                    b : bool
+                                    ============================
+                                    f (f (f b)) = f b *)
+  destruct b.
+  -                              (* f : bool -> bool
+                                    ============================
+                                    f (f (f true)) = f true *)
+    destruct (f true) eqn:H1.
+    +                            (* f : bool -> bool
+                                    H1 : f true = true
+                                    ============================
+                                    f (f true) = true *)
+      rewrite H1.                (* f true = true *)
+      apply H1.
+    +                            (* f : bool -> bool
+                                    H1 : f true = false
+                                    ============================
+                                    f (f false) = false *)
+      destruct (f false) eqn:H2. 
+      *                          (* f : bool -> bool
+                                    H1 : f true = false
+                                    H2 : f false = true
+                                    ============================
+                                    f true = false *)
+        apply H1.
+      *                          (* f : bool -> bool
+                                    H1 : f true = false
+                                    H2 : f false = false
+                                    ============================
+                                    f false = false *)
+        apply H2.
+  -                              (* f : bool -> bool
+                                    ============================
+                                    f (f (f false)) = f false *)
+    destruct (f false) eqn:H3.
+    +                            (* f : bool -> bool
+                                    H3 : f false = true
+                                    ============================
+                                    f (f true) = true *)
+      destruct (f true) eqn:H4.
+      *                          (* f : bool -> bool
+                                    H3 : f false = true
+                                    H4 : f true = true
+                                    ============================
+                                    f true = true *)
+        apply H4.
+      *                          (* f : bool -> bool
+                                    H3 : f false = true
+                                    H4 : f true = false
+                                    ============================
+                                    f false = true *)
+        apply H3.
+    +                            (* f : bool -> bool
+                                    H3 : f false = false
+                                    ============================
+                                    f (f false) = false *)
+      rewrite H3.                (* f false = false *)
+      apply H3.
+Qed.
 
 (* =====================================================================
-   § 8. Resumen de tácticas básicas 
-   ================================================================== *)
-
-(* Tácticas básicas:
-   - [intros]: move hypotheses/variables from goal to context
-
-   - [reflexivity]: finish the proof (when the goal looks like [e = e])
-
-   - [apply]: prove goal using a hypothesis, lemma, or constructor
-
-   - [apply... in H]: apply a hypothesis, lemma, or constructor to
-     a hypothesis in the context (forward reasoning)
-
-   - [apply... with...]: explicitly specify values for variables
-     that cannot be determined by pattern matching
-
-   - [simpl]: simplify computations in the goal
-
-   - [simpl in H]: ... or a hypothesis
-
-   - [rewrite]: use an equality hypothesis (or lemma) to rewrite
-     the goal
-
-   - [rewrite ... in H]: ... or a hypothesis
-
-   - [symmetry]: changes a goal of the form [t=u] into [u=t]
-
-   - [symmetry in H]: changes a hypothesis of the form [t=u] into [u=t]
-
-   - [unfold]: replace a defined constant by its right-hand side in
-     the goal
-
-   - [unfold... in H]: ... or a hypothesis
-
-   - [destruct... as...]: case analysis on values of inductively
-     defined types
-
-   - [destruct... eqn:...]: specify the name of an equation to be
-     added to the context, recording the result of the case analysis
-
-   - [induction... as...]: induction on values of inductively
-     defined types
-
-   - [inversion]: reason by injectivity and distinctness of constructors
-
-   - [assert (H: e)] (or [assert (e) as H]): introduce a "local
-     lemma" [e] and call it [H]
-
-   - [generalize dependent x]: move the variable [x] (and anything
-     else that depends on it) from the context back to an explicit
-     hypothesis in the goal formula *)
-
-(* =====================================================================
-   § 9. Ejercicios 
+   § 8. Ejercicios 
    ================================================================== *)
 
 (* ---------------------------------------------------------------------
-   Ejercicio 11. Demostrar que
+   Ejercicio 8.1. Demostrar que
       forall (n m : nat),
         iguales_nat n m = iguales_nat m n.
    ------------------------------------------------------------------ *)
 
-Theorem iguales_nat_sym :
-  forall (n m : nat),
+Theorem iguales_nat_simetrica: forall n m : nat,
     iguales_nat n m = iguales_nat m n.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n m.                          (* n, m : nat
+                                          ============================
+                                          iguales_nat n m = iguales_nat m n *)
+  destruct (iguales_nat n m) eqn:H1.
+  -                                    (* n, m : nat
+                                          H1 : iguales_nat n m = true
+                                          ============================
+                                          true = iguales_nat m n *)
+    apply iguales_nat_true in H1.      (* n, m : nat
+                                          H1 : n = m
+                                          ============================
+                                          true = iguales_nat m n *)
+    rewrite H1.                        (* true = iguales_nat m m *)
+    symmetry.                          (* iguales_nat m m = true *)
+    apply iguales_nat_refl.
+  -                                    (* n, m : nat
+                                          H1 : iguales_nat n m = false
+                                          ============================
+                                          false = iguales_nat m n *)
+    destruct (iguales_nat m n) eqn:H2. 
+    +                                  (* n, m : nat
+                                          H1 : iguales_nat n m = false
+                                          H2 : iguales_nat m n = true
+                                          ============================
+                                          false = true *)
+      apply iguales_nat_true in H2.    (* n, m : nat
+                                          H1 : iguales_nat n m = false
+                                          H2 : m = n
+                                          ============================
+                                          false = true *)
+      rewrite H2 in H1.                (* n, m : nat
+                                          H1 : iguales_nat n n = false
+                                          H2 : m = n
+                                          ============================
+                                          false = true *)
+      rewrite iguales_nat_refl in H1.  (* n, m : nat
+                                          H1 : true = false
+                                          H2 : m = n
+                                          ============================
+                                          false = true *)
+      inversion H1.
+    +                                  (* n, m : nat
+                                          H1 : iguales_nat n m = false
+                                          H2 : iguales_nat m n = false
+                                          ============================
+                                          false = false *)
+      reflexivity.
+Qed.
 
 (* ---------------------------------------------------------------------
-   Ejercicio 12. Demostrar que
-        forall n m p,
+   Ejercicio 8.2. Demostrar que
+        forall n m p : nat,
           iguales_nat n m = true ->
           iguales_nat m p = true ->
           iguales_nat n p = true.
    ------------------------------------------------------------------ *)
 
-Theorem iguales_nat_trans :
-  forall n m p,
+Theorem iguales_nat_trans: forall n m p : nat,
     iguales_nat n m = true ->
     iguales_nat m p = true ->
     iguales_nat n p = true.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n m p H1 H2.           (* n, m, p : nat
+                                   H1 : iguales_nat n m = true
+                                   H2 : iguales_nat m p = true
+                                   ============================
+                                   iguales_nat n p = true *)
+  apply iguales_nat_true in H1. (* n, m, p : nat
+                                   H1 : n = m
+                                   H2 : iguales_nat m p = true
+                                   ============================
+                                   iguales_nat n p = true *)
+  apply iguales_nat_true in H2. (* n, m, p : nat
+                                   H1 : n = m
+                                   H2 : m = p
+                                   ============================
+                                   iguales_nat n p = true *)
+  rewrite H1.                   (* iguales_nat m p = true *)
+  rewrite H2.                   (* iguales_nat p p = true *)
+  apply iguales_nat_refl.
+Qed.
 
 (* ---------------------------------------------------------------------
-   Ejercicio 13. We proved, in an exercise above, that for all lists of
-   pairs, [combine] is the inverse of [split].  How would you formalize
-   the statement that [split] is the inverse of [combine]?  When is this 
-   property true?
-
-   Complete the definition of [split_combine_statement] below with a
-   property that states that [split] is the inverse of
-   [combine]. Then, prove that the property holds. (Be sure to leave
-   your induction hypothesis general by not doing [intros] on more
-   things than necessary.  Hint: what property do you need of [l1]
-   and [l2] for [split] [combine l1 l2 = (l1,l2)] to be true?) 
+   Ejercicio 8.3. Definir las hipótesis sobre xs e ys para que se cumpla
+   la propiedad 
+      desempareja (empareja xs ys) = (xs,ys).
+   y demostrarla.
    ------------------------------------------------------------------ *)
 
-Definition split_combine_statement : Prop
-  (* ("[: Prop]" means that we are giving a name to a
-     logical proposition here.) *)
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
-
-Theorem split_combine : split_combine_statement.
+(* En la prueba se usará el siguiente lema *)
+Lemma longitud_cero: forall (X : Type) (xs : list X),
+    longitud xs = 0 -> xs = [].
 Proof.
-(* FILL IN HERE *) Admitted.
+  intros X xs H.           (* X : Type
+                              xs : list X
+                              H : longitud xs = 0
+                              ============================
+                              xs = [ ] *)
+  destruct xs as [|x xs']. 
+  -                        (* X : Type
+                              H : longitud [ ] = 0
+                              ============================
+                              [ ] = [ ] *)
+    reflexivity.
+  -                        (* X : Type
+                              x : X
+                              xs' : list X
+                              H : longitud (x :: xs') = 0
+                              ============================
+                              x :: xs' = [ ] *)
+    simpl in H.            (* X : Type
+                              x : X
+                              xs' : list X
+                              H : S (longitud xs') = 0
+                              ============================
+                              x :: xs' = [ ] *)
+    inversion H.
+Qed.
 
-(* ---------------------------------------------------------------------
-   Ejercicio 14. Demostrar que
-      forall (X : Type) (test : X -> bool) (x : X) (l lf : list X),
-        filter test l = x :: lf ->
-        test x = true.
-   ------------------------------------------------------------------ *)
-
-Theorem filter_exercise :
-  forall (X : Type) (test : X -> bool) (x : X) (l lf : list X),
-    filter test l = x :: lf ->
-    test x = true.
+Theorem desempareja_empareja: forall (X : Type) (xs ys: list X),
+    longitud xs = longitud ys ->
+    desempareja (empareja xs ys) = (xs,ys).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros X xs.                  (* X : Type
+                                   xs : list X
+                                   ============================
+                                   forall ys : list X,
+                                   longitud xs = longitud ys -> 
+                                   desempareja (empareja xs ys) = (xs, ys) *)
+  induction xs as [|x xs' HI1]. 
+  -                             (* X : Type
+                                   ============================
+                                   forall ys : list X,
+                                   longitud [ ] = longitud ys -> 
+                                   desempareja (empareja [ ] ys) = ([ ], ys) *)
+    intros ys H.                (* X : Type
+                                   ys : list X
+                                   H : longitud [ ] = longitud ys
+                                   ============================
+                                   desempareja (empareja [ ] ys) = ([ ], ys) *)
+    simpl in H.                 (* X : Type
+                                   ys : list X
+                                   H : 0 = longitud ys
+                                   ============================
+                                   desempareja (empareja [ ] ys) = ([ ], ys) *)
+    symmetry in H.              (* X : Type
+                                   ys : list X
+                                   H : longitud ys = 0
+                                   ============================
+                                   desempareja (empareja [ ] ys) = ([ ], ys) *)
+    apply longitud_cero in H.   (* X : Type
+                                   ys : list X
+                                   H : ys = [ ]
+                                   ============================
+                                   desempareja (empareja [] ys) = ([], ys) *)
+    rewrite H.                  (* desempareja (empareja [] []) = ([], []) *)
+    simpl.                      (* ([], []) = ([], []) *)
+    reflexivity.
+  -                             (* X : Type
+                                   x : X
+                                   xs' : list X
+                                   HI1 : forall ys : list X,
+                                         longitud xs' = longitud ys ->
+                                         desempareja (empareja xs' ys) 
+                                         = (xs', ys)
+                                   ============================
+                                   forall ys : list X,
+                                   longitud (x :: xs') = longitud ys ->
+                                   desempareja (empareja (x :: xs') ys) 
+                                   = (x :: xs', ys) *)
+    intros ys.                  (* X : Type
+                                   x : X
+                                   xs' : list X
+                                   HI1 : forall ys : list X,
+                                         longitud xs' = longitud ys ->
+                                         desempareja (empareja xs' ys) 
+                                         = (xs', ys)
+                                   ys : list X
+                                   ============================
+                                   longitud (x :: xs') = longitud ys ->
+                                   desempareja (empareja (x :: xs') ys) 
+                                   = (x :: xs', ys) *)
+    destruct ys as [|y ys'].
+    +                           (* X : Type
+                                   x : X
+                                   xs' : list X
+                                   HI1 : forall ys : list X,
+                                         longitud xs' = longitud ys ->
+                                         desempareja (empareja xs' ys) 
+                                         = (xs', ys)
+                                   ============================
+                                   longitud (x :: xs') = longitud [ ] ->
+                                   desempareja (empareja (x :: xs') [ ]) 
+                                   = (x :: xs', [ ]) *)
+      intros H.                 (* X : Type
+                                   x : X
+                                   xs' : list X
+                                   HI1 : forall ys : list X,
+                                         longitud xs' = longitud ys ->
+                                         desempareja (empareja xs' ys) 
+                                         = (xs', ys)
+                                   H : longitud (x :: xs') = longitud [ ]
+                                   ============================
+                                   desempareja (empareja (x :: xs') [ ]) 
+                                   = (x :: xs', [ ]) *)
+      simpl in H.               (* X : Type
+                                   x : X
+                                   xs' : list X
+                                   HI1 : forall ys : list X,
+                                         longitud xs' = longitud ys ->
+                                         desempareja (empareja xs' ys) 
+                                         = (xs', ys)
+                                   H : S (longitud xs') = 0
+                                   ============================
+                                   desempareja (empareja (x :: xs') [ ]) 
+                                   = (x :: xs', [ ]) *)
+      inversion H.
+    +                           (* X : Type
+                                   x : X
+                                   xs' : list X
+                                   HI1 : forall ys : list X,
+                                         longitud xs' = longitud ys ->
+                                         desempareja (empareja xs' ys) 
+                                         = (xs', ys)
+                                   y : X
+                                   ys' : list X
+                                   ============================
+                                   longitud (x :: xs') = longitud (y :: ys') ->
+                                   desempareja (empareja (x::xs') (y::ys')) 
+                                   = (x :: xs', y :: ys') *)
+      intros H.                 (* X : Type
+                                   x : X
+                                   xs' : list X
+                                   HI1 : forall ys : list X,
+                                         longitud xs' = longitud ys ->
+                                         desempareja (empareja xs' ys) 
+                                         = (xs', ys)
+                                   y : X
+                                   ys' : list X
+                                   H : longitud (x :: xs') = longitud (y :: ys')
+                                   ============================
+                                   desempareja (empareja (x::xs') (y::ys')) 
+                                   = (x :: xs', y :: ys') *)
+      inversion H.              (* X : Type
+                                   x : X
+                                   xs' : list X
+                                   HI1 : forall ys : list X,
+                                         longitud xs' = longitud ys ->
+                                         desempareja (empareja xs' ys) 
+                                         = (xs', ys)
+                                   y : X
+                                   ys' : list X
+                                   H : longitud (x :: xs') = longitud (y :: ys')
+                                   H1 : longitud xs' = longitud ys'
+                                   ============================
+                                   desempareja (empareja (x::xs') (y::ys')) 
+                                   = (x :: xs', y :: ys') *)
+      apply HI1 in H1.          (* X : Type
+                                   x : X
+                                   xs' : list X
+                                   HI1 : forall ys : list X,
+                                         longitud xs' = longitud ys ->
+                                         desempareja (empareja xs' ys) 
+                                         = (xs', ys)
+                                   y : X
+                                   ys' : list X
+                                   H : longitud (x :: xs') = longitud (y :: ys')
+                                   H1 : desempareja (empareja xs' ys') 
+                                        = (xs', ys')
+                                   ============================
+                                   desempareja (empareja (x::xs') (y::ys')) 
+                                   = (x :: xs', y :: ys') *)
+      simpl.                    (* match desempareja (empareja xs' ys') with
+                                   | (xs, ys) => (x :: xs, y :: ys)
+                                   end 
+                                   = (x :: xs', y :: ys') *)
+      rewrite H1.               (* (x::xs', y::ys') = (x::xs',y::ys') *)
+      reflexivity.
+Qed.
 
 (* ---------------------------------------------------------------------
-   Ejercicio 15. Definir, por recursión, las funciones forallb y existsb
-   tales que 
-   + (forallb p xs) se verifica si todos los elementos de xs cumplen
-     p. Por ejemplo, 
-        forallb esImpar [1;3;5;7;9]   = true
-        forallb negb [false;false] = true
-        forallb esPar [0;2;4;5]    = false
-        forallb (iguales_nat 5) []     = true
-   + (existsb p xs) se verifica si algún elemento de xs cumple p. Por
-     ejemplo, 
-        existsb (iguales_nat 5) [0;2;3;6]         = false
-        existsb (andb true) [true;true;false] = true
-        existsb esImpar [1;0;0;0;0;3]            = true
-        existsb esPar []                      = false
-
-   Redefinir, usando forallb y negb, la función existsb' y demostrar su
-   equivalencia con existsb.
+   Ejercicio 8.4. Demostrar que
+      forall (X : Type) (p : X -> bool) (x : X) (xs ys : list X),
+        filtra p xs = x :: ys ->
+        p x = true.
    ------------------------------------------------------------------ *)
 
+Theorem prop_filtra:
+  forall (X : Type) (p : X -> bool) (x : X) (xs ys : list X),
+    filtra p xs = x :: ys ->
+    p x = true.
+Proof.
+  intros X p x xs ys.           (* X : Type
+                                   p : X -> bool
+                                   x : X
+                                   xs, ys : list X
+                                   ============================
+                                   filtra p xs = x :: ys -> p x = true *)
+  induction xs as [|x' xs' HI]. 
+  -                             (* X : Type
+                                   p : X -> bool
+                                   x : X
+                                   ys : list X
+                                   ============================
+                                   filtra p [ ] = x :: ys -> p x = true *)
+    simpl.                      (* [ ] = x :: ys -> p x = true *)
+    intros H.                   (* X : Type
+                                   p : X -> bool
+                                   x : X
+                                   ys : list X
+                                   H : [ ] = x :: ys
+                                   ============================
+                                   p x = true *)
+    inversion H.
+  -                             (* X : Type
+                                   p : X -> bool
+                                   x, x' : X
+                                   xs', ys : list X
+                                   HI : filtra p xs' = x :: ys -> p x = true
+                                   ============================
+                                   filtra p (x'::xs') = x::ys -> p x = true *)
+    destruct (p x') eqn:Hx'. 
+    +                           (* X : Type
+                                   p : X -> bool
+                                   x, x' : X
+                                   xs', ys : list X
+                                   HI : filtra p xs' = x :: ys -> p x = true
+                                   Hx' : p x' = true
+                                   ============================
+                                   filtra p (x'::xs') = x::ys -> p x = true *)
+      simpl.                    (* (if p x' then x' :: filtra p xs' 
+                                            else filtra p xs') 
+                                   = x :: ys -> p x = true *)
+      rewrite Hx'.              (* x' :: filtra p xs' = x :: ys -> p x = true *)
+      intros H.                 (* X : Type
+                                   p : X -> bool
+                                   x, x' : X
+                                   xs', ys : list X
+                                   HI : filtra p xs' = x :: ys -> p x = true
+                                   Hx' : p x' = true
+                                   H : x' :: filtra p xs' = x :: ys
+                                   ============================
+                                   p x = true *)
+      inversion H.              (* X : Type
+                                   p : X -> bool
+                                   x, x' : X
+                                   xs', ys : list X
+                                   HI : filtra p xs' = x :: ys -> p x = true
+                                   Hx' : p x' = true
+                                   H : x' :: filtra p xs' = x :: ys
+                                   H1 : x' = x
+                                   H2 : filtra p xs' = ys
+                                   ============================
+                                   p x = true *)
+      rewrite H1 in Hx'.        (* X : Type
+                                   p : X -> bool
+                                   x, x' : X
+                                   xs', ys : list X
+                                   HI : filtra p xs' = x :: ys -> p x = true
+                                   Hx' : p x = true
+                                   H : x' :: filtra p xs' = x :: ys
+                                   H1 : x' = x
+                                   H2 : filtra p xs' = ys
+                                   ============================
+                                   p x = true *)
+      apply Hx'.
+    +                           (* X : Type
+                                   p : X -> bool
+                                   x, x' : X
+                                   xs', ys : list X
+                                   HI : filtra p xs' = x :: ys -> p x = true
+                                   Hx' : p x' = false
+                                   ============================
+                                   filtra p (x'::xs') = x::ys -> p x = true *)
+      simpl.                    (* (if p x' then x' :: filtra p xs' 
+                                            else filtra p xs') 
+                                   = x :: ys -> p x = true *)
+      rewrite Hx'.              (* filtra p xs' = x :: ys -> p x = true *)
+      apply HI.
+Qed.
+
+(* ---------------------------------------------------------------------
+   Ejercicio 8.5.1. Definir, por recursión, la función 
+      todos {X : Type} (p : X -> bool) (xs : list X) : bool 
+   tal que (todos p xs) se verifica si todos los elementos de xs cumplen
+   p. Por ejemplo, 
+      todos esImpar [1;3;5;7;9]     = true
+      todos negacion [false;false]  = true
+      todos esPar [0;2;4;5]         = false
+      todos (iguales_nat 5) []      = true
+   ------------------------------------------------------------------ *)
+
+Fixpoint todos {X : Type} (p : X -> bool) (xs : list X) : bool :=
+  match xs with
+  | nil    => true
+  | x::xs' => if p x
+             then todos p xs'
+             else false
+  end.
+
+Compute (todos esImpar [1;3;5;7;9]).
+(* = true : bool*)
+Compute (todos negacion [false;false]).
+(* = true : bool*)
+Compute (todos esPar [0;2;4;5]).
+(* = false : bool*)
+Compute (todos (iguales_nat 5) []).
+(* = true : bool *)
+
+(* ---------------------------------------------------------------------
+   Ejercicio 8.5.2. Definir, por recursión, la función 
+      existe      
+   tal que (existe p xs) se verifica si algún elemento de xs cumple
+   p. Por ejemplo, 
+      existe (iguales_nat 5) [0;2;3;6]           = false
+      existe (conjuncion true) [true;true;false] = true
+      existe esImpar [1;0;0;0;0;3]               = true
+      existe esPar []                            = false
+   ------------------------------------------------------------------ *)
+
+Fixpoint existe {X : Type} (p : X -> bool) (xs : list X) : bool :=
+  match xs with
+  | nil    => false
+  | x::xs' => if p x
+             then true
+             else existe p xs'
+  end.
+
+Compute (existe (iguales_nat 5) [0;2;3;6]).
+(* = false : bool *)
+Compute (existe (conjuncion true) [true;true;false]).
+(* = true : bool *)
+Compute (existe esImpar [1;0;0;0;0;3]).
+(* = true : bool *)
+Compute (existe esPar []).
+(* = false : bool *)
+
+(* ---------------------------------------------------------------------
+   Ejercicio 8.5.3. Redefinir, usando todos y negb, la función existe2 y
+   demostrar su equivalencia con existe.
+   ------------------------------------------------------------------ *)
+
+Definition existe2 {X : Type} (p : X -> bool) (xs : list X) : bool :=
+  negacion (todos (fun y => negacion (p y)) xs).
+
+Compute (existe2 (iguales_nat 5) [0;2;3;6]).
+(* = false : bool *)
+Compute (existe2 (conjuncion true) [true;true;false]).
+(* = true : bool *)
+Compute (existe2 esImpar [1;0;0;0;0;3]).
+(* = true : bool *)
+Compute (existe2 esPar []).
+(* = false : bool *)
+
+Theorem equiv_existe: forall (X : Type) (p : X -> bool) (xs : list X),
+    existe p xs = existe2 p xs.
+Proof.
+  intros X p xs.               (* X : Type
+                                  p : X -> bool
+                                  xs : list X
+                                  ============================
+                                  existe p xs = existe2 p xs *)
+  induction xs as [|x xs' HI]. 
+  -                            (* X : Type
+                                  p : X -> bool
+                                  ============================
+                                  existe p [ ] = existe2 p [ ] *)
+    unfold existe2.            (* existe p [ ] = 
+                                  negacion (todos (fun y : X => negacion (p y))
+                                                   [ ]) *)
+    simpl.                     (* false = false *)
+    reflexivity.
+  -                            (* X : Type
+                                  p : X -> bool
+                                  x : X
+                                  xs' : list X
+                                  HI : existe p xs' = existe2 p xs'
+                                  ============================
+                                  existe p (x :: xs') = existe2 p (x :: xs') *)
+    destruct (p x) eqn:Hx.
+    +                          (* X : Type
+                                  p : X -> bool
+                                  x : X
+                                  xs' : list X
+                                  HI : existe p xs' = existe2 p xs'
+                                  Hx : p x = true
+                                  ============================
+                                  existe p (x :: xs') = existe2 p (x :: xs') *)
+      unfold existe2.          (* existe p (x :: xs') =
+                                  negacion (todos (fun y : X => negacion (p y))
+                                                  (x :: xs')) *)
+      simpl.                   (* (if p x then true else existe p xs') =
+                                  negacion
+                                   (if negacion (p x) 
+                                    then todos (fun y : X => negacion (p y)) xs'
+                                    else false) *)
+      rewrite Hx.              (* true =
+                                  negacion
+                                   (if negacion true 
+                                    then todos (fun y : X => negacion (p y)) xs'
+                                    else false) *)
+      simpl.                   (* true = true *)
+      reflexivity.
+    +                          (* X : Type
+                                  p : X -> bool
+                                  x : X
+                                  xs' : list X
+                                  HI : existe p xs' = existe2 p xs'
+                                  Hx : p x = false
+                                  ============================
+                                  existe p (x :: xs') = existe2 p (x :: xs') *)
+      unfold existe2.          (* existe p (x :: xs') =
+                                  negacion 
+                                   (todos (fun y : X => negacion (p y)) 
+                                          (x :: xs')) *)
+      simpl.                   (* (if p x then true else existe p xs') =
+                                  negacion
+                                   (if negacion (p x) 
+                                    then todos (fun y : X => negacion (p y)) xs'
+                                    else false) *)
+      rewrite Hx.              (* existe p xs' =
+                                  negacion
+                                   (if negacion false 
+                                    then todos (fun y : X => negacion (p y)) xs'
+                                    else false) *)
+      simpl.                   (* existe p xs' =
+                                  negacion 
+                                   (todos (fun y : X => negacion (p y)) xs') *)
+      rewrite HI.              (* existe2 p xs' = 
+                                  negacion 
+                                   (todos (fun y : X => negacion (p y)) xs') *)
+      unfold existe2.          (* negacion 
+                                   (todos (fun y : X => negacion (p y)) xs') =
+                                  negacion 
+                                   (todos (fun y : X => negacion (p y)) xs') *)
+      reflexivity.
+Qed.
+
+(* =====================================================================
+   § 9. Resumen de tácticas básicas 
+   ================================================================== *)
+
+(* Las tácticas básicas utilizadas hasta ahora son
+  + apply H: 
+    + si el objetivo coincide con la hipótesis H, lo demuestra;
+    + si H es una implicación,
+      + si el objetivo coincide con la conclusión de H, lo sustituye por
+        su premisa y
+      + si el objetivo coincide con la premisa de H, lo sustituye por
+        su conclusión.
+
+  + apply ... with ...: Especifica los valores de las variables que no
+    se pueden deducir por emparejamiento.
+
+  + apply H1 in H2: Aplica la igualdad de la hipótesis H1 a la
+    hipótesis H2.
+
+  + assert (H: P): Incluyed la demostración de la propiedad P y continúa
+    la demostración añadiendo como premisa la propiedad P con nombre H. 
+
+  + destruct b: Distingue dos casos según que b sea True o False.
+
+  + destruct n as [| n1]: Distingue dos casos según que n sea 0 o sea S n1. 
+
+  + destruct p as [n m]: Sustituye el par p por (n,m).
+
+  + destruct e eqn: H: Distingue casos según el valor de la expresión
+    e y lo añade al contexto la hipótesis H.
+
+  + generalize dependent x: Mueve la variable x (y las que dependan de
+    ella) del contexto a una hipótesis explícita en el objetivo.
+
+  + induction n as [|n1 IHn1]: Inicia una demostración por inducción
+    sobre n. El caso base en ~n  0~. El paso de la inducción consiste en
+    suponer la propiedad para ~n1~ y demostrarla para ~S n1~. El nombre de la
+    hipótesis de inducción es ~IHn1~.
+
+  + intros vars: Introduce las variables del cuantificador universal y,
+    como premisas, los antecedentes de las implicaciones.
+
+  + inversion: Aplica qe los constructores son disjuntos e inyectivos. 
+
+  + reflexivity: Demuestra el objetivo si es una igualdad trivial.
+
+  + rewrite H: Sustituye el término izquierdo de H por el derecho.
+
+  + rewrite <-H: Sustituye el término derecho de H por el izquierdo.
+
+  + simpl: Simplifica el objetivo.
+
+  + simpl in H: Simplifica la hipótesis H.
+
+  + symmetry: Cambia un objetivo de la forma s = t en t = s.
+
+  + symmetry in H: Cambia la hipótesis H de la forma ~st~ en ~ts~.
+
+  + unfold f Expande la definición de la función f.
+ *)
 
 (* =====================================================================
    § Bibliografía
