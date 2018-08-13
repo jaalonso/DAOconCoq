@@ -104,6 +104,10 @@ Abort.
 + =destruct H as [HA HB]=: Sustituye la hipótesis =H= de la forma 
   =A /\ B= por las hipótesis =HA= (que afirma que =A= es verdad) y =HB=
   (que afirma que =B= es verdad).
++ =destruct H as [Hn | Hm]=: Cuando la hipótesis =H= es de la forma 
+  =A \/ B=, la divide en dos casos: uno con hipótesis =HA= (afirmando la
+  certeza de =A=) y otro con la hipótesis =HB= (afirmando la certeza de
+  =B=). 
 + =generalize dependent x=: Mueve la variable =x= (y las que dependan de
   ella) del contexto a una hipótesis explícita en el objetivo.
 + =induction n as [|n1 IHn1]=: Inicia una demostración por inducción
