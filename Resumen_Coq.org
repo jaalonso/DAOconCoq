@@ -125,6 +125,7 @@ Abort.
   uno con hipótesis =HA= (afirmando la certeza de =A=) y otro con la
   hipótesis =HB= (afirmando la certeza de =B=).
 + =inversion=: Aplica qe los constructores son disjuntos e inyectivos. 
++ =left=: Sustituye el objetivo de la forma =A \/ B= por =A=.
 + =reflexivity=: Demuestra el objetivo si es una igualdad trivial.
 + =rewrite H=: Sustituye el término izquierdo de H por el derecho.
 + =rewrite <-H=: Sustituye el término derecho de H por el izquierdo.
