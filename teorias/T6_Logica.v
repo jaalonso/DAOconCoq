@@ -166,7 +166,7 @@ Check @eq.
 (* ---------------------------------------------------------------------
    Notas.
    1. La expresión (x = y) es una abreviatura de (eq x y).
-   2. Se escibe @eq en lugar de eq para ver los argumentos implícitos.
+   2. Se escribe @eq en lugar de eq para ver los argumentos implícitos.
    ------------------------------------------------------------------ *)
 
 (* =====================================================================
@@ -325,7 +325,7 @@ Qed.
 (* ---------------------------------------------------------------------
    Nota. Uso de la táctica 'destruct H as [HA HB]' que  sustituye la
    hipótesis H de la forma (A /\ B) por las hipótesis HA (que afirma
-   que =A= es verdad) y HB (que afirma que B es verdad).
+   que A es verdad) y HB (que afirma que B es verdad).
    ------------------------------------------------------------------ *)
 
 (* ---------------------------------------------------------------------
@@ -375,379 +375,901 @@ Qed.
       forall n m : nat, n + m = 0 -> n * m = 0.
    ------------------------------------------------------------------ *)
 
-
 Lemma ej_conjuncion3 :
   forall n m : nat, n + m = 0 -> n * m = 0.
 Proof.
-  intros n m H.          
-  assert (H' : n = 0 /\ m = 0).  
-  - 
-    apply ejercicio_conj.
+  intros n m H.                (* n, m : nat
+                                  H : n + m = 0
+                                  ============================
+                                  n * m = 0 *)
+  assert (H' : n = 0 /\ m = 0). 
+  -                            (* n, m : nat
+                                  H : n + m = 0
+                                  ============================
+                                  n = 0 /\ m = 0 *)
+    apply ejercicio_conj.      (* n + m = 0 *)
     apply H.
-  -
-    destruct H' as [Hn Hm].
-    rewrite Hn.
+  -                            (* n, m : nat
+                                  H : n + m = 0
+                                  H' : n = 0 /\ m = 0
+                                  ============================
+                                  n * m = 0 *)
+    destruct H' as [Hn Hm].    (* n, m : nat
+                                  H : n + m = 0
+                                  Hn : n = 0
+                                  Hm : m = 0
+                                  ============================
+                                  n * m = 0 *)
+    rewrite Hn.                (* 0 * m = 0 *)
     reflexivity.
 Qed.
 
-(** Another common situation with conjunctions is that we know
-    [A /\ B] but in some context we need just [A] (or just [B]).
-    The following lemmas are useful in such cases: *)
+(* ---------------------------------------------------------------------
+   Ejemplo 2.1.8. Demostrar que
+      forall P Q : Prop,
+        P /\ Q -> P.
+   ------------------------------------------------------------------ *)
 
-Lemma proj1 : forall P Q : Prop,
+Lemma conj_e1 : forall P Q : Prop,
   P /\ Q -> P.
 Proof.
-  intros P Q [HP HQ].
-  apply HP.  Qed.
+  intros P Q [HP HQ]. (* P, Q : Prop
+                         HP : P
+                         HQ : Q
+                         ============================
+                         P *)
+  apply HP.
+Qed.
 
-(** **** Exercise: 1 star, optional (proj2)  *)
-Lemma proj2 : forall P Q : Prop,
+(* ---------------------------------------------------------------------
+   Ejercicio 2.1.2. Demostrar que
+      forall P Q : Prop,
+        P /\ Q -> Q.
+   ------------------------------------------------------------------ *)
+
+Lemma conj_e2: forall P Q : Prop,
   P /\ Q -> Q.
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  intros P Q [HP HQ]. (* P, Q : Prop
+                         HP : P
+                         HQ : Q
+                         ============================
+                         Q *)
+  apply HQ.
+Qed.
 
-(** Finally, we sometimes need to rearrange the order of conjunctions
-    and/or the grouping of multi-way conjunctions.  The following
-    commutativity and associativity theorems are handy in such
-    cases. *)
+(* ---------------------------------------------------------------------
+   Ejemplo 2.1.9. Demostrar que
+      forall P Q : Prop,
+        P /\ Q -> Q /\ P.
+   ------------------------------------------------------------------ *)
 
-Theorem and_commut : forall P Q : Prop,
+Theorem conj_conmutativa: forall P Q : Prop,
   P /\ Q -> Q /\ P.
 Proof.
-  intros P Q [HP HQ].
+  intros P Q [HP HQ]. (* P, Q : Prop
+                         HP : P
+                         HQ : Q
+                         ============================
+                         Q /\ P *)
   split.
-    - (* left *) apply HQ.
-    - (* right *) apply HP.  Qed.
+  -                   (* P, Q : Prop
+                         HP : P
+                         HQ : Q
+                         ============================
+                         Q *)
+    apply HQ.
+  -                   (* P, Q : Prop
+                         HP : P
+                         HQ : Q
+                         ============================
+                         P *)
+    apply HP.
+Qed.
 
-(** **** Exercise: 2 stars (and_assoc)  *)
-(** (In the following proof of associativity, notice how the _nested_
-    [intros] pattern breaks the hypothesis [H : P /\ (Q /\ R)] down into
-    [HP : P], [HQ : Q], and [HR : R].  Finish the proof from
-    there.) *)
+(* ---------------------------------------------------------------------
+   Ejercicio 2.1.3. Demostrar que
+      forall P Q R : Prop,
+        P /\ (Q /\ R) -> (P /\ Q) /\ R.
+   ------------------------------------------------------------------ *)
 
-Theorem and_assoc : forall P Q R : Prop,
+Theorem conj_asociativa : forall P Q R : Prop,
   P /\ (Q /\ R) -> (P /\ Q) /\ R.
 Proof.
-  intros P Q R [HP [HQ HR]].
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  intros P Q R [HP [HQ HR]]. (* P, Q, R : Prop
+                                HP : P
+                                HQ : Q
+                                HR : R
+                                ============================
+                                (P /\ Q) /\ R *)
+  split.
+  -                          (* P /\ Q *)
+    split.
+    +                        (* P *)
+      apply HP.
+    +                        (* Q *)
+      apply HQ.
+  -                          (* R *)
+    apply HR.
+Qed.
 
-(** By the way, the infix notation [/\] is actually just syntactic
-    sugar for [and A B].  That is, [and] is a Coq operator that takes
-    two propositions as arguments and yields a proposition. *)
+(* ---------------------------------------------------------------------
+   Nota. Uso de la táctica 'intros P Q R [HP [HQ HR]]'.
+   ------------------------------------------------------------------ *)
+
+(* ---------------------------------------------------------------------
+   Ejemplo 2.1.10. Calcular el tipo de la expresión
+      and
+   ------------------------------------------------------------------ *)
 
 Check and.
 (* ===> and : Prop -> Prop -> Prop *)
+
+(* ---------------------------------------------------------------------
+   Nota. (x /\ y) es una abreviatura de (and x y).
+   ------------------------------------------------------------------ *)
 
 (* =====================================================================
    §§ 2.2. Disyunción  
    ================================================================== *)
 
-(** Another important connective is the _disjunction_, or _logical or_,
-    of two propositions: [A \/ B] is true when either [A] or [B]
-    is.  (Alternatively, we can write [or A B], where [or : Prop ->
-    Prop -> Prop].) *)
+(* ---------------------------------------------------------------------
+   Ejemplo 2.2.1. Demostrar que
+      forall n m : nat, n = 0 \/ m = 0 -> n * m = 0.
+   ------------------------------------------------------------------ *)
 
-(** To use a disjunctive hypothesis in a proof, we proceed by case
-    analysis, which, as for [nat] or other data types, can be done
-    with [destruct] or [intros].  Here is an example: *)
-
-Lemma or_example :
+(* 1ª demostración *)
+Lemma disy_ej1:
   forall n m : nat, n = 0 \/ m = 0 -> n * m = 0.
 Proof.
-  (* This pattern implicitly does case analysis on
-     [n = 0 \/ m = 0] *)
-  intros n m [Hn | Hm].
-  - (* Here, [n = 0] *)
-    rewrite Hn. reflexivity.
-  - (* Here, [m = 0] *)
-    rewrite Hm. rewrite <- mult_n_O.
+  intros n m H.
+  destruct H as [Hn | Hm]. 
+  -                        (* n, m : nat
+                              Hn : n = 0
+                              ============================
+                              n * m = 0 *)
+    rewrite Hn.            (* 0 * m = 0 *)
+    reflexivity.           
+  -                        (* n, m : nat
+                              Hm : m = 0
+                              ============================
+                              n * m = 0 *)
+    rewrite Hm.            (* n * 0 = 0 *)
+    rewrite <- mult_n_O.    (* 0 = 0 *)
     reflexivity.
 Qed.
 
-(** Conversely, to show that a disjunction holds, we need to show that
-    one of its sides does. This is done via two tactics, [left] and
-    [right].  As their names imply, the first one requires
-    proving the left side of the disjunction, while the second
-    requires proving its right side.  Here is a trivial use... *)
-
-Lemma or_intro : forall A B : Prop, A -> A \/ B.
+(* 2ª demostración *)
+Lemma disy_ej:
+  forall n m : nat, n = 0 \/ m = 0 -> n * m = 0.
 Proof.
-  intros A B HA.
-  left.
+  intros n m [Hn | Hm]. 
+  -                     (* n, m : nat
+                           Hn : n = 0
+                           ============================
+                           n * m = 0 *)
+    rewrite Hn.         (* 0 * m = 0 *)
+    reflexivity.
+  -                     (* n, m : nat
+                           Hm : m = 0
+                           ============================
+                           n * m = 0 *)
+    rewrite Hm.         (* n * 0 = 0 *)
+    rewrite <- mult_n_O. (* 0 = 0 *)
+    reflexivity.
+Qed.
+
+(* ---------------------------------------------------------------------
+   Notas.
+   1. La táctica 'destruct H as [Hn | Hm]', cuando la hipótesis H es de
+      la forma (A \/ B), la divide en dos casos: uno con hipótesis HA
+      (afirmando la certeza de A) y otro con la hipótesis HB (afirmando
+      la certeza de B).   
+   2. La táctica 'intros x [HA | HB]', cuando el objetivo es de la
+      forma (forall x, A \/ B -> C), intoduce la variable x y dos casos:
+      uno con hipótesis HA (afirmando la certeza de A) y otro con la
+      hipótesis HB (afirmando la certeza de B).
+   ------------------------------------------------------------------ *)
+
+(* ---------------------------------------------------------------------
+   Ejemplo 2.2.2. Demostrar que
+      forall A B : Prop, A -> A \/ B.
+   ------------------------------------------------------------------ *)
+
+Lemma disy_intro: forall A B : Prop, A -> A \/ B.
+Proof.
+  intros A B HA. (* A, B : Prop
+                    HA : A
+                    ============================
+                    A \/ B *)
+  left.          (* A *)
   apply HA.
 Qed.
 
-(** ... and a slightly more interesting example requiring both [left]
-    and [right]: *)
+(* ---------------------------------------------------------------------
+   Nota. La táctica 'left' sustituye el objetivo de la forma (A \/ B)
+   por A.
+   ------------------------------------------------------------------ *)
 
-Lemma zero_or_succ :
+(* ---------------------------------------------------------------------
+   Ejemplo 2.2.3. Demostrar que
+      forall n : nat, n = 0 \/ n = S (pred n).
+   ------------------------------------------------------------------ *)
+
+Lemma cero_o_sucesor:
   forall n : nat, n = 0 \/ n = S (pred n).
 Proof.
-  (* WORKED IN CLASS *)
   intros [|n].
-  - left. reflexivity.
-  - right. reflexivity.
+  -              (* 
+                    ============================
+                    0 = 0 \/ 0 = S (Nat.pred 0) *)
+    left.        (* 0 = 0 *)
+    reflexivity. 
+  -              (* n : nat
+                    ============================
+                    S n = 0 \/ S n = S (Nat.pred (S n)) *)
+    right.       (* S n = S (Nat.pred (S n)) *)
+    reflexivity.
 Qed.
 
-(** **** Exercise: 1 star (mult_eq_0)  *)
+(* ---------------------------------------------------------------------
+   Nota. La táctica 'right' sustituye el objetivo de la forma (A \/ B)
+   por B.
+   ------------------------------------------------------------------ *)
+
+(* ---------------------------------------------------------------------
+   Ejercicio 2.2.1. Demostrar que
+      forall n m, n * m = 0 -> n = 0 \/ m = 0.
+   ------------------------------------------------------------------ *)
+
 Lemma mult_eq_0 :
   forall n m, n * m = 0 -> n = 0 \/ m = 0.
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  intros n m H.          (* n, m : nat
+                            H : n * m = 0
+                            ============================
+                            n = 0 \/ m = 0 *)
+  destruct n as [|n'].
+  -                      (* m : nat
+                            H : 0 * m = 0
+                            ============================
+                            0 = 0 \/ m = 0 *)
+    left.                (* 0 = 0 *)
+    reflexivity.
+  -                      (* n', m : nat
+                            H : S n' * m = 0
+                            ============================
+                            S n' = 0 \/ m = 0 *)
+    destruct m as [|m']. 
+    +                    (* n' : nat
+                            H : S n' * 0 = 0
+                            ============================
+                            S n' = 0 \/ 0 = 0 *)
+      right.             (* 0 = 0 *)
+      reflexivity.
+    +                    (* n', m' : nat
+                            H : S n' * S m' = 0
+                            ============================
+                            S n' = 0 \/ S m' = 0 *)
+      simpl in H.        (* n', m' : nat
+                            H : S (m' + n' * S m') = 0
+                            ============================
+                            S n' = 0 \/ S m' = 0 *)
+      inversion H.
+Qed.
 
-(** **** Exercise: 1 star (or_commut)  *)
-Theorem or_commut : forall P Q : Prop,
+(* ---------------------------------------------------------------------
+   Ejercicio 2.2.2. Demostrar que
+      forall P Q : Prop,
+        P \/ Q  -> Q \/ P.
+   ------------------------------------------------------------------ *)
+
+Theorem disy_conmutativa: forall P Q : Prop,
   P \/ Q  -> Q \/ P.
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  intros P Q [HP | HQ]. 
+  -                     (* P, Q : Prop
+                           HP : P
+                           ============================
+                           Q \/ P *)
+    right.              (* P *)
+    apply HP.
+  -                     (* P, Q : Prop
+                           HQ : Q
+                           ============================
+                           Q \/ P *)
+    left.               (* Q *)
+    apply HQ.
+Qed.
+  
+(* ---------------------------------------------------------------------
+   Ejemplo 2.2.4. Calcular el tipo de la expresión
+      or
+   ------------------------------------------------------------------ *)
+
+Check or.
+(* ===> or : Prop -> Prop -> Prop *)
+
+(* ---------------------------------------------------------------------
+   Nota. (x \/ y) es una abreviatura de (or x y).
+   ------------------------------------------------------------------ *)
 
 (* =====================================================================
    §§ 2.3. Falsedad y negación  
    ================================================================== *)
 
-(** So far, we have mostly been concerned with proving that certain
-    things are _true_ -- addition is commutative, appending lists is
-    associative, etc.  Of course, we may also be interested in
-    _negative_ results, showing that certain propositions are _not_
-    true. In Coq, such negative statements are expressed with the
-    negation operator [~]. *)
+Module DefNot.
 
-(** To see how negation works, recall the discussion of the _principle
-    of explosion_ from the [Tactics] chapter; it asserts that, if
-    we assume a contradiction, then any other proposition can be
-    derived.  Following this intuition, we could define [~ P] ("not
-    [P]") as [forall Q, P -> Q].  Coq actually makes a slightly
-    different choice, defining [~ P] as [P -> False], where [False] is
-    a specific contradictory proposition defined in the standard
-    library. *)
+(* ---------------------------------------------------------------------
+   Ejemplo 2.3.1. Definir la función
+      not (P : Prop) : Prop
+   tal que (not P) es la negación de P
+   ------------------------------------------------------------------ *)
 
-Module MyNot.
+Definition not (P:Prop) : Prop :=
+    P -> False.
 
-Definition not (P:Prop) := P -> False.
+(* ---------------------------------------------------------------------
+   Ejemplo 2.3.2. Definir (~ x) como abreviatura de (not x).
+   ------------------------------------------------------------------ *)
 
 Notation "~ x" := (not x) : type_scope.
 
-Check not.
-(* ===> Prop -> Prop *)
+(* ---------------------------------------------------------------------
+   Nota. Esta es la forma como está definida la negación en Coq.
+   ------------------------------------------------------------------ *)
 
-End MyNot.
+End DefNot.
 
 (** Since [False] is a contradictory proposition, the principle of
     explosion also applies to it. If we get [False] into the proof
     context, we can use [destruct] (or [inversion]) on it to complete
     any goal: *)
 
-Theorem ex_falso_quodlibet : forall (P:Prop),
+(* ---------------------------------------------------------------------
+   Ejemplo 2.3.3. Demostrar que
+      forall (P:Prop),
+        False -> P.
+   ------------------------------------------------------------------ *)
+
+Theorem ex_falso_quodlibet: forall (P:Prop),
   False -> P.
 Proof.
-  (* WORKED IN CLASS *)
-  intros P contra.
-  destruct contra.  Qed.
+  intros P H. (* P : Prop
+                 H : False
+                 ============================
+                 P *)
+  destruct H.
+Qed.
 
-(** The Latin _ex falso quodlibet_ means, literally, "from falsehood
-    follows whatever you like"; this is another common name for the
-    principle of explosion. *)
+(* ---------------------------------------------------------------------
+   Nota. En latín, "ex falso quodlibet" significa "de lo falso (se
+   sigue) cualquier cosa". 
+   ------------------------------------------------------------------ *)
 
-(** **** Exercise: 2 stars, optional (not_implies_our_not)  *)
-(** Show that Coq's definition of negation implies the intuitive one
-    mentioned above: *)
+(* ---------------------------------------------------------------------
+   Ejercicio 2.3.1. Demostrar que
+      forall (P:Prop),
+        ~ P -> (forall (Q:Prop), P -> Q).
+   ------------------------------------------------------------------ *)
 
-Fact not_implies_our_not : forall (P:Prop),
+Fact negacion_elim: forall (P:Prop),
   ~ P -> (forall (Q:Prop), P -> Q).
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
-
-(** This is how we use [not] to state that [0] and [1] are different
-    elements of [nat]: *)
-
-Theorem zero_not_one : ~(0 = 1).
-Proof.
-  intros contra. inversion contra.
+  unfold not.     (* 
+                     ============================
+                     forall P : Prop, (P -> False) -> forall Q : Prop, P -> Q *)
+  intros P H1.    (* P : Prop
+                     H1 : P -> False
+                     ============================
+                     forall Q : Prop, P -> Q *)
+  intros Q H2.    (* P : Prop
+                     H1 : P -> False
+                     Q : Prop
+                     H2 : P
+                     ============================
+                     Q *)
+  apply H1 in H2. (* P : Prop
+                     H1 : P -> False
+                     Q : Prop
+                     H2 : False
+                     ============================
+                     Q *)
+  destruct H2.
 Qed.
 
-(** Such inequality statements are frequent enough to warrant a
-    special notation, [x <> y]: *)
+(* ---------------------------------------------------------------------
+   Ejemplo 2.3.4. Demostrar que
+      ~(0 = 1).
+   ------------------------------------------------------------------ *)
 
-Check (0 <> 1).
-(* ===> Prop *)
-
-Theorem zero_not_one' : 0 <> 1.
+Theorem cero_no_es_uno: ~(0 = 1).
 Proof.
-  intros H. inversion H.
+  intros H.       (* H : 0 = 1
+                     ============================
+                     False *)
+  inversion H.
 Qed.
 
-(** It takes a little practice to get used to working with negation in
-    Coq.  Even though you can see perfectly well why a statement
-    involving negation is true, it can be a little tricky at first to
-    get things into the right configuration so that Coq can understand
-    it!  Here are proofs of a few familiar facts to get you warmed
-    up. *)
+(* ---------------------------------------------------------------------
+   Nota. La expresión (x <> y) es una abreviatura de ~(x = y).
+   ------------------------------------------------------------------ *)
+
+
+Theorem cero_no_es_uno': 0 <> 1.
+Proof.
+  intros H.       (* H : 0 = 1
+                     ============================
+                     False *)
+  inversion H. 
+Qed.
+
+(* ---------------------------------------------------------------------
+   Ejemplo 2.3.5. Demostrar que
+      ~ False
+   ------------------------------------------------------------------ *)
+
 
 Theorem not_False :
   ~ False.
 Proof.
-  unfold not. intros H. destruct H. Qed.
+  unfold not. (* 
+                 ============================
+                 False -> False *)
+  intros H.   (* H : False
+                 ============================
+                 False *)
+  destruct H. 
+Qed.
 
-Theorem contradiction_implies_anything : forall P Q : Prop,
+(* ---------------------------------------------------------------------
+   Ejemplo 2.3.6. Demostrar que
+      forall P Q : Prop,
+        (P /\ ~P) -> Q.
+   ------------------------------------------------------------------ *)
+
+Theorem contradiccion_implica_cualquiera: forall P Q : Prop,
   (P /\ ~P) -> Q.
 Proof.
-  (* WORKED IN CLASS *)
-  intros P Q [HP HNA]. unfold not in HNA.
-  apply HNA in HP. destruct HP.  Qed.
+  intros P Q [HP HNP]. (* P, Q : Prop
+                          HP : P
+                          HNP : ~ P
+                          ============================
+                          Q *)
+  unfold not in HNP. (* P, Q : Prop
+                          HP : P
+                          HNP : P -> False
+                          ============================
+                          Q *)
+  apply HNP in HP. (* P, Q : Prop
+                          HP : False
+                          HNP : P -> False
+                          ============================
+                          Q *)
+  destruct HP.
+Qed.
 
-Theorem double_neg : forall P : Prop,
+(* ---------------------------------------------------------------------
+   Ejemplo 2.3.7. Demostrar que
+      forall P : Prop,
+        P -> ~~P.
+   ------------------------------------------------------------------ *)
+
+Theorem doble_neg: forall P : Prop,
   P -> ~~P.
 Proof.
-  (* WORKED IN CLASS *)
-  intros P H. unfold not. intros G. apply G. apply H.  Qed.
+  intros P H. (* P : Prop
+                 H : P
+                 ============================
+                 ~ ~ P *)
+  unfold not. (* (P -> False) -> False *)
+  intros G.   (* P : Prop
+                 H : P
+                 G : P -> False
+                 ============================
+                 False *)
+  apply G.    (* P *)
+  apply H.
+Qed.
 
-(** **** Exercise: 2 stars, advanced, recommended (double_neg_inf)  *)
-(** Write an informal proof of [double_neg]:
+(* ---------------------------------------------------------------------
+   Ejercicio 2.3.2. Demostrar que
+      forall (P Q : Prop),
+        (P -> Q) -> (~Q -> ~P).
+   ------------------------------------------------------------------ *)
 
-   _Theorem_: [P] implies [~~P], for any proposition [P]. *)
-
-(* FILL IN HERE *)
-(** [] *)
-
-(** **** Exercise: 2 stars, recommended (contrapositive)  *)
-Theorem contrapositive : forall (P Q : Prop),
+Theorem contrapositiva: forall (P Q : Prop),
   (P -> Q) -> (~Q -> ~P).
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  unfold not.          (* 
+                          ============================
+                          forall P Q : Prop, 
+                            (P -> Q) -> (Q -> False) -> P -> False *)
+  intros P Q H1 H2 H3. (* P, Q : Prop
+                          H1 : P -> Q
+                          H2 : Q -> False
+                          H3 : P
+                          ============================
+                          False *)
+  apply H1 in H3.      (* P, Q : Prop
+                          H1 : P -> Q
+                          H2 : Q -> False
+                          H3 : Q
+                          ============================
+                          False *)
+  apply H2 in H3.      (* P, Q : Prop
+                          H1 : P -> Q
+                          H2 : Q -> False
+                          H3 : False
+                          ============================
+                          False *)
+  apply H3.
+Qed.
 
-(** **** Exercise: 1 star (not_both_true_and_false)  *)
-Theorem not_both_true_and_false : forall P : Prop,
+(* ---------------------------------------------------------------------
+   Ejercicio 2.3.3. Demostrar que
+      forall P : Prop,
+        ~ (P /\ ~P).
+   ------------------------------------------------------------------ *)
+
+Theorem no_contradiccion: forall P : Prop,
   ~ (P /\ ~P).
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  unfold not.       (* 
+                       ============================
+                       forall P : Prop, P /\ (P -> False) -> False *)
+  intros P [H1 H2]. (* P : Prop
+                       H1 : P
+                       H2 : P -> False
+                       ============================
+                       False *)
+  apply H2.         (* P *)
+  apply H1.
+Qed.
 
-(** **** Exercise: 1 star, advanced (informal_not_PNP)  *)
-Definition informal_not_PNP_TODO := 0.
-(** Write an informal proof (in English) of the proposition [forall P
-    : Prop, ~(P /\ ~P)]. *)
+(* ---------------------------------------------------------------------
+   Ejemplo 2.3.8. Demostrar que
+      forall b : bool,
+        b <> true -> b = false.
+   ------------------------------------------------------------------ *)
 
-(* FILL IN HERE *)
-(** [] *)
-
-(** Similarly, since inequality involves a negation, it requires a
-    little practice to be able to work with it fluently.  Here is one
-    useful trick.  If you are trying to prove a goal that is
-    nonsensical (e.g., the goal state is [false = true]), apply
-    [ex_falso_quodlibet] to change the goal to [False].  This makes it
-    easier to use assumptions of the form [~P] that may be available
-    in the context -- in particular, assumptions of the form
-    [x<>y]. *)
-
-Theorem not_true_is_false : forall b : bool,
+(* 1ª demostración *)
+Theorem no_verdadero_es_falso: forall b : bool,
   b <> true -> b = false.
 Proof.
   intros [] H.
-  - (* b = true *)
-    unfold not in H.
-    apply ex_falso_quodlibet.
-    apply H. reflexivity.
-  - (* b = false *)
+  -                           (* H : true <> true
+                                 ============================
+                                 true = false *)
+    unfold not in H.          (* H : true = true -> False
+                                 ============================
+                                 true = false *)
+    apply ex_falso_quodlibet. (* H : true = true -> False
+                                 ============================
+                                 False *)
+    apply H.                  (* true = true *)
+    reflexivity.
+  -                           (* H : false <> true
+                                 ============================
+                                 false = false *)
     reflexivity.
 Qed.
 
-(** Since reasoning with [ex_falso_quodlibet] is quite common, Coq
-    provides a built-in tactic, [exfalso], for applying it. *)
-
-Theorem not_true_is_false' : forall b : bool,
+(* 2ª demostración *)
+Theorem no_verdadero_es_falso': forall b : bool,
   b <> true -> b = false.
 Proof.
   intros [] H.
-  - (* b = false *)
-    unfold not in H.
-    exfalso.                (* <=== *)
-    apply H. reflexivity.
-  - (* b = true *) reflexivity.
+  -                  (* H : true <> true
+                        ============================
+                        true = false *)
+    unfold not in H. (* H : true = true -> False
+                        ============================
+                        true = false *)
+    exfalso.         (* H : true = true -> False
+                        ============================
+                        False *)
+    apply H.         (* true = true *)
+    reflexivity.
+  -                  (* H : false <> true
+                        ============================
+                        false = false *)
+    reflexivity.
 Qed.
+
+(* ---------------------------------------------------------------------
+   Notas. 
+   1. Uso de 'apply ex_falso_quodlibet' en la primera demostración.
+   2. Uso de 'exfalso' en la segunda demostración.
+   3. La táctica 'exfalso' sustituye el objetivo por falso. 
+   ------------------------------------------------------------------ *)
 
 (* =====================================================================
    §§ 2.4. Verdad
    ================================================================== *)
 
-(** Besides [False], Coq's standard library also defines [True], a
-    proposition that is trivially true. To prove it, we use the
-    predefined constant [I : True]: *)
+(* ---------------------------------------------------------------------
+   Ejemplo 2.4.1. Demostrar que la proposición True es verdadera.
+   ------------------------------------------------------------------ *)
 
-Lemma True_is_true : True.
-Proof. apply I. Qed.
+Lemma True_es_verdadera : True.
+Proof.
+  apply I.
+Qed.
 
-(** Unlike [False], which is used extensively, [True] is used quite
-    rarely, since it is trivial (and therefore uninteresting) to prove
-    as a goal, and it carries no useful information as a hypothesis. *)
-(** But it can be quite useful when defining complex [Prop]s using
-    conditionals or as a parameter to higher-order [Prop]s.  We will
-    see examples of such uses of [True] later on. *)
+(* ---------------------------------------------------------------------
+   Nota. Uso del constructor I.
+   ------------------------------------------------------------------ *)
 
 (* =====================================================================
    §§ 2.5. Equivalencia lógica  
    ================================================================== *)
 
-(** The handy "if and only if" connective, which asserts that two
-    propositions have the same truth value, is just the conjunction of
-    two implications. *)
+Module DefIff.
 
-Module MyIff.
+  (* ---------------------------------------------------------------------
+   Ejemplo 2.5.1. Definir la función
+      iff (P Q : Prop) : Prop
+   tal que  (iff P Q) es la equivalencia de P y Q.
+   ------------------------------------------------------------------ *)
 
-Definition iff (P Q : Prop) := (P -> Q) /\ (Q -> P).
+
+Definition iff (P Q : Prop) : Prop := (P -> Q) /\ (Q -> P).
+
+(* ---------------------------------------------------------------------
+   Ejemplo 2.5.2. Definir (P <-> Q) como una abreviatura de (iff P Q). 
+   ------------------------------------------------------------------ *)
 
 Notation "P <-> Q" := (iff P Q)
                       (at level 95, no associativity)
                       : type_scope.
 
-End MyIff.
+End DefIff.
 
-Theorem iff_sym : forall P Q : Prop,
+(* ---------------------------------------------------------------------
+   Ejemplo 2.5.3. Demostrar que
+      forall P Q : Prop,
+        (P <-> Q) -> (Q <-> P).
+   ------------------------------------------------------------------ *)
+
+Theorem iff_sim : forall P Q : Prop,
   (P <-> Q) -> (Q <-> P).
 Proof.
-  (* WORKED IN CLASS *)
-  intros P Q [HAB HBA].
+  intros P Q [HPQ HQP]. (* P, Q : Prop
+                           HPQ : P -> Q
+                           HQP : Q -> P
+                           ============================
+                           Q <-> P *)
   split.
-  - (* -> *) apply HBA.
-  - (* <- *) apply HAB.  Qed.
-
-Lemma not_true_iff_false : forall b,
-  b <> true <-> b = false.
-Proof.
-  (* WORKED IN CLASS *)
-  intros b. split.
-  - (* -> *) apply not_true_is_false.
-  - (* <- *)
-    intros H. rewrite H. intros H'. inversion H'.
+  -                     (* P, Q : Prop
+                           HPQ : P -> Q
+                           HQP : Q -> P
+                           ============================
+                           Q -> P *)
+    apply HQP.
+  -                     (* P, Q : Prop
+                           HPQ : P -> Q
+                           HQP : Q -> P
+                           ============================
+                           P -> Q *)
+    apply HPQ.
 Qed.
 
-(** **** Exercise: 1 star, optional (iff_properties)  *)
-(** Using the above proof that [<->] is symmetric ([iff_sym]) as
-    a guide, prove that it is also reflexive and transitive. *)
+(* ---------------------------------------------------------------------
+   Ejemplo 2.5.4. Demostrar que
+      forall b : bool,
+        b <> true <-> b = false.
+   ------------------------------------------------------------------ *)
 
-Theorem iff_refl : forall P : Prop,
-  P <-> P.
+Lemma not_true_iff_false : forall b : bool,
+  b <> true <-> b = false.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros b.                      (* b : bool
+                                    ============================
+                                    b <> true <-> b = false *)
+  split.
+  -                              (* b : bool
+                                    ============================
+                                    b <> true -> b = false *)
+    apply no_verdadero_es_falso. 
+  -                              (* b : bool
+                                    ============================
+                                    b = false -> b <> true *)
+    intros H.                    (* b : bool
+                                    H : b = false
+                                    ============================
+                                    b <> true *)
+    rewrite H.                   (* false <> true *)
+    intros H'.                   (* b : bool
+                                    H : b = false
+                                    H' : false = true
+                                    ============================
+                                    False *)
+    inversion H'.
+Qed.
 
-Theorem iff_trans : forall P Q R : Prop,
+
+(* ---------------------------------------------------------------------
+   Ejercicio 2.3.4. Demostrar que
+      forall P : Prop,
+        P <-> P.
+   ------------------------------------------------------------------ *)
+
+Lemma iff_refl_aux: forall P : Prop,
+    P -> P.
+Proof.
+  intros P H. (* P : Prop
+                 H : P
+                 ============================
+                 P *)
+  apply H.
+Qed.
+
+Theorem iff_refl: forall P : Prop,
+    P <-> P.
+Proof.
+  split.
+  -                     (* P : Prop
+                           ============================
+                           P -> P *)
+    apply iff_refl_aux. 
+  -                     (* P : Prop
+                           ============================
+                           P -> P *)
+    apply iff_refl_aux.
+Qed.
+
+(* ---------------------------------------------------------------------
+   Ejercicio 2.3.5. Demostrar que
+      forall P Q R : Prop,
+        (P <-> Q) -> (Q <-> R) -> (P <-> R).
+   ------------------------------------------------------------------ *)
+
+Theorem iff_trans: forall P Q R : Prop,
   (P <-> Q) -> (Q <-> R) -> (P <-> R).
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  intros P Q R [HPQ HQP] [HQR HRQ]. (* P, Q, R : Prop
+                                       HPQ : P -> Q
+                                       HQP : Q -> P
+                                       HQR : Q -> R
+                                       HRQ : R -> Q
+                                       ============================
+                                       P <-> R *)
+  split.
+  -                                 (* P, Q, R : Prop
+                                       HPQ : P -> Q
+                                       HQP : Q -> P
+                                       HQR : Q -> R
+                                       HRQ : R -> Q
+                                       ============================
+                                       P -> R *)
+    intros HP.                      (* P, Q, R : Prop
+                                       HPQ : P -> Q
+                                       HQP : Q -> P
+                                       HQR : Q -> R
+                                       HRQ : R -> Q
+                                       HP : P
+                                       ============================
+                                       R *)
+    apply HQR.                      (* Q *)
+    apply HPQ.                      (* P *)
+    apply HP.
+  -                                 (* P, Q, R : Prop
+                                       HPQ : P -> Q
+                                       HQP : Q -> P
+                                       HQR : Q -> R
+                                       HRQ : R -> Q
+                                       ============================
+                                       R -> P *)
+    intros HR.                      (* P, Q, R : Prop
+                                       HPQ : P -> Q
+                                       HQP : Q -> P
+                                       HQR : Q -> R
+                                       HRQ : R -> Q
+                                       HR : R
+                                       ============================
+                                       P *)
+    apply HQP.                      (* Q *)
+    apply HRQ.                      (* R *)
+    apply HR.
+Qed.
 
-(** **** Exercise: 3 stars (or_distributes_over_and)  *)
-Theorem or_distributes_over_and : forall P Q R : Prop,
+(* ---------------------------------------------------------------------
+   Ejercicio 2.3.6. Demostrar que
+      forall P Q R : Prop,
+        P \/ (Q /\ R) <-> (P \/ Q) /\ (P \/ R).
+   ------------------------------------------------------------------ *)
+
+Theorem distributiva_disy_conj: forall P Q R : Prop,
   P \/ (Q /\ R) <-> (P \/ Q) /\ (P \/ R).
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
-
+  split.
+  -                             (* P, Q, R : Prop
+                                   ============================
+                                   P \/ (Q /\ R) -> (P \/ Q) /\ (P \/ R) *)
+    intros [HP | [HQ HR]].
+    +                           (* P, Q, R : Prop
+                                   HP : P
+                                   ============================
+                                   (P \/ Q) /\ (P \/ R) *)
+      split.
+      *                         (* P, Q, R : Prop
+                                   HP : P
+                                   ============================
+                                   P \/ Q *)
+        left.                   (* P *)
+        apply HP.
+      *                         (* P, Q, R : Prop
+                                   HP : P
+                                   ============================
+                                   P \/ R *)
+        left.                   (* P *)
+        apply HP.
+    +                           (* P, Q, R : Prop
+                                   HQ : Q
+                                   HR : R
+                                   ============================
+                                   (P \/ Q) /\ (P \/ R) *)
+      split.
+      *                         (* P, Q, R : Prop
+                                   HQ : Q
+                                   HR : R
+                                   ============================
+                                   P \/ Q *)
+        right.                  (* Q *)
+        apply HQ.
+      *                         (* P, Q, R : Prop
+                                   HQ : Q
+                                   HR : R
+                                   ============================
+                                   P \/ R *)
+        right.                  (* R *)
+        apply HR.
+  -                             (* P, Q, R : Prop
+                                   ============================
+                                   (P \/ Q) /\ (P \/ R) -> P \/ (Q /\ R) *)
+    intros [[HP1|HQ] [HP2|HR]]. 
+    +                           (* P, Q, R : Prop
+                                   HP1, HP2 : P
+                                   ============================
+                                   P \/ (Q /\ R) *)
+      left.                     (* P *)
+      apply HP1.
+    +                           (* P, Q, R : Prop
+                                   HP1 : P
+                                   HR : R
+                                   ============================
+                                   P \/ (Q /\ R) *)
+      left.                     (* P *)
+      apply HP1.
+    +                           (* P, Q, R : Prop
+                                   HQ : Q
+                                   HP2 : P
+                                   ============================
+                                   P \/ (Q /\ R) *)
+      left.                     (* P *)
+      apply HP2.
+    +                           (* P, Q, R : Prop
+                                   HQ : Q
+                                   HR : R
+                                   ============================
+                                   P \/ (Q /\ R) *)
+      right.                    (* Q /\ R *)
+      split.
+      *                         (* P, Q, R : Prop
+                                   HQ : Q
+                                   HR : R
+                                   ============================
+                                   Q *)
+        apply HQ.
+      *                         (* P, Q, R : Prop
+                                   HQ : Q
+                                   HR : R
+                                   ============================
+                                   R *)
+        apply HR.
+Qed.
+      
 (** Some of Coq's tactics treat [iff] statements specially, avoiding
     the need for some low-level proof-state manipulation.  In
     particular, [rewrite] and [reflexivity] can be used with [iff]
@@ -763,7 +1285,7 @@ Lemma mult_0 : forall n m, n * m = 0 <-> n = 0 \/ m = 0.
 Proof.
   split.
   - apply mult_eq_0.
-  - apply or_example.
+  - apply disy_ej.
 Qed.
 
 Lemma or_assoc :
@@ -1109,7 +1631,7 @@ Example lemma_application_ex :
     n = 0.
 Proof.
   intros n ns H.
-  destruct (proj1 _ _ (In_map_iff _ _ _ _ _) H)
+  destruct (conj_e1 _ _ (In_map_iff _ _ _ _ _) H)
            as [m [Hm _]].
   rewrite mult_0_r in Hm. rewrite <- Hm. reflexivity.
 Qed.
@@ -1625,7 +2147,7 @@ Proof.
 Definition peirce := forall P Q: Prop,
   ((P->Q)->P)->P.
 
-Definition double_negation_elimination := forall P:Prop,
+Definition doble_negation_elimination := forall P:Prop,
   ~~P -> P.
 
 Definition de_morgan_not_and_not := forall P Q:Prop,
