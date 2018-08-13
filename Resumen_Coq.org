@@ -112,6 +112,10 @@ Abort.
   hipótesis de inducción es ~IHn1~.
 + =intros vars=: Introduce las variables del cuantificador universal y,
   como premisas, los antecedentes de las implicaciones.
++ =intros x [HA HB]=: Introduce, cuando el objetivo es de la
+  forma =(forall x, A /\ B -> C)=, la variable =x= y las
+  hipótesis =HA= y =HB= afirmando la certeza de =A= y de =B=,
+  respectivamente. 
 + =inversion=: Aplica qe los constructores son disjuntos e inyectivos. 
 + =reflexivity=: Demuestra el objetivo si es una igualdad trivial.
 + =rewrite H=: Sustituye el término izquierdo de H por el derecho.
