@@ -108,6 +108,7 @@ Abort.
   =A \/ B=, la divide en dos casos: uno con hipótesis =HA= (afirmando la
   certeza de =A=) y otro con la hipótesis =HB= (afirmando la certeza de
   =B=). 
++ =exfalso=: Sustituye el objetivo por falso. 
 + =generalize dependent x=: Mueve la variable =x= (y las que dependan de
   ella) del contexto a una hipótesis explícita en el objetivo.
 + =induction n as [|n1 IHn1]=: Inicia una demostración por inducción
