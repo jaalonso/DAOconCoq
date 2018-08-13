@@ -129,6 +129,7 @@ Abort.
 + =reflexivity=: Demuestra el objetivo si es una igualdad trivial.
 + =rewrite H=: Sustituye el término izquierdo de H por el derecho.
 + =rewrite <-H=: Sustituye el término derecho de H por el izquierdo.
++ =right=: Sustituye el objetivo de la forma =A \/ B= por =B=.
 + =simpl=: Simplifica el objetivo.
 + =simpl in H=: Simplifica la hipótesis =H=.
 + =split=: Sustituye el objetivo =P /\ Q= por los subobjetivos =P= y =Q=.
