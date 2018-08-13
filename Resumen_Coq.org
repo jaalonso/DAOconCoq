@@ -101,6 +101,9 @@ Abort.
 + =destruct p as [n m]=: Sustituye el par =p= por =(n,m)=.
 + =destruct e eqn: H=: Distingue casos según el valor de la expresión
   =e= y lo añade al contexto la hipótesis =H=.
++ =destruct H as [HA HB]=: Sustituye la hipótesis =H= de la forma 
+  =A /\ B= por las hipótesis =HA= (que afirma que =A= es verdad) y =HB=
+  (que afirma que =B= es verdad).
 + =generalize dependent x=: Mueve la variable =x= (y las que dependan de
   ella) del contexto a una hipótesis explícita en el objetivo.
 + =induction n as [|n1 IHn1]=: Inicia una demostración por inducción
