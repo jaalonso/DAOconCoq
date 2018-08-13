@@ -116,6 +116,10 @@ Abort.
   forma =(forall x, A /\ B -> C)=, la variable =x= y las
   hipótesis =HA= y =HB= afirmando la certeza de =A= y de =B=,
   respectivamente. 
++ =intros x [HA | HB]=: Cuando el objetivo es de la forma 
+  =(forall x, A \/ B -> C)=, introduce la variable x y dos casos:
+  uno con hipótesis =HA= (afirmando la certeza de =A=) y otro con la
+  hipótesis =HB= (afirmando la certeza de =B=).
 + =inversion=: Aplica qe los constructores son disjuntos e inyectivos. 
 + =reflexivity=: Demuestra el objetivo si es una igualdad trivial.
 + =rewrite H=: Sustituye el término izquierdo de H por el derecho.
