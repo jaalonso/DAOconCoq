@@ -10,7 +10,8 @@ Require Export T5_Tacticas.
       2. Disyunción  
       3. Falsedad y negación  
       4. Verdad
-      6. Equivalencia lógica  
+      5. Equivalencia lógica
+      6. Cuantificación existencial  
    3. Programación con proposiciones 
    4. Aplicando teoremas a argumentos 
    5. Coq vs. teoría de conjuntos 
@@ -1269,203 +1270,689 @@ Proof.
                                    R *)
         apply HR.
 Qed.
-      
-(** Some of Coq's tactics treat [iff] statements specially, avoiding
-    the need for some low-level proof-state manipulation.  In
-    particular, [rewrite] and [reflexivity] can be used with [iff]
-    statements, not just equalities.  To enable this behavior, we need
-    to import a Coq library that supports it: *)
+
+(* ---------------------------------------------------------------------
+   Nota. Se importa la librería Coq.Setoids.Setoid para usar las
+   tácticas reflexivity y rewrite con iff.
+   ------------------------------------------------------------------ *)
 
 Require Import Coq.Setoids.Setoid.
 
-(** Here is a simple example demonstrating how these tactics work with
-    [iff].  First, let's prove a couple of basic iff equivalences... *)
+(* ---------------------------------------------------------------------
+   Ejemplo 2.5.5. Demostrar que
+      forall n m : nat, n * m = 0 <-> n = 0 \/ m = 0.
+   ------------------------------------------------------------------ *)
 
-Lemma mult_0 : forall n m, n * m = 0 <-> n = 0 \/ m = 0.
+Lemma mult_0 : forall n m : nat, n * m = 0 <-> n = 0 \/ m = 0.
 Proof.
   split.
-  - apply mult_eq_0.
-  - apply disy_ej.
+  -                  (* n, m : nat
+                        ============================
+                        n * m = 0 -> n = 0 \/ m = 0 *)
+    apply mult_eq_0. 
+  -                  (* n, m : nat
+                        ============================
+                        n = 0 \/ m = 0 -> n * m = 0 *)
+    apply disy_ej.
 Qed.
 
-Lemma or_assoc :
+(* ---------------------------------------------------------------------
+   Ejemplo 2.5.6. Demostrar que
+      forall P Q R : Prop, 
+        P \/ (Q \/ R) <-> (P \/ Q) \/ R.
+   ------------------------------------------------------------------ *)
+
+Lemma disy_asociativa :
   forall P Q R : Prop, P \/ (Q \/ R) <-> (P \/ Q) \/ R.
 Proof.
-  intros P Q R. split.
-  - intros [H | [H | H]].
-    + left. left. apply H.
-    + left. right. apply H.
-    + right. apply H.
-  - intros [[H | H] | H].
-    + left. apply H.
-    + right. left. apply H.
-    + right. right. apply H.
+  intros P Q R.           (* P, Q, R : Prop
+                             ============================
+                             P \/ (Q \/ R) <-> (P \/ Q) \/ R *)
+  split.
+  -                       (* P, Q, R : Prop
+                             ============================
+                             P \/ (Q \/ R) -> (P \/ Q) \/ R *)
+    intros [H | [H | H]]. 
+    +                     (* P, Q, R : Prop
+                             H : P
+                             ============================
+                             (P \/ Q) \/ R *)
+      left.               (* P \/ Q *)
+      left.               (* P *)
+      apply H.
+    +                     (* P, Q, R : Prop
+                             H : Q
+                             ============================
+                             (P \/ Q) \/ R *)
+      left.               (* P \/ Q *)
+      right.              (* Q *)
+      apply H.
+    +                     (* P, Q, R : Prop
+                             H : R
+                             ============================
+                             (P \/ Q) \/ R *)
+      right.              (* R *)
+      apply H.
+  -                       (* P, Q, R : Prop
+                             ============================
+                             (P \/ Q) \/ R -> P \/ (Q \/ R) *)
+    intros [[H | H] | H].
+    +                     (* P, Q, R : Prop
+                             H : P
+                             ============================
+                             (P \/ Q) \/ R *)
+      left.               (* P *)
+      apply H.
+    +                     (* P, Q, R : Prop
+                             H : Q
+                             ============================
+                             P \/ (Q \/ R) *)
+      right.              (* Q \/ R *)
+      left.               (* Q *)
+      apply H.
+    +                     (* P, Q, R : Prop
+                             H : R
+                             ============================
+                             P \/ (Q \/ R) *)
+      right.              (* Q \/ R *)
+      right.              (* R *)
+      apply H.
 Qed.
 
-(** We can now use these facts with [rewrite] and [reflexivity] to
-    give smooth proofs of statements involving equivalences.  Here is
-    a ternary version of the previous [mult_0] result: *)
+(* ---------------------------------------------------------------------
+   Ejemplo 2.5.7. Demostrar que
+      forall n m p : nat,
+        n * m * p = 0 <-> n = 0 \/ m = 0 \/ p = 0.
+   ------------------------------------------------------------------ *)
 
-Lemma mult_0_3 :
-  forall n m p, n * m * p = 0 <-> n = 0 \/ m = 0 \/ p = 0.
+Lemma mult_0_3: forall n m p : nat,
+    n * m * p = 0 <-> n = 0 \/ m = 0 \/ p = 0.
 Proof.
-  intros n m p.
-  rewrite mult_0. rewrite mult_0. rewrite or_assoc.
+  intros n m p.            (* n, m, p : nat
+                              ============================
+                              n * (m * p) = 0 <-> n = 0 \/ (m = 0 \/ p = 0) *)
+  rewrite mult_0.          (* n * m = 0 \/ p = 0 <-> 
+                              n = 0 \/ (m = 0 \/ p = 0) *)
+  rewrite mult_0.          (* (n = 0 \/ m = 0) \/ p = 0 <-> 
+                              n = 0 \/ (m = 0 \/ p = 0) *)
+  rewrite disy_asociativa. (* (n = 0 \/ m = 0) \/ p = 0 <-> 
+                              (n = 0 \/ m = 0) \/ p = 0 *)
   reflexivity.
 Qed.
 
-(** The [apply] tactic can also be used with [<->]. When given an
-    equivalence as its argument, [apply] tries to guess which side of
-    the equivalence to use. *)
+(* ---------------------------------------------------------------------
+   Nota. Uso de reflexivity y rewrite con iff.
+   ------------------------------------------------------------------ *)
 
-Lemma apply_iff_example :
-  forall n m : nat, n * m = 0 -> n = 0 \/ m = 0.
+(* ---------------------------------------------------------------------
+   Ejemplo 2.5.8. Demostrar que
+      forall n m : nat,
+        n * m = 0 -> n = 0 \/ m = 0.
+   ------------------------------------------------------------------ *)
+
+Lemma ej_apply_iff: forall n m : nat,
+    n * m = 0 -> n = 0 \/ m = 0.
 Proof.
-  intros n m H. apply mult_0. apply H.
+  intros n m H. (* n, m : nat
+                   H : n * m = 0
+                   ============================
+                   n = 0 \/ m = 0 *)
+  apply mult_0. (* n * m = 0 *)
+  apply H.
 Qed.
 
-(* ================================================================= *)
-(** ** Existential Quantification *)
+(* ---------------------------------------------------------------------
+   Nota. Uso de apply sobre iff.
+   ------------------------------------------------------------------ *)
 
-(** Another important logical connective is _existential
-    quantification_.  To say that there is some [x] of type [T] such
-    that some property [P] holds of [x], we write [exists x : T,
-    P]. As with [forall], the type annotation [: T] can be omitted if
-    Coq is able to infer from the context what the type of [x] should
-    be. *)
+(* =====================================================================
+   §§ 2.6. Cuantificación existencial  
+   ================================================================== *)
 
-(** To prove a statement of the form [exists x, P], we must show that
-    [P] holds for some specific choice of value for [x], known as the
-    _witness_ of the existential.  This is done in two steps: First,
-    we explicitly tell Coq which witness [t] we have in mind by
-    invoking the tactic [exists t].  Then we prove that [P] holds after
-    all occurrences of [x] are replaced by [t]. *)
+(* ---------------------------------------------------------------------
+   Ejemplo 2.6.1. Demostrar que
+      exists n : nat, 4 = n + n.
+   ------------------------------------------------------------------ *)
 
-Lemma four_is_even : exists n : nat, 4 = n + n.
+Lemma cuatro_es_par: exists n : nat, 4 = n + n.
 Proof.
-  exists 2. reflexivity.
+  exists 2.          (* 
+                   ============================
+                   4 = 2 + 2 *)
+  reflexivity.
 Qed.
+
+(* ---------------------------------------------------------------------
+   Nota. La táctica 'exists a' sustituye el objetivo de la forma 
+   (exists x, P(x)) por P(a).
+   ------------------------------------------------------------------ *)
 
 (** Conversely, if we have an existential hypothesis [exists x, P] in
     the context, we can destruct it to obtain a witness [x] and a
     hypothesis stating that [P] holds of [x]. *)
 
-Theorem exists_example_2 : forall n,
+(* ---------------------------------------------------------------------
+   Ejemplo 2.6.2. Demostrar que
+      forall n : nat,
+        (exists m, n = 4 + m) -> (exists o, n = 2 + o).
+   ------------------------------------------------------------------ *)
+
+(* 1ª demostración *)
+Theorem ej_existe_2a: forall n : nat,
   (exists m, n = 4 + m) ->
   (exists o, n = 2 + o).
 Proof.
-  (* WORKED IN CLASS *)
-  intros n [m Hm]. (* note implicit [destruct] here *)
-  exists (2 + m).
-  apply Hm.  Qed.
+  intros n H.
+  destruct H as [a Ha].
+  exists (2 + a).
+  apply Ha.
+Qed.
 
-(** **** Exercise: 1 star, recommended (dist_not_exists)  *)
-(** Prove that "[P] holds for all [x]" implies "there is no [x] for
-    which [P] does not hold."  (Hint: [destruct H as [x E]] works on
-    existential assumptions!)  *)
+(* 2ª demostración *)
+Theorem ej_existe_2b: forall n : nat,
+  (exists m, n = 4 + m) ->
+  (exists o, n = 2 + o).
+Proof.
+  intros n [a Ha]. 
+  exists (2 + a).
+  apply Ha.
+Qed.
 
-Theorem dist_not_exists : forall (X:Type) (P : X -> Prop),
+(* ---------------------------------------------------------------------
+   Notas.
+   1. 'destruct H [a Ha]' sustituye la hipótesis (H : exists x, P(x)) 
+      por (Ha : P(a)).
+   2. 'intros x [a Ha]' sustituye el objetivo 
+      (forall x, (exists y P(y)) -> Q(x)) por Q(x) y le añade la
+      hipótesis (Ha : P(a)).
+   ------------------------------------------------------------------ *)
+
+(* ---------------------------------------------------------------------
+   Ejercicio 2.6.1. Demostrar que
+      forall (X:Type) (P : X -> Prop),
+        (forall x, P x) -> ~ (exists x, ~ P x)
+   ------------------------------------------------------------------ *)
+
+Theorem paraTodo_no_existe_no: forall (X:Type) (P : X -> Prop),
   (forall x, P x) -> ~ (exists x, ~ P x).
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  intros X P H1 [a Ha]. (* X : Type
+                           P : X -> Prop
+                           H1 : forall x : X, P x
+                           a : X
+                           Ha : ~ P a
+                           ============================
+                           False *)
+  apply Ha.             (* P a *)
+  apply H1.
+Qed.
 
-(** **** Exercise: 2 stars (dist_exists_or)  *)
-(** Prove that existential quantification distributes over
-    disjunction. *)
+(* ---------------------------------------------------------------------
+   Ejercicio 2.6.2. Demostrar que
+      forall (X : Type) (P Q : X -> Prop),
+        (exists x, P x \/ Q x) <-> (exists x, P x) \/ (exists x, Q x).
+   ------------------------------------------------------------------ *)
 
-Theorem dist_exists_or : forall (X:Type) (P Q : X -> Prop),
+Theorem dist_existe: forall (X : Type) (P Q : X -> Prop),
   (exists x, P x \/ Q x) <-> (exists x, P x) \/ (exists x, Q x).
 Proof.
-   (* FILL IN HERE *) Admitted.
-(** [] *)
+  intros X P Q.                 (* X : Type
+                                   P, Q : X -> Prop
+                                   ============================
+                                   (exists x:X, P x \/ Q x) <-> 
+                                   (exists x:X, P x) \/ (exists x:X, Q x) *)
+  split.
+  -                             (* X : Type
+                                   P, Q : X -> Prop
+                                   ============================
+                                   (exists x : X, P x \/ Q x) -> 
+                                   (exists x:X, P x) \/ (exists x:X, Q x) *)
+    intros [a [HPa | HQa]].
+    +                           (* X : Type
+                                   P, Q : X -> Prop
+                                   a : X
+                                   HPa : P a
+                                   ============================
+                                   (exists x:X, P x) \/ (exists x:X, Q x) *)
+      left.                     (* exists x : X, P x *)
+      exists a.                      (* P a *)
+      apply HPa.
+    +                           (* X : Type
+                                   P, Q : X -> Prop
+                                   a : X
+                                   HQa : Q a
+                                   ============================
+                                   (exists x:X, P x) \/ (exists x:X, Q x) *)
+      right.                    (* exists x : X, Q x *)
+      exists a.                      (* Q a *)
+      apply HQa.
+  -                             (* X : Type
+                                   P, Q : X -> Prop
+                                   ============================
+                                   (exists x:X, P x) \/ (exists x:X, Q x) -> 
+                                   exists x : X, P x \/ Q x *)
+    intros [[a HPa] | [a HQa]]. 
+    +                           (* X : Type
+                                   P, Q : X -> Prop
+                                   a : X
+                                   HPa : P a
+                                   ============================
+                                   exists x : X, P x \/ Q x *)
+      exists a.                      (* P a \/ Q a *)
+      left.                     (* P a *)
+      apply HPa.
+    +                           (* X : Type
+                                   P, Q : X -> Prop
+                                   a : X
+                                   HQa : Q a
+                                   ============================
+                                   exists x : X, P x \/ Q x *)
+      exists a.                      (* P a \/ Q a *)
+      right.                    (* Q a *)
+      apply HQa.
+Qed.
 
 (* =====================================================================
    § 3. Programación con proposiciones 
    ================================================================== *)
 
-(** The logical connectives that we have seen provide a rich
-    vocabulary for defining complex propositions from simpler ones.
-    To illustrate, let's look at how to express the claim that an
-    element [x] occurs in a list [l].  Notice that this property has a
-    simple recursive structure: *)
-(**    - If [l] is the empty list, then [x] cannot occur on it, so the
-         property "[x] appears in [l]" is simply false. *)
-(**    - Otherwise, [l] has the form [x' :: l'].  In this case, [x]
-         occurs in [l] if either it is equal to [x'] or it occurs in
-         [l']. *)
+(* ---------------------------------------------------------------------
+   Ejemplo 3.1.1. Definir la función
+      En {A : Type} (x : A) (xs : list A) : Prop :=
+   tal que (En x xs) se verifica si x pertenece a xs.
+   ------------------------------------------------------------------ *)
 
-(** We can translate this directly into a straightforward recursive
-    function taking an element and a list and returning a proposition: *)
-
-Fixpoint In {A : Type} (x : A) (l : list A) : Prop :=
-  match l with
-  | [] => False
-  | x' :: l' => x' = x \/ In x l'
+Fixpoint En {A : Type} (x : A) (xs : list A) : Prop :=
+  match xs with
+  | []        => False
+  | x' :: xs' => x' = x \/ En x xs'
   end.
 
-(** When [In] is applied to a concrete list, it expands into a
-    concrete sequence of nested disjunctions. *)
+(* ---------------------------------------------------------------------
+   Ejemplo 3.1.2. Demostrar que
+      En 4 [1; 2; 3; 4; 5].
+   ------------------------------------------------------------------ *)
 
-Example In_example_1 : In 4 [1; 2; 3; 4; 5].
+Example En_ejemplo_1 : En 4 [1; 2; 3; 4; 5].
 Proof.
-  (* WORKED IN CLASS *)
-  simpl. right. right. right. left. reflexivity.
+  simpl.       (* 1 = 4 \/ 2 = 4 \/ 3 = 4 \/ 4 = 4 \/ 5 = 4 \/ False *)
+  right.       (* 2 = 4 \/ 3 = 4 \/ 4 = 4 \/ 5 = 4 \/ False *)
+  right.       (* 3 = 4 \/ 4 = 4 \/ 5 = 4 \/ False *)
+  right.       (* 4 = 4 \/ 5 = 4 \/ False *)
+  left.        (* 4 = 4 *)
+  reflexivity. 
 Qed.
 
-Example In_example_2 :
-  forall n, In n [2; 4] ->
-  exists n', n = 2 * n'.
+(* ---------------------------------------------------------------------
+   Ejemplo 3.1.3. Demostrar que
+      forall n : nat, 
+        En n [2; 4] -> exists n', n = 2 * n'.
+   ------------------------------------------------------------------ *)
+
+Example En_ejemplo_2: forall n : nat,
+    En n [2; 4] -> exists n', n = 2 * n'.
 Proof.
-  (* WORKED IN CLASS *)
-  simpl.
-  intros n [H | [H | []]].
-  - exists 1. rewrite <- H. reflexivity.
-  - exists 2. rewrite <- H. reflexivity.
-Qed.
-(** (Notice the use of the empty pattern to discharge the last case
-    _en passant_.) *)
-
-(** We can also prove more generic, higher-level lemmas about [In].
-
-    Note, in the next, how [In] starts out applied to a variable and
-    only gets expanded when we do case analysis on this variable: *)
-
-Lemma In_map :
-  forall (A B : Type) (f : A -> B) (l : list A) (x : A),
-    In x l ->
-    In (f x) (map f l).
-Proof.
-  intros A B f l x.
-  induction l as [|x' l' IHl'].
-  - (* l = nil, contradiction *)
-    simpl. intros [].
-  - (* l = x' :: l' *)
-    simpl. intros [H | H].
-    + rewrite H. left. reflexivity.
-    + right. apply IHl'. apply H.
+  simpl.                   (* 
+                              ============================
+                              forall n : nat,
+                               2 = n \/ 4 = n \/ False -> 
+                               exists n' : nat, n = n' + (n' + 0) *)
+  intros n [H | [H | []]]. 
+  -                        (* n : nat
+                              H : 2 = n
+                              ============================
+                              exists n' : nat, n = n' + (n' + 0) *)
+    exists 1.                   (* n = 1 + (1 + 0) *)
+    rewrite <- H.           (* 2 = 1 + (1 + 0) *)
+    reflexivity.
+  -                        (* n : nat
+                              H : 4 = n
+                              ============================
+                              exists n' : nat, n = n' + (n' + 0) *)
+    exists 2.                   (* n = 2 + (2 + 0) *)
+    rewrite <- H.           (* 4 = 2 + (2 + 0) *)
+    reflexivity.
 Qed.
 
-(** This way of defining propositions recursively, though convenient
-    in some cases, also has some drawbacks.  In particular, it is
-    subject to Coq's usual restrictions regarding the definition of
-    recursive functions, e.g., the requirement that they be "obviously
-    terminating."  In the next chapter, we will see how to define
-    propositions _inductively_, a different technique with its own set
-    of strengths and limitations. *)
+(* ---------------------------------------------------------------------
+   Nota. Uso del patrón vacóp para descartar el último caso.
+   ------------------------------------------------------------------ *)
 
-(** **** Exercise: 2 stars (In_map_iff)  *)
-Lemma In_map_iff :
-  forall (A B : Type) (f : A -> B) (l : list A) (y : B),
-    In y (map f l) <->
-    exists x, f x = y /\ In x l.
+(* ---------------------------------------------------------------------
+   Ejemplo 3.2. Demostrar que
+      forall (A B : Type) (f : A -> B) (xs : list A) (x : A),
+        En x xs ->
+        En (f x) (map f xs).
+   ------------------------------------------------------------------ *)
+
+
+Lemma En_map: forall (A B : Type) (f : A -> B) (xs : list A) (x : A),
+    En x xs ->
+    En (f x) (map f xs).
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  intros A B f xs x.            (* A : Type
+                                   B : Type
+                                   f : A -> B
+                                   xs : list A
+                                   x : A
+                                   ============================
+                                   En x xs -> En (f x) (map f xs) *)
+  induction xs as [|x' xs' HI]. 
+  -                             (* A : Type
+                                   B : Type
+                                   f : A -> B
+                                   x : A
+                                   ============================
+                                   En x [ ] -> En (f x) (map f [ ]) *)
+    simpl.                      (* False -> False *)
+    intros [].
+  -                             (* A : Type
+                                   B : Type
+                                   f : A -> B
+                                   x' : A
+                                   xs' : list A
+                                   x : A
+                                   HI : En x xs' -> En (f x) (map f xs')
+                                   ============================
+                                   En x (x'::xs') -> 
+                                   En (f x) (map f (x'::xs')) *)
+    simpl.                      (* x' = x \/ En x xs' -> 
+                                   f x' = f x \/ En (f x) (map f xs') *)
+    intros [H | H].
+    +                           (* A : Type
+                                   B : Type
+                                   f : A -> B
+                                   x' : A
+                                   xs' : list A
+                                   x : A
+                                   HI : En x xs' -> En (f x) (map f xs')
+                                   H : x' = x
+                                   ============================
+                                   f x' = f x \/ En (f x) (map f xs') *)
+      rewrite H.                (* f x = f x \/ En (f x) (map f xs') *)
+      left.                     (* f x = f x *)
+      reflexivity.
+    +                           (* A : Type
+                                   B : Type
+                                   f : A -> B
+                                   x' : A
+                                   xs' : list A
+                                   x : A
+                                   HI : En x xs' -> En (f x) (map f xs')
+                                   H : En x xs'
+                                   ============================
+                                   f x' = f x \/ En (f x) (map f xs') *)
+      right.                    (* En (f x) (map f xs') *)
+      apply HI.                 (* En x xs' *)
+      apply H.
+Qed.
+
+(* ---------------------------------------------------------------------
+   Ejercicio 3.1. Demostrar que
+      forall (A B : Type) (f : A -> B) (xs : list A) (y : B),
+        En y (map f xs) <->
+        exists x, f x = y /\ En x xs.
+   ------------------------------------------------------------------ *)
+
+Lemma En_map_iff: forall (A B : Type) (f : A -> B) (xs : list A) (y : B),
+    En y (map f xs) <->
+    exists x, f x = y /\ En x xs.
+Proof.
+  intros A B f xs y.                  (* A : Type
+                                         B : Type
+                                         f : A -> B
+                                         xs : list A
+                                         y : B
+                                         ============================
+                                         En y (map f xs) <-> 
+                                         (exists x : A, f x = y /\ En x xs) *)
+  induction xs as [|x xs' HI]. 
+  -                                   (* A : Type
+                                         B : Type
+                                         f : A -> B
+                                         y : B
+                                         ============================
+                                         En y (map f [ ]) <-> 
+                                         (exists x : A, f x = y /\ En x [ ]) *)
+    simpl.                            (* En y (map f [ ]) <-> 
+                                         (exists x : A, f x = y /\ En x [ ]) *)
+    split.
+    +                                 (* A : Type
+                                         B : Type
+                                         f : A -> B
+                                         y : B
+                                         ============================
+                                         False -> 
+                                         exists x : A, f x = y /\ False *)
+      intros [].
+    +                                 (* A : Type
+                                         B : Type
+                                         f : A -> B
+                                         y : B
+                                         ============================
+                                         (exists x : A, f x = y /\ False) -> 
+                                         False *)
+      intros [a [H []]].
+  -                                   (* A : Type
+                                         B : Type
+                                         f : A -> B
+                                         x : A
+                                         xs' : list A
+                                         y : B
+                                         HI : En y (map f xs') <-> 
+                                              (exists x:A, f x = y /\ En x xs')
+                                         ============================
+                                         En y (map f (x :: xs')) <-> 
+                                         (exists x0 : A, 
+                                           f x0 = y /\ En x0 (x :: xs')) *)
+    simpl.                            (* f x = y \/ En y (map f xs') <->
+                                         (exists x0 : A, 
+                                           f x0 = y /\ (x = x0 \/ En x0 xs')) *)
+    split.
+    +                                 (* A : Type
+                                         B : Type
+                                         f : A -> B
+                                         x : A
+                                         xs' : list A
+                                         y : B
+                                         HI : En y (map f xs') <-> 
+                                              (exists x:A, f x = y /\ En x xs')
+                                         ============================
+                                         f x = y \/ En y (map f xs') ->
+                                         exists x0 : A, 
+                                          f x0 = y /\ (x = x0 \/ En x0 xs') *)
+      intros [H1 | H2].
+      *                               (* A : Type
+                                         B : Type
+                                         f : A -> B
+                                         x : A
+                                         xs' : list A
+                                         y : B
+                                         HI : En y (map f xs') <-> 
+                                              (exists x:A, f x = y /\ En x xs')
+                                         H1 : f x = y
+                                         ============================
+                                         exists x0 : A, 
+                                          f x0 = y /\ (x = x0 \/ En x0 xs') *)
+        exists x.                        (* f x = y /\ (x = x \/ En x xs') *)
+        split.
+        --                            (* A : Type
+                                         B : Type
+                                         f : A -> B
+                                         x : A
+                                         xs' : list A
+                                         y : B
+                                         HI : En y (map f xs') <-> 
+                                              (exists x:A, f x = y /\ En x xs')
+                                         H1 : f x = y
+                                         ============================
+                                         f x = y *)
+          apply H1.
+        --                            (* A : Type
+                                         B : Type
+                                         f : A -> B
+                                         x : A
+                                         xs' : list A
+                                         y : B
+                                         HI : En y (map f xs') <-> 
+                                              (exists x:A, f x = y /\ En x xs')
+                                         H1 : f x = y
+                                         ============================
+                                         x = x \/ En x xs' *)
+          left.                       (* x = x *)
+          reflexivity.
+      *                               (* A : Type
+                                         B : Type
+                                         f : A -> B
+                                         x : A
+                                         xs' : list A
+                                         y : B
+                                         HI : En y (map f xs') <-> 
+                                              (exists x:A, f x = y /\ En x xs')
+                                         H2 : En y (map f xs')
+                                         ============================
+                                         exists x0 : A, 
+                                          f x0 = y /\ (x = x0 \/ En x0 xs') *)
+        apply HI in H2.               (* A : Type
+                                         B : Type
+                                         f : A -> B
+                                         x : A
+                                         xs' : list A
+                                         y : B
+                                         HI : En y (map f xs') <-> 
+                                              (exists x:A, f x = y /\ En x xs')
+                                         H2 : exists x : A, f x = y /\ En x xs'
+                                         ============================
+                                         exists x0 : A, 
+                                          f x0 = y /\ (x = x0 \/ En x0 xs') *)
+        destruct H2 as [a [Ha1 Ha2]]. (* A : Type
+                                         B : Type
+                                         f : A -> B
+                                         x : A
+                                         xs' : list A
+                                         y : B
+                                         HI : En y (map f xs') <-> 
+                                              (exists x:A, f x = y /\ En x xs')
+                                         a : A
+                                         Ha1 : f a = y
+                                         Ha2 : En a xs'
+                                         ============================
+                                         exists x0 : A, 
+                                          f x0 = y /\ (x = x0 \/ En x0 xs') *)
+        
+        exists a.                          (* En y (map f xs) <-> 
+                                         (exists x : A, f x = y /\ En x xs) *)
+        split.
+        --                            (* A : Type
+                                         B : Type
+                                         f : A -> B
+                                         x : A
+                                         xs' : list A
+                                         y : B
+                                         HI : En y (map f xs') <-> 
+                                              (exists x:A, f x = y /\ En x xs')
+                                         a : A
+                                         Ha1 : f a = y
+                                         Ha2 : En a xs'
+                                         ============================
+                                         f a = y *)
+          apply Ha1.
+        --                            (* A : Type
+                                         B : Type
+                                         f : A -> B
+                                         x : A
+                                         xs' : list A
+                                         y : B
+                                         HI : En y (map f xs') <-> 
+                                              (exists x:A, f x = y /\ En x xs')
+                                         a : A
+                                         Ha1 : f a = y
+                                         Ha2 : En a xs'
+                                         ============================
+                                         x = a \/ En a xs' *)
+          right.                      (* En a xs' *)
+          apply Ha2.
+    +                                 (* A : Type
+                                         B : Type
+                                         f : A -> B
+                                         x : A
+                                         xs' : list A
+                                         y : B
+                                         HI : En y (map f xs') <-> 
+                                              (exists x : A, 
+                                                f x = y /\ En x xs')
+                                         ============================
+                                         (exists x0 : A, 
+                                          f x0 = y /\ (x = x0 \/ En x0 xs')) ->
+                                         f x = y \/ En y (map f xs') *)
+      intros [a [Ha1 [Ha2 | Ha3]]].
+      *                               (* A : Type
+                                         B : Type
+                                         f : A -> B
+                                         x : A
+                                         xs' : list A
+                                         y : B
+                                         HI : En y (map f xs') <-> 
+                                              (exists x:A, f x = y /\ En x xs')
+                                         a : A
+                                         Ha1 : f a = y
+                                         Ha2 : x = a
+                                         ============================
+                                         f x = y \/ En y (map f xs') *)
+        left.                         (* f x = y *)
+        rewrite Ha2.                  (* f a = y *)
+        rewrite Ha1.                  (* y = y *)
+        reflexivity.
+      *                               (* A : Type
+                                         B : Type
+                                         f : A -> B
+                                         x : A
+                                         xs' : list A
+                                         y : B
+                                         HI : En y (map f xs') <-> 
+                                              (exists x:A, f x = y /\ En x xs')
+                                         a : A
+                                         Ha1 : f a = y
+                                         Ha3 : En a xs'
+                                         ============================
+                                         f x = y \/ En y (map f xs') *)
+        right.                        (* En y (map f xs') *)
+        apply HI.                     (* exists x0 : A, f x0 = y /\ En x0 xs' *)
+        exists a.                          (* f a = y /\ En a xs' *)
+        split.
+        --                            (* A : Type
+                                         B : Type
+                                         f : A -> B
+                                         x : A
+                                         xs' : list A
+                                         y : B
+                                         HI : En y (map f xs') <-> 
+                                              (exists x:A, f x = y /\ En x xs')
+                                         a : A
+                                         Ha1 : f a = y
+                                         Ha3 : En a xs'
+                                         ============================
+                                         f a = y *)
+          apply Ha1.
+        --                            (* A : Type
+                                         B : Type
+                                         f : A -> B
+                                         x : A
+                                         xs' : list A
+                                         y : B
+                                         HI : En y (map f xs') <-> 
+                                              (exists x:A, f x = y /\ En x xs')
+                                         a : A
+                                         Ha1 : f a = y
+                                         Ha3 : En a xs'
+                                         ============================
+                                         En a xs' *)
+          apply Ha3.
+Qed.
 
 (** **** Exercise: 2 stars (In_app_iff)  *)
 Lemma In_app_iff : forall A l l' (a:A),
-  In a (l++l') <-> In a l \/ In a l'.
+  En a (l++l') <-> En a l \/ En a l'.
 Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
@@ -1484,9 +1971,9 @@ Proof.
 Fixpoint All {T : Type} (P : T -> Prop) (l : list T) : Prop
   (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
 
-Lemma All_In :
+Lemma All_En :
   forall T (P : T -> Prop) (l : list T),
-    (forall x, In x l -> P x) <->
+    (forall x, En x l -> P x) <->
     All P l.
 Proof.
   (* FILL IN HERE *) Admitted.
@@ -1627,11 +2114,11 @@ Qed.
 
 Example lemma_application_ex :
   forall {n : nat} {ns : list nat},
-    In n (map (fun m => m * 0) ns) ->
+    En n (map (fun m => m * 0) ns) ->
     n = 0.
 Proof.
   intros n ns H.
-  destruct (conj_e1 _ _ (In_map_iff _ _ _ _ _) H)
+  destruct (conj_e1 _ _ (En_map_iff _ _ _ _ _) H)
            as [m [Hm _]].
   rewrite mult_0_r in Hm. rewrite <- Hm. reflexivity.
 Qed.
@@ -2120,7 +2607,7 @@ Proof.
     ~ (exists x, ~ P x)
     forall x, P x
 
-    The [dist_not_exists] theorem above proves one side of this
+    The [paraTodo_no_existe_no] theorem above proves one side of this
     equivalence. Interestingly, the other direction cannot be proved
     in constructive logic. Your job is to show that it is implied by
     the excluded middle. *)
