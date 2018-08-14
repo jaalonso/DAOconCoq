@@ -96,6 +96,7 @@ Abort.
   hipótesis =H2=.
 + =assert (H: P)=: Incluyed la demostración de la propiedad P y continúa
   la demostración añadiendo como premisa la propiedad P con nombre H. 
++ =exists a=: Sustituye el objetivo de la forma =exists x, P(x)= por =P(a)=.
 + =destruct b=: Distingue dos casos según que b sea True o False.
 + =destruct n as [| n1]=: Distingue dos casos según que =n= sea 0 o sea =S n1=. 
 + =destruct p as [n m]=: Sustituye el par =p= por =(n,m)=.
