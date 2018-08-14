@@ -108,7 +108,9 @@ Abort.
 + =destruct H as [Hn | Hm]=: Cuando la hipótesis =H= es de la forma 
   =A \/ B=, la divide en dos casos: uno con hipótesis =HA= (afirmando la
   certeza de =A=) y otro con la hipótesis =HB= (afirmando la certeza de
-  =B=). 
+  =B=).
++ =destruct H [a Ha]=: Sustituye la hipótesis =H : exists x, P(x)= 
+  por =Ha : P(a)=.
 + =exfalso=: Sustituye el objetivo por falso. 
 + =generalize dependent x=: Mueve la variable =x= (y las que dependan de
   ella) del contexto a una hipótesis explícita en el objetivo.
@@ -126,6 +128,9 @@ Abort.
   =(forall x, A \/ B -> C)=, introduce la variable x y dos casos:
   uno con hipótesis =HA= (afirmando la certeza de =A=) y otro con la
   hipótesis =HB= (afirmando la certeza de =B=).
++ =intros x [a Ha]=: Sustituye el objetivo 
+  =forall x, (exists y P(y)) -> Q(x)= por =Q(x)= y le añade la
+  hipótesis =Ha : P(a)=.
 + =inversion=: Aplica qe los constructores son disjuntos e inyectivos. 
 + =left=: Sustituye el objetivo de la forma =A \/ B= por =A=.
 + =reflexivity=: Demuestra el objetivo si es una igualdad trivial.
