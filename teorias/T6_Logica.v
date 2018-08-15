@@ -2444,39 +2444,30 @@ Qed.
    § 4. Aplicando teoremas a argumentos 
    ================================================================== *)
 
-(** One feature of Coq that distinguishes it from many other proof
-    assistants is that it treats _proofs_ as first-class objects.
+(* ---------------------------------------------------------------------
+   Ejemplo 4.1. Evaluar la expresión
+      Check suma_conmutativa.
+   ------------------------------------------------------------------ *)
 
-    There is a great deal to be said about this, but it is not
-    necessary to understand it in detail in order to use Coq.  This
-    section gives just a taste, while a deeper exploration can be
-    found in the optional chapters [ProofObjects] and
-    [IndPrinciples]. *)
-
-(** We have seen that we can use the [Check] command to ask Coq to
-    print the type of an expression.  We can also use [Check] to ask
-    what theorem a particular identifier refers to. *)
-
-Check plus_comm.
+Check suma_conmutativa.
 (* ===> forall n m : nat, n + m = m + n *)
 
-(** Coq prints the _statement_ of the [plus_comm] theorem in the same
-    way that it prints the _type_ of any term that we ask it to
-    [Check].  Why? *)
+(* ---------------------------------------------------------------------
+   Notas.
+   1. En Coq, las demostraciones son objetos de primera clase.
+   2. Coq devuelve el tipo de suma_conmutativa como es de cualquier
+      expresión.
+   3. El identificador suma_conmutativa representa un objeto prueba de
+      (forall n m : nat, n + m = m + n).
+   4. Un término de tipo (nat -> nat -> nat) transforma dos naturales en
+      un natural.
+   5. Análogamente, un término de tipo (n = m -> n + n = m + m)
+      transforma un argumento de tipo (n = m) en otro de tipo 
+      (n + n = m + m).
+   ------------------------------------------------------------------ *)
 
-(** The reason is that the identifier [plus_comm] actually refers to a
-    _proof object_ -- a data structure that represents a logical
-    derivation establishing of the truth of the statement [forall n m
-    : nat, n + m = m + n].  The type of this object _is_ the statement
-    of the theorem that it is a proof of. *)
 
-(** Intuitively, this makes sense because the statement of a theorem
-    tells us what we can use that theorem for, just as the type of a
-    computational object tells us what we can do with that object --
-    e.g., if we have a term of type [nat -> nat -> nat], we can give
-    it two [nat]s as arguments and get a [nat] back.  Similarly, if we
-    have an object of type [n = m -> n + n = m + m] and we provide it
-    an "argument" of type [n = m], we can derive [n + n = m + m]. *)
+
 
 (** Operationally, this analogy goes even further: by applying a
     theorem, as if it were a function, to hypotheses with matching
@@ -2484,49 +2475,65 @@ Check plus_comm.
     intermediate assertions.  For example, suppose we wanted to prove
     the following result: *)
 
-Lemma plus_comm3 :
-  forall x y z, x + (y + z) = (z + y) + x.
+(* ---------------------------------------------------------------------
+   Ejemplo 4.2. Demostrar que
+      forall x y z : nat, 
+        x + (y + z) = (z + y) + x.
+   ------------------------------------------------------------------ *)
 
-(** It appears at first sight that we ought to be able to prove this
-    by rewriting with [plus_comm] twice to make the two sides match.
-    The problem, however, is that the second [rewrite] will undo the
-    effect of the first. *)
-
+(* 1º intento *)
+Lemma suma_conmutativa3a :
+  forall x y z : nat,
+    x + (y + z) = (z + y) + x.
 Proof.
-  intros x y z.
-  rewrite plus_comm.
-  rewrite plus_comm.
-  (* We are back where we started... *)
+  intros x y z.             (* x, y, z : nat
+                               ============================
+                               x + (y + z) = (z + y) + x *)
+  rewrite suma_conmutativa. (* (y + z) + x = (z + y) + x *)
+  rewrite suma_conmutativa. (* x + (y + z) = (z + y) + x *)
 Abort.
 
-(** One simple way of fixing this problem, using only tools that we
-    already know, is to use [assert] to derive a specialized version
-    of [plus_comm] that can be used to rewrite exactly where we
-    want. *)
-
-Lemma plus_comm3_take2 :
-  forall x y z, x + (y + z) = (z + y) + x.
+(* 2º intento *)
+Lemma suma_conmutativa3b :
+  forall x y z,
+    x + (y + z) = (z + y) + x.
 Proof.
-  intros x y z.
-  rewrite plus_comm.
-  assert (H : y + z = z + y).
-  { rewrite plus_comm. reflexivity. }
-  rewrite H.
+  intros x y z.               (* x, y, z : nat
+                                 ============================
+                                 x + (y + z) = z + y + x *)
+  rewrite suma_conmutativa.   (* (y + z) + x = (z + y) + x *)
+  assert (H : y + z = z + y). 
+  -                           (* x, y, z : nat
+                                 ============================
+                                 y + z = z + y *)
+    rewrite suma_conmutativa. (* z + y = z + y *)
+    reflexivity. 
+  -                           (* x, y, z : nat
+                                 H : y + z = z + y
+                                 ============================
+                                 (y + z) + x = (z + y) + x *)
+    rewrite H.                (* (z + y) + x = (z + y) + x *)
+    reflexivity.
+Qed.
+
+(* 3º intento *)
+Lemma suma_conmutativa3c:
+  forall x y z,
+    x + (y + z) = (z + y) + x.
+Proof.
+  intros x y z.                   (* x, y, z : nat
+                                     ============================
+                                     x + (y + z) = (z + y) + x *)
+  rewrite suma_conmutativa.       (* (y + z) + x = (z + y) + x *)
+  rewrite (suma_conmutativa y z). (* (z + y) + x = (z + y) + x *)
   reflexivity.
 Qed.
 
-(** A more elegant alternative is to apply [plus_comm] directly to the
-    arguments we want to instantiate it with, in much the same way as
-    we apply a polymorphic function to a type argument. *)
-
-Lemma plus_comm3_take3 :
-  forall x y z, x + (y + z) = (z + y) + x.
-Proof.
-  intros x y z.
-  rewrite plus_comm.
-  rewrite (plus_comm y z).
-  reflexivity.
-Qed.
+(* ---------------------------------------------------------------------
+   Nota. Indicación en (rewrite (suma_conmutativa y z)) de los
+   argumentos con los que se aplica, análogamente a las funciones
+   polimórficas. 
+   ------------------------------------------------------------------ *)
 
 (** You can "use theorems as functions" in this way with almost all
     tactics that take a theorem name as an argument.  Note also that
@@ -2629,7 +2636,7 @@ Example function_equality_ex2 :
   (fun x => plus x 1) = (fun x => plus 1 x).
 Proof.
   apply functional_extensionality. intros x.
-  apply plus_comm.
+  apply suma_conmutativa.
 Qed.
 
 (** Naturally, we must be careful when adding new axioms into Coq's
