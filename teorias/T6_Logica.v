@@ -1950,71 +1950,495 @@ Proof.
           apply Ha3.
 Qed.
 
-(** **** Exercise: 2 stars (In_app_iff)  *)
-Lemma In_app_iff : forall A l l' (a:A),
-  En a (l++l') <-> En a l \/ En a l'.
+(* ---------------------------------------------------------------------
+   Ejercicio 3.2. Demostrar que
+      forall A (xs ys : list A) (a : A),
+        En a (xs ++ ys) <-> En a xs \/ En a ys.
+   ------------------------------------------------------------------ *)
+
+Lemma En_conc_1: forall A (xs ys : list A) (a : A),
+  En a (xs ++ ys) -> En a xs \/ En a ys.
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  induction xs as [|x xs' HI].    
+  -                               (* A : Type
+                                     ============================
+                                     forall (ys : list A) (a : A), 
+                                      En a ([ ] ++ ys) -> En a [ ] \/ En a ys *)
+    simpl.                        (* forall (ys : list A) (a : A), 
+                                      En a ys -> False \/ En a ys *)
+    intros ys a H.                (* A : Type
+                                     ys : list A
+                                     a : A
+                                     H : En a ys
+                                     ============================
+                                     False \/ En a ys *)
+    right.                        (* En a ys *)
+    apply H.
+  -                               (* A : Type
+                                     x : A
+                                     xs' : list A
+                                     HI : forall (ys : list A) (a : A), 
+                                           En a (xs' ++ ys) -> 
+                                           En a xs' \/ En a ys
+                                     ============================
+                                     forall (ys : list A) (a : A),
+                                      En a ((x :: xs') ++ ys) -> 
+                                      En a (x :: xs') \/ En a ys *)
+    simpl.                        (* forall (ys : list A) (a : A),
+                                      x = a \/ En a (xs' ++ ys) -> 
+                                      (x = a \/ En a xs') \/ En a ys *)
+    intros ys a [H1 | H2].
+    +                             (* A : Type
+                                     x : A
+                                     xs' : list A
+                                     HI : forall (ys : list A) (a : A), 
+                                           En a (xs' ++ ys) -> 
+                                           En a xs' \/ En a ys
+                                     ys : list A
+                                     a : A
+                                     H1 : x = a
+                                     ============================
+                                     (x = a \/ En a xs') \/ En a ys *)
+      left.                       (* x = a \/ En a xs' *)
+      left.                       (* x = a *)
+      apply H1.
+    +                             (* A : Type
+                                     x : A
+                                     xs' : list A
+                                     HI : forall (ys : list A) (a : A), 
+                                           En a (xs' ++ ys) -> 
+                                           En a xs' \/ En a ys
+                                     ys : list A
+                                     a : A
+                                     H2 : En a (xs' ++ ys)
+                                     ============================
+                                     (x = a \/ En a xs') \/ En a ys *)
+      rewrite <- disy_asociativa.  (* x = a \/ (En a xs' \/ En a ys) *)
+      right.                      (* En a xs' \/ En a ys *)
+      apply HI.                   (* En a (xs' ++ ys) *)
+      apply H2.
+Qed.
 
-(** **** Exercise: 3 stars, recommended (All)  *)
-(** Recall that functions returning propositions can be seen as
-    _properties_ of their arguments. For instance, if [P] has type
-    [nat -> Prop], then [P n] states that property [P] holds of [n].
-
-    Drawing inspiration from [In], write a recursive function [All]
-    stating that some property [P] holds of all elements of a list
-    [l]. To make sure your definition is correct, prove the [All_In]
-    lemma below.  (Of course, your definition should _not_ just
-    restate the left-hand side of [All_In].) *)
-
-Fixpoint All {T : Type} (P : T -> Prop) (l : list T) : Prop
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
-
-Lemma All_En :
-  forall T (P : T -> Prop) (l : list T),
-    (forall x, En x l -> P x) <->
-    All P l.
+Lemma En_conc_2: forall A (xs ys : list A) (a : A),
+  En a xs \/ En a ys -> En a (xs ++ ys). 
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  induction xs as [|x xs' HI]. 
+  -                               (* A : Type
+                                     ============================
+                                     forall (ys : list A) (a : A), 
+                                      En a [ ] \/ En a ys -> En a ([ ] ++ ys) *)
+    simpl.                        (* forall (ys : list A) (a : A), 
+                                      False \/ En a ys -> En a ys *)
+    intros ys a [[] | H].         (* A : Type
+                                     ys : list A
+                                     a : A
+                                     H : En a ys
+                                     ============================
+                                     En a ys *)
+    apply H.
+  -                               (* A : Type
+                                     x : A
+                                     xs' : list A
+                                     HI : forall (ys : list A) (a : A), 
+                                           En a xs' \/ En a ys -> 
+                                           En a (xs' ++ ys)
+                                     ============================
+                                     forall (ys : list A) (a : A),
+                                      En a (x :: xs') \/ En a ys -> 
+                                      En a ((x :: xs') ++ ys) *)
+    simpl.                        (* forall (ys : list A) (a : A),
+                                      (x = a \/ En a xs') \/ En a ys -> 
+                                      x = a \/ En a (xs' ++ ys) *)
+    intros ys a [[H1 | H2] | H3]. 
+    +                             (* A : Type
+                                     x : A
+                                     xs' : list A
+                                     HI : forall (ys : list A) (a : A), 
+                                           En a xs' \/ En a ys -> 
+                                           En a (xs' ++ ys)
+                                     ys : list A
+                                     a : A
+                                     H1 : x = a
+                                     ============================
+                                     x = a \/ En a (xs' ++ ys) *)
+      left.                       (* x = a *)
+      apply H1.
+    +                             (* A : Type
+                                     x : A
+                                     xs' : list A
+                                     HI : forall (ys : list A) (a : A), 
+                                           En a xs' \/ En a ys -> 
+                                           En a (xs' ++ ys)
+                                     ys : list A
+                                     a : A
+                                     H2 : En a xs'
+                                     ============================
+                                     x = a \/ En a (xs' ++ ys) *)
+      right.                      (* En a (xs' ++ ys) *)
+      apply HI.                   (* En a xs' \/ En a ys *)
+      left.                       (* En a xs' *)
+      apply H2.
+    +                             (* A : Type
+                                     x : A
+                                     xs' : list A
+                                     HI : forall (ys : list A) (a : A), 
+                                           En a xs' \/ En a ys -> 
+                                           En a (xs' ++ ys)
+                                     ys : list A
+                                     a : A
+                                     H3 : En a ys
+                                     ============================
+                                     x = a \/ En a (xs' ++ ys) *)
+      right.                      (* En a (xs' ++ ys) *)
+      apply HI.                   (* En a xs' \/ En a ys *)
+      right.                      (* En a ys *)
+      apply H3.
+Qed.    
 
-(** **** Exercise: 3 stars (combine_odd_even)  *)
-(** Complete the definition of the [combine_odd_even] function below.
-    It takes as arguments two properties of numbers, [Podd] and
-    [Peven], and it should return a property [P] such that [P n] is
-    equivalent to [Podd n] when [n] is odd and equivalent to [Peven n]
-    otherwise. *)
-
-Definition combine_odd_even (Podd Peven : nat -> Prop) : nat -> Prop
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
-
-(** To test your definition, prove the following facts: *)
-
-Theorem combine_odd_even_intro :
-  forall (Podd Peven : nat -> Prop) (n : nat),
-    (oddb n = true -> Podd n) ->
-    (oddb n = false -> Peven n) ->
-    combine_odd_even Podd Peven n.
+Lemma En_conc: forall A (xs ys : list A) (a : A),
+  En a (xs ++ ys) <-> En a xs \/ En a ys.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  split.
+  -                  (* A : Type
+                        xs, ys : list A
+                                     a : A
+                                     ============================
+                                     En a (xs ++ ys) -> En a xs \/ En a ys *)
+    apply En_conc_1. 
+  -                  (* A : Type
+                                     xs, ys : list A
+                                     a : A
+                                     ============================
+                                     En a xs \/ En a ys -> En a (xs ++ ys) *)
+    apply En_conc_2.
+Qed.
 
-Theorem combine_odd_even_elim_odd :
-  forall (Podd Peven : nat -> Prop) (n : nat),
-    combine_odd_even Podd Peven n ->
-    oddb n = true ->
-    Podd n.
-Proof.
-  (* FILL IN HERE *) Admitted.
+(* ---------------------------------------------------------------------
+   Ejercicio 3.3.1. Definir la propiedad
+      Todos {T : Type} (P : T -> Prop) (xs : list T) : Prop
+   tal que (Todos P xs) se verifica si todos los elementos de xs cumplen
+   la propiedad P.
+   ------------------------------------------------------------------ *)
 
-Theorem combine_odd_even_elim_even :
-  forall (Podd Peven : nat -> Prop) (n : nat),
-    combine_odd_even Podd Peven n ->
-    oddb n = false ->
-    Peven n.
+Fixpoint Todos {T : Type} (P : T -> Prop) (xs : list T) : Prop :=
+  match xs with
+  | nil      => True
+  | x :: xs' => P x /\ Todos P xs' 
+  end.
+
+(* ---------------------------------------------------------------------
+   Ejercicio 3.3.2. Demostrar que
+      forall T (P : T -> Prop) (xs : list T),
+        (forall x, En x xs -> P x) <->
+        Todos P xs.
+   ------------------------------------------------------------------ *)
+
+Lemma Todos_En_1: 
+  forall T (P : T -> Prop) (xs : list T),
+    (forall x, En x xs -> P x) ->
+    Todos P xs.
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  induction xs as [|x' xs' HI].  
+  -                             (* T : Type
+                                   P : T -> Prop
+                                   ============================
+                                   (forall x : T, En x [ ] -> P x) -> 
+                                   Todos P [ ] *) 
+    simpl.                      (* (forall x : T, False -> P x) -> True *)
+    intros.                     (* T : Type
+                                   P : T -> Prop
+                                   H : forall x : T, False -> P x
+                                   ============================
+                                   True *)
+    apply I.
+  -                             (* T : Type
+                                   P : T -> Prop
+                                   x' : T
+                                   xs' : list T
+                                   HI : (forall x : T, En x xs' -> P x) -> 
+                                        Todos P xs'
+                                   ============================
+                                   (forall x : T, En x (x' :: xs') -> P x) -> 
+                                   Todos P (x' :: xs') *)
+    simpl.                      (* (forall x : T, x' = x \/ En x xs' -> P x) ->
+                                   P x' /\ Todos P xs' *)
+    intros H.                   (* T : Type
+                                   P : T -> Prop
+                                   x' : T
+                                   xs' : list T
+                                   HI : (forall x : T, En x xs' -> P x) -> 
+                                        Todos P xs'
+                                   H : forall x : T, x' = x \/ En x xs' -> P x
+                                   ============================
+                                   P x' /\ Todos P xs' *)
+    split.
+    +                           (* T : Type
+                                   P : T -> Prop
+                                   x' : T
+                                   xs' : list T
+                                   HI : (forall x : T, En x xs' -> P x) -> 
+                                        Todos P xs'
+                                   H : forall x : T, x' = x \/ En x xs' -> P x
+                                   ============================
+                                   P x' *)
+      apply H.                  (* x' = x' \/ En x' xs' *)
+      left.                     (* x' = x' *)
+      reflexivity.
+    +                           (* T : Type
+                                   P : T -> Prop
+                                   x' : T
+                                   xs' : list T
+                                   HI : (forall x : T, En x xs' -> P x) -> 
+                                        Todos P xs'
+                                   H : forall x : T, x' = x \/ En x xs' -> P x
+                                   ============================
+                                   Todos P xs' *)
+      apply HI.                 (* forall x : T, En x xs' -> P x *)
+      intros x H1.              (* T : Type
+                                   P : T -> Prop
+                                   x' : T
+                                   xs' : list T
+                                   HI : (forall x : T, En x xs' -> P x) -> 
+                                        Todos P xs'
+                                   H : forall x : T, x' = x \/ En x xs' -> P x
+                                   x : T
+                                   H1 : En x xs'
+                                   ============================
+                                   P x *)
+      apply H.                  (* x' = x \/ En x xs' *)
+      right.                    (* En x xs' *)
+      apply H1.
+Qed.
+
+Lemma Todos_En_2: 
+  forall T (P : T -> Prop) (xs : list T),
+    Todos P xs ->
+    (forall x, En x xs -> P x).
+Proof.
+  induction xs as [|x' xs' HI]. 
+  -                             (* T : Type
+                                   P : T -> Prop
+                                   ============================
+                                   Todos P [ ] -> 
+                                   forall x : T, En x [ ] -> P x *)
+    simpl.                      (* True -> forall x : T, False -> P x *)
+    intros [].                  (* T : Type
+                                   P : T -> Prop
+                                   ============================
+                                   forall x : T, False -> P x *)
+    intros x [].
+  -                             (* T : Type
+                                   P : T -> Prop
+                                   x' : T
+                                   xs' : list T
+                                   HI : Todos P xs' -> 
+                                        forall x : T, En x xs' -> P x
+                                   ============================
+                                   Todos P (x' :: xs') -> 
+                                   forall x : T, En x (x' :: xs') -> P x *)
+    simpl.                      (* P x' /\ Todos P xs' -> 
+                                   forall x : T, x' = x \/ En x xs' -> P x *)
+    intros [H1 H2] x [H3 | H4]. 
+    +                           (* T : Type
+                                   P : T -> Prop
+                                   x' : T
+                                   xs' : list T
+                                   HI : Todos P xs' -> 
+                                        forall x : T, En x xs' -> P x
+                                   H1 : P x'
+                                   H2 : Todos P xs'
+                                   x : T
+                                   H3 : x' = x
+                                   ============================
+                                   P x *)
+      rewrite <- H3.             (* P x' *)
+      apply H1.
+    +                           (* T : Type
+                                   P : T -> Prop
+                                   x' : T
+                                   xs' : list T
+                                   HI : Todos P xs' -> 
+                                        forall x : T, En x xs' -> P x
+                                   H1 : P x'
+                                   H2 : Todos P xs'
+                                   x : T
+                                   H4 : En x xs'
+                                   ============================
+                                   P x *)
+      apply HI.
+      *                         (* T : Type
+                                   P : T -> Prop
+                                   x' : T
+                                   xs' : list T
+                                   HI : Todos P xs' -> 
+                                        forall x : T, En x xs' -> P x
+                                   H1 : P x'
+                                   H2 : Todos P xs'
+                                   x : T
+                                   H4 : En x xs'
+                                   ============================
+                                   Todos P xs' *)
+        apply H2.
+      *                         (* T : Type
+                                   P : T -> Prop
+                                   x' : T
+                                   xs' : list T
+                                   HI : Todos P xs' -> 
+                                        forall x : T, En x xs' -> P x
+                                   H1 : P x'
+                                   H2 : Todos P xs'
+                                   x : T
+                                   H4 : En x xs'
+                                   ============================
+                                   En x xs' *)
+        apply H4.
+Qed.
+
+Lemma Todos_En: 
+  forall T (P : T -> Prop) (xs : list T),
+    (forall x, En x xs -> P x) <->
+    Todos P xs.
+Proof.
+  split.
+  -                   (* T : Type
+                         P : T -> Prop
+                         xs : list T
+                         ============================
+                         (forall x : T, En x xs -> P x) -> Todos P xs *)
+    apply Todos_En_1. 
+  -                   (* T : Type
+                         P : T -> Prop
+                         xs : list T
+                         ============================
+                         Todos P xs -> forall x : T, En x xs -> P x *)
+    apply Todos_En_2.
+Qed.
+
+(* ---------------------------------------------------------------------
+   Ejercicio 3.4.1. Definir la propiedad
+      combina_par_impar (Pimpar Ppar : nat -> Prop) : nat -> Prop
+   tal que (combina_par_impar Pimpar Ppar) es una función que asigna a n
+   (Pimpar n) si n es impar y (Ppar n) si n es par.
+   ------------------------------------------------------------------ *)
+
+Definition combina_par_impar (Pimpar Ppar : nat -> Prop) : nat -> Prop :=
+  fun n => (esImpar n = true -> Pimpar n) /\
+        (esImpar n = false -> Ppar n).
+
+(* ---------------------------------------------------------------------
+   Ejercicio 3.4.2. Demostrar que
+      forall (Pimpar Ppar : nat -> Prop) (n : nat),
+        (esImpar n = true -> Pimpar n) ->
+        (esImpar n = false -> Ppar n) ->
+        combina_par_impar Pimpar Ppar n.
+   ------------------------------------------------------------------ *)
+
+Theorem combina_par_impar_intro :
+  forall (Pimpar Ppar : nat -> Prop) (n : nat),
+    (esImpar n = true -> Pimpar n) ->
+    (esImpar n = false -> Ppar n) ->
+    combina_par_impar Pimpar Ppar n.
+Proof.
+  intros Pimpar Par n H1 H2. (* Pimpar, Par : nat -> Prop
+                                n : nat
+                                H1 : esImpar n = true -> Pimpar n
+                                H2 : esImpar n = false -> Par n
+                                ============================
+                                combina_par_impar Pimpar Par n *)
+  unfold combina_par_impar.  (* (esImpar n = true -> Pimpar n) /\ 
+                                (esImpar n = false -> Par n) *)
+  split.
+  -                          (* Pimpar, Par : nat -> Prop
+                                n : nat
+                                H1 : esImpar n = true -> Pimpar n
+                                H2 : esImpar n = false -> Par n
+                                ============================
+                                esImpar n = true -> Pimpar n *)
+    apply H1.
+  -                          (* Pimpar, Par : nat -> Prop
+                                n : nat
+                                H1 : esImpar n = true -> Pimpar n
+                                H2 : esImpar n = false -> Par n
+                                ============================
+                                esImpar n = false -> Par n *)
+    apply H2.
+Qed.
+
+(* ---------------------------------------------------------------------
+   Ejercicio 3.4.3. Demostrar que
+      forall (Pimpar Ppar : nat -> Prop) (n : nat),
+        combina_par_impar Pimpar Ppar n ->
+        esImpar n = true ->
+        Pimpar n.
+   ------------------------------------------------------------------ *)
+
+Theorem combina_par_impar_elim_impar:
+  forall (Pimpar Ppar : nat -> Prop) (n : nat),
+    combina_par_impar Pimpar Ppar n ->
+    esImpar n = true ->
+    Pimpar n.
+Proof.
+  intros Pimpar Ppar n H1 H2.     (* Pimpar, Ppar : nat -> Prop
+                                     n : nat
+                                     H1 : combina_par_impar Pimpar Ppar n
+                                     H2 : esImpar n = true
+                                     ============================
+                                    Pimpar n *)
+  unfold combina_par_impar in H1. (* Pimpar, Ppar : nat -> Prop
+                                     n : nat
+                                     H1 : (esImpar n = true -> Pimpar n) /\ 
+                                          (esImpar n = false -> Ppar n)
+                                     H2 : esImpar n = true
+                                     ============================
+                                     Pimpar n *)
+  destruct H1 as [H3 H4].         (* Pimpar, Ppar : nat -> Prop
+                                     n : nat
+                                     H3 : esImpar n = true -> Pimpar n
+                                     H4 : esImpar n = false -> Ppar n
+                                     H2 : esImpar n = true
+                                     ============================
+                                     Pimpar n *)
+  apply H3.                       (* esImpar n = true *)
+  apply H2.
+Qed.
+
+(* ---------------------------------------------------------------------
+   Ejercicio 3.4.4. Demostrar que
+      forall (Pimpar Ppar : nat -> Prop) (n : nat),
+        combina_par_impar Pimpar Ppar n ->
+        esImpar n = false ->
+        Ppar n.
+   ------------------------------------------------------------------ *)
+
+Theorem combina_par_impar_elim_par:
+  forall (Pimpar Ppar : nat -> Prop) (n : nat),
+    combina_par_impar Pimpar Ppar n ->
+    esImpar n = false ->
+    Ppar n.
+Proof.
+  intros Pimpar Ppar n H1 H2.     (* Pimpar, Ppar : nat -> Prop
+                                     n : nat
+                                     H1 : combina_par_impar Pimpar Ppar n
+                                     H2 : esImpar n = false
+                                     ============================
+                                     Ppar n *)
+  unfold combina_par_impar in H1. (* Pimpar, Ppar : nat -> Prop
+                                     n : nat
+                                     H1 : (esImpar n = true -> Pimpar n) /\ 
+                                          (esImpar n = false -> Ppar n)
+                                     H2 : esImpar n = false
+                                     ============================
+                                     Ppar n *)
+  destruct H1 as [H3 H4].         (* Pimpar, Ppar : nat -> Prop
+                                     n : nat
+                                     H3 : esImpar n = true -> Pimpar n
+                                     H4 : esImpar n = false -> Ppar n
+                                     H2 : esImpar n = false
+                                     ============================
+                                     Ppar n *)
+  apply H4.                       (* esImpar n = false *)
+  apply H2.
+Qed.
 
 (* =====================================================================
    § 4. Aplicando teoremas a argumentos 
@@ -2458,7 +2882,7 @@ Fixpoint forallb {X : Type} (test : X -> bool) (l : list X) : bool :=
     property of the above exercise. *)
 
 Theorem forallb_true_iff : forall X test (l : list X),
-   forallb test l = true <-> All (fun x => test x = true) l.
+   forallb test l = true <-> Todos (fun x => test x = true) l.
 Proof.
   (* FILL IN HERE *) Admitted.
 
