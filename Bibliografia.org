@@ -1,5 +1,10 @@
 #+TITLE: Bibliografía
 
+* Tutoriales
+
++ [[https://www.lri.fr/~paulin/LASER/course-notes.pdf][Introduction to the Coq proof-assistant for ractical software verification]]. 
+  ~ Christine Paulin-Mohring
+
 * Libros
 
 + [[https://softwarefoundations.cis.upenn.edu/current/lf-current][Software foundations (Vol. 1: Logical foundations)]] de Benjamin Peirce
@@ -26,6 +31,13 @@
 *** École Polytechnique
 + [[http://www.enseignement.polytechnique.fr/informatique/INF551/][Computational logic: artificial intelligence in mathematical reasoning]]. 
   ~ [[http://www.lix.polytechnique.fr/Labo/Stephane.Graham-Lengrand/][Stéphane Graham-Lengrand]] y Roberto Blanco
+
+*** Paris Sud
+
++ [[https://www.lri.fr/~paulin/LASER][Introduction to the Coq proof-assistant for ractical software verification]]. 
+  ~ Christine Paulin-Mohring
++ [[https://www.lri.fr/~paulin/PreuvesInteractives/][Preuves interactives et applications (2016-17)]]. ~ Burkhart Wolff y
+  Christine Paulin-Mohring  
 
 * Resúmenes de Coq
 
