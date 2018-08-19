@@ -45,4 +45,6 @@ Se complementa con el curso [[http://www.seas.upenn.edu/~cis500/current/index.ht
 + [[https://courses.ps.uni-saarland.de/icl_18/][Introduction to computational logic]] (Curso de Smolka)
 + [[http://www-verimag.imag.fr/~corbinea/mmode.fr.html][C-zar: le langage de preuves déclaratif pour Coq]].
 + [[http://flint.cs.yale.edu/cs430][Formal Semantics]] (Curso de Yale).
-+ [[http://adam.chlipala.net/cpdt/][Certified programming with dependent types]]. ~ A. Chlipala
++ [[http://adam.chlipala.net/cpdt/][Certified programming with dependent
+  types]]. ~ A. Chlipala
+
