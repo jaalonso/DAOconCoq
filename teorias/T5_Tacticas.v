@@ -2230,9 +2230,7 @@ Qed.
 Fixpoint todos {X : Type} (p : X -> bool) (xs : list X) : bool :=
   match xs with
   | nil    => true
-  | x::xs' => if p x
-             then todos p xs'
-             else false
+  | x::xs' => conjuncion (p x) (todos p xs')
   end.
 
 Compute (todos esImpar [1;3;5;7;9]).
@@ -2258,9 +2256,7 @@ Compute (todos (iguales_nat 5) []).
 Fixpoint existe {X : Type} (p : X -> bool) (xs : list X) : bool :=
   match xs with
   | nil    => false
-  | x::xs' => if p x
-             then true
-             else existe p xs'
+  | x::xs' => disyuncion (p x) (existe p xs')
   end.
 
 Compute (existe (iguales_nat 5) [0;2;3;6]).
@@ -2326,16 +2322,15 @@ Proof.
       unfold existe2.          (* existe p (x :: xs') =
                                   negacion (todos (fun y : X => negacion (p y))
                                                   (x :: xs')) *)
-      simpl.                   (* (if p x then true else existe p xs') =
-                                  negacion
-                                   (if negacion (p x) 
-                                    then todos (fun y : X => negacion (p y)) xs'
-                                    else false) *)
-      rewrite Hx.              (* true =
-                                  negacion
-                                   (if negacion true 
-                                    then todos (fun y : X => negacion (p y)) xs'
-                                    else false) *)
+      simpl.                   (* p x || existe p xs' =
+                                  negacion 
+                                   (negacion 
+                                    (p x) && 
+                                    todos (fun y : X => negacion (p y)) xs') *)
+      rewrite Hx.              (* true || existe p xs' =
+                                  negacion 
+                                   (negacion true && 
+                                    todos (fun y : X => negacion (p y)) xs')*)
       simpl.                   (* true = true *)
       reflexivity.
     +                          (* X : Type
@@ -2350,16 +2345,14 @@ Proof.
                                   negacion 
                                    (todos (fun y : X => negacion (p y)) 
                                           (x :: xs')) *)
-      simpl.                   (* (if p x then true else existe p xs') =
-                                  negacion
-                                   (if negacion (p x) 
-                                    then todos (fun y : X => negacion (p y)) xs'
-                                    else false) *)
-      rewrite Hx.              (* existe p xs' =
-                                  negacion
-                                   (if negacion false 
-                                    then todos (fun y : X => negacion (p y)) xs'
-                                    else false) *)
+      simpl.                   (* p x || existe p xs' =
+                                  negacion 
+                                   (negacion (p x) && 
+                                    todos (fun y : X => negacion (p y)) xs') *)
+      rewrite Hx.              (* false || existe p xs' =
+                                  negacion (
+                                   negacion false && 
+                                   todos (fun y : X => negacion (p y)) xs') *)
       simpl.                   (* existe p xs' =
                                   negacion 
                                    (todos (fun y : X => negacion (p y)) xs') *)
