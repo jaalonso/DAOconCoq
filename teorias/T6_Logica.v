@@ -722,11 +722,6 @@ Notation "~ x" := (not x) : type_scope.
 
 End DefNot.
 
-(** Since [False] is a contradictory proposition, the principle of
-    explosion also applies to it. If we get [False] into the proof
-    context, we can use [destruct] (or [inversion]) on it to complete
-    any goal: *)
-
 (* ---------------------------------------------------------------------
    Ejemplo 2.3.3. Demostrar que
       forall (P:Prop),
@@ -809,7 +804,6 @@ Qed.
    Ejemplo 2.3.5. Demostrar que
       ~ False
    ------------------------------------------------------------------ *)
-
 
 Theorem not_False :
   ~ False.
@@ -2535,545 +2529,1315 @@ Qed.
    polimórficas. 
    ------------------------------------------------------------------ *)
 
-(** You can "use theorems as functions" in this way with almost all
-    tactics that take a theorem name as an argument.  Note also that
-    theorem application uses the same inference mechanisms as function
-    application; thus, it is possible, for example, to supply
-    wildcards as arguments to be inferred, or to declare some
-    hypotheses to a theorem as implicit by default.  These features
-    are illustrated in the proof below. *)
+(* ---------------------------------------------------------------------
+   Ejemplo 4.3. Demostrar que
+     forall {n : nat} {ns : list nat},
+       En n (map (fun m => m * 0) ns) ->
+       n = 0.
+   ------------------------------------------------------------------ *)
 
-Example lemma_application_ex :
+(* Lema auxiliar *)
+Lemma producto_n_0:
+  forall n : nat, n * 0 = 0.
+Proof.
+  induction n as [|n' HI]. 
+  -                        (* 
+                              ============================
+                              0 * 0 = 0 *)
+    reflexivity. 
+  -                        (* n' : nat
+                              HI : n' * 0 = 0
+                              ============================
+                              S n' * 0 = 0 *)
+    simpl.                 (* n' * 0 = 0 *)
+    apply HI.
+Qed.
+
+(* 1ª demostración *)
+Example ej_aplicacion_de_lema_1:
   forall {n : nat} {ns : list nat},
     En n (map (fun m => m * 0) ns) ->
     n = 0.
 Proof.
-  intros n ns H.
-  destruct (conj_e1 _ _ (En_map_iff _ _ _ _ _) H)
-           as [m [Hm _]].
-  rewrite mult_0_r in Hm. rewrite <- Hm. reflexivity.
+  intros n ns H.              (* n : nat
+                                 ns : list nat
+                                 H : En n (map (fun m : nat => m * 0) ns)
+                                 ============================
+                                 n = 0 *)
+  rewrite En_map_iff in H.    (* n : nat
+                                 ns : list nat
+                                 H : exists x : nat, x * 0 = n /\ En x ns
+                                 ============================
+                                 n = 0 *)
+  destruct H as [m [Hm _]].   (* n : nat
+                                 ns : list nat
+                                 m : nat
+                                 Hm : m * 0 = n
+                                 ============================
+                                 n = 0 *)
+  rewrite producto_n_0 in Hm. (* n : nat
+                                 ns : list nat
+                                 m : nat
+                                 Hm : 0 = n
+                                 ============================
+                                 n = 0 *)
+  symmetry.                   (* 0 = n *)
+  apply Hm.
 Qed.
 
-(** We will see many more examples of the idioms from this section in
-    later chapters. *)
+(* 2ª demostración *)
+Example ej_aplicacion_de_lema:
+  forall {n : nat} {ns : list nat},
+    En n (map (fun m => m * 0) ns) ->
+    n = 0.
+Proof.
+  intros n ns H.                    (* n : nat
+                                       ns : list nat
+                                       H : En n (map (fun m : nat => m * 0) ns)
+                                       ============================
+                                       n = 0 *)
+  destruct (conj_e1 _ _
+             (En_map_iff _ _ _ _ _) 
+             H)
+           as [m [Hm _]].           (* n : nat
+                                       ns : list nat
+                                       H : En n (map (fun m : nat => m * 0) ns)
+                                       m : nat
+                                       Hm : m * 0 = n
+                                       ============================
+                                       n = 0 *)
+  rewrite producto_n_0 in Hm.       (* n : nat
+                                       ns : list nat
+                                       H : En n (map (fun m : nat => m * 0) ns)
+                                       m : nat
+                                       Hm : 0 = n
+                                       ============================
+                                       n = 0 *)
+  symmetry.                         (* 0 = n *)
+  apply Hm.
+Qed.
+
+(* ---------------------------------------------------------------------
+   Nota. Aplicación de teoremas a argumentos con
+      (conj_e1 _ _  (En_map_iff _ _ _ _ _) H)
+   ------------------------------------------------------------------ *)
 
 (* =====================================================================
    § 5. Coq vs. teoría de conjuntos 
    ================================================================== *)
 
-(** Coq's logical core, the _Calculus of Inductive Constructions_,
-    differs in some important ways from other formal systems that are
-    used by mathematicians for writing down precise and rigorous
-    proofs.  For example, in the most popular foundation for
-    mainstream paper-and-pencil mathematics, Zermelo-Fraenkel Set
-    Theory (ZFC), a mathematical object can potentially be a member of
-    many different sets; a term in Coq's logic, on the other hand, is
-    a member of at most one type.  This difference often leads to
-    slightly different ways of capturing informal mathematical
-    concepts, but these are, by and large, quite natural and easy to
-    work with.  For example, instead of saying that a natural number
-    [n] belongs to the set of even numbers, we would say in Coq that
-    [ev n] holds, where [ev : nat -> Prop] is a property describing
-    even numbers.
-
-    However, there are some cases where translating standard
-    mathematical reasoning into Coq can be either cumbersome or
-    sometimes even impossible, unless we enrich the core logic with
-    additional axioms.  We conclude this chapter with a brief
-    discussion of some of the most significant differences between the
-    two worlds. *)
+(* ---------------------------------------------------------------------
+   Notas.
+   1. En lugar de decir que un elemento pertenece a un conjunto se puede
+      decir que verifica la propiedad que define al conjunto.
+   ------------------------------------------------------------------ *)
 
 (* =====================================================================
    §§ 5.1. Extensionalidad funcional
    ================================================================== *)
 
-(** The equality assertions that we have seen so far mostly have
-    concerned elements of inductive types ([nat], [bool], etc.).  But
-    since Coq's equality operator is polymorphic, these are not the
-    only possibilities -- in particular, we can write propositions
-    claiming that two _functions_ are equal to each other: *)
+(* ---------------------------------------------------------------------
+   Ejemplo 5.1.1. Demostrar que
+      plus 3 = plus (pred 4).
+   ------------------------------------------------------------------ *)
 
-Example function_equality_ex1 : plus 3 = plus (pred 4).
-Proof. reflexivity. Qed.
-
-(** In common mathematical practice, two functions [f] and [g] are
-    considered equal if they produce the same outputs:
-
-    (forall x, f x = g x) -> f = g
-
-    This is known as the principle of _functional extensionality_. *)
-
-(** Informally speaking, an "extensional property" is one that
-    pertains to an object's observable behavior.  Thus, functional
-    extensionality simply means that a function's identity is
-    completely determined by what we can observe from it -- i.e., in
-    Coq terms, the results we obtain after applying it. *)
-
-(** Functional extensionality is not part of Coq's basic axioms.  This
-    means that some "reasonable" propositions are not provable. *)
-
-Example function_equality_ex2 :
-  (fun x => plus x 1) = (fun x => plus 1 x).
+Example igualdad_de_funciones_ej1:
+  suma 3 = suma (pred 4).
 Proof.
-   (* Stuck *)
-Abort.
+  reflexivity.
+Qed.
 
-(** However, we can add functional extensionality to Coq's core logic
-    using the [Axiom] command. *)
+(* ---------------------------------------------------------------------
+   Ejemplo 5.1.2. Definir el axioma de extensionalidad funcional que
+   afirma que dos funciones son giuales cuando tienen los mismos
+   valores. 
+   ------------------------------------------------------------------ *)
 
-Axiom functional_extensionality : forall {X Y: Type}
+Axiom extensionalidad_funcional : forall {X Y: Type}
                                     {f g : X -> Y},
   (forall (x:X), f x = g x) -> f = g.
 
-(** Using [Axiom] has the same effect as stating a theorem and
-    skipping its proof using [Admitted], but it alerts the reader that
-    this isn't just something we're going to come back and fill in
-    later! *)
+(* ---------------------------------------------------------------------
+   Ejemplo 5.1.3. Demostrar que
+      (fun x => suma x 1) = (fun x => suma 1 x).
+   ------------------------------------------------------------------ *)
 
-(** We can now invoke functional extensionality in proofs: *)
-
-Example function_equality_ex2 :
-  (fun x => plus x 1) = (fun x => plus 1 x).
+Example igualdad_de_funciones_ej2 :
+  (fun x => suma x 1) = (fun x => suma 1 x).
 Proof.
-  apply functional_extensionality. intros x.
+  apply extensionalidad_funcional. (* 
+                                      ============================
+                                      forall x : nat, suma x 1 = suma 1 x *)
+  intros x.                        (* x : nat
+                                      ============================
+                                      suma x 1 = suma 1 x *)
   apply suma_conmutativa.
 Qed.
 
-(** Naturally, we must be careful when adding new axioms into Coq's
-    logic, as they may render it _inconsistent_ -- that is, they may
-    make it possible to prove every proposition, including [False]!
+(* ---------------------------------------------------------------------
+   Notas.
+   1. No se puede demostrar sin el axioma.
+   2. Hay que ser cuidadoso en la definición de axiomas, porque se
+      pueden introducir inconsistencias. 
+   ------------------------------------------------------------------ *)
 
-    Unfortunately, there is no simple way of telling whether an axiom
-    is safe to add: hard work is generally required to establish the
-    consistency of any particular combination of axioms.
+(* ---------------------------------------------------------------------
+   Ejemplo 5.1.4. Calcular los axiomas usados en la prueba de 
+      igualdad_de_funciones_ej2
+   ------------------------------------------------------------------ *)
 
-    Fortunately, it is known that adding functional extensionality, in
-    particular, _is_ consistent. *)
-
-(** To check whether a particular proof relies on any additional
-    axioms, use the [Print Assumptions] command.  *)
-
-Print Assumptions function_equality_ex2.
+Print Assumptions igualdad_de_funciones_ej2.
 (* ===>
      Axioms:
-     functional_extensionality :
+     extensionalidad_funcional :
          forall (X Y : Type) (f g : X -> Y),
                 (forall x : X, f x = g x) -> f = g *)
 
-(** **** Exercise: 4 stars (tr_rev_correct)  *)
-(** One problem with the definition of the list-reversing function
-    [rev] that we have is that it performs a call to [app] on each
-    step; running [app] takes time asymptotically linear in the size
-    of the list, which means that [rev] has quadratic running time.
-    We can improve this with the following definition: *)
+(* ---------------------------------------------------------------------
+   Ejercicio 5.1.1. Se considera la siguiente definición iterativa de la
+   función inversa
+      Fixpoint inversaIaux {X} (xs ys : list X) : list X :=
+        match xs with
+        | []       => ys
+        | x :: xs' => inversaIaux xs' (x :: ys)
+        end.
+      
+      Definition inversaI {X} (xs : list X) : list X :=
+        inversaIaux xs [].
 
-Fixpoint rev_append {X} (l1 l2 : list X) : list X :=
-  match l1 with
-  | [] => l2
-  | x :: l1' => rev_append l1' (x :: l2)
+   Demostrar que 
+      forall X : Type, 
+        @inversaI X = @inversa X.
+   ------------------------------------------------------------------ *)
+
+Fixpoint inversaIaux {X} (xs ys : list X) : list X :=
+  match xs with
+  | []       => ys
+  | x :: xs' => inversaIaux xs' (x :: ys)
   end.
 
-Definition tr_rev {X} (l : list X) : list X :=
-  rev_append l [].
+Definition inversaI {X} (xs : list X) : list X :=
+  inversaIaux xs [].
 
-(** This version is said to be _tail-recursive_, because the recursive
-    call to the function is the last operation that needs to be
-    performed (i.e., we don't have to execute [++] after the recursive
-    call); a decent compiler will generate very efficient code in this
-    case.  Prove that the two definitions are indeed equivalent. *)
+Lemma inversaI_correcta_aux:
+  forall (X : Type) (xs ys : list X),
+    inversaIaux xs ys = inversa xs ++ ys.
+Proof.
+  intros X xs.                  (* X : Type
+                                   xs : list X
+                                   ============================
+                                   forall ys : list X, 
+                                    inversaIaux xs ys = inversa xs ++ ys *)
+  induction xs as [|x xs' HI].  
+  -                             (* X : Type
+                                   ============================
+                                   forall ys : list X, 
+                                    inversaIaux [ ] ys = inversa [ ] ++ ys *)
+    simpl.                      (* forall ys : list X, ys = ys *)
+    intros.                     (* X : Type
+                                   ys : list X
+                                   ============================
+                                   ys = ys *)
+    reflexivity.
+  -                             (* X : Type
+                                   x : X
+                                   xs' : list X
+                                   HI : forall ys : list X, 
+                                         inversaIaux xs' ys = inversa xs' ++ ys
+                                   ============================
+                                   forall ys : list X, 
+                                    inversaIaux (x :: xs') ys = 
+                                    inversa (x :: xs') ++ ys *)
+    intros ys.                  (* X : Type
+                                   x : X
+                                   xs' : list X
+                                   HI : forall ys : list X, 
+                                         inversaIaux xs' ys = inversa xs' ++ ys
+                                   ys : list X
+                                   ============================
+                                   inversaIaux (x :: xs') ys = 
+                                   inversa (x :: xs') ++ ys *)
+    simpl.                      (* inversaIaux xs' (x :: ys) = 
+                                   (inversa xs' ++ [x]) ++ ys *)
+    rewrite <- conc_asociativa.  (* inversaIaux xs' (x :: ys) = 
+                                   inversa xs' ++ ([x] ++ ys) *)
+    apply HI.
+Qed.
+                                            
+Lemma inversaI_correcta:
+  forall X : Type,
+    @inversaI X = @inversa X.
+Proof.
+  intros X.                        (* X : Type
+                                      ============================
+                                      inversaI = inversa *)
+  apply extensionalidad_funcional. (* forall x : list X, 
+                                       inversaI x = inversa x *)
+  intros.                          (* X : Type
+                                      x : list X
+                                      ============================
+                                      inversaI x = inversa x *)
+  unfold inversaI.                 (* inversaIaux x [ ] = inversa x *)
+  rewrite inversaI_correcta_aux.   (* inversa x ++ [ ] = inversa x *)
+  apply conc_nil.
+Qed.
 
-Lemma tr_rev_correct : forall X, @tr_rev X = @rev X.
-(* FILL IN HERE *) Admitted.
-(** [] *)
-
+  
 (* =====================================================================
    §§ 5.2. Proposiciones y booleanos  
    ================================================================== *)
 
-(** We've seen two different ways of encoding logical facts in Coq:
-    with _booleans_ (of type [bool]), and with _propositions_ (of type
-    [Prop]).
+(* ---------------------------------------------------------------------
+   Ejemplo 5.2.1. Demostrar que
+     forall k : nat,
+       esPar (doble k) = true.
+   ------------------------------------------------------------------ *)
 
-    For instance, to claim that a number [n] is even, we can say
-    either
-       - (1) that [evenb n] returns [true], or
-       - (2) that there exists some [k] such that [n = double k].
-             Indeed, these two notions of evenness are equivalent, as
-             can easily be shown with a couple of auxiliary lemmas.
-
-    Of course, it would be very strange if these two characterizations
-    of evenness did not describe the same set of natural numbers!
-    Fortunately, we can prove that they do... *)
-
-(** We first need two helper lemmas. *)
-Theorem evenb_double : forall k, evenb (double k) = true.
+Theorem esPar_doble:
+  forall k : nat,
+    esPar (doble k) = true.
 Proof.
-  intros k. induction k as [|k' IHk'].
-  - reflexivity.
-  - simpl. apply IHk'.
+  intros k.                (* k : nat
+                              ============================
+                              esPar (doble k) = true *)
+  induction k as [|k' HI]. 
+  -                        (* 
+                              ============================
+                              esPar (doble 0) = true *)
+    reflexivity.
+  -                        (* k' : nat
+                              HI : esPar (doble k') = true
+                              ============================
+                              esPar (doble (S k')) = true *)
+    simpl.                 (* esPar (doble k') = true *)
+    apply HI.
 Qed.
 
-(** **** Exercise: 3 stars (evenb_double_conv)  *)
-Theorem evenb_double_conv : forall n,
-  exists k, n = if evenb n then double k
-                else S (double k).
-Proof.
-  (* Hint: Use the [evenb_S] lemma from [Induction.v]. *)
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+(* ---------------------------------------------------------------------
+   Ejercicio 5.2.1. Demostrar que
+      forall n : nat,
+        exists k : nat, n = if esPar n
+                     then doble k
+                     else S (doble k).
+   ------------------------------------------------------------------ *)
 
-Theorem even_bool_prop : forall n,
-  evenb n = true <-> exists k, n = double k.
+Theorem esPar_doble_aux :
+  forall n : nat,
+    exists k : nat, n = if esPar n
+                 then doble k
+                 else S (doble k).
 Proof.
-  intros n. split.
-  - intros H. destruct (evenb_double_conv n) as [k Hk].
-    rewrite Hk. rewrite H. exists k. reflexivity.
-  - intros [k Hk]. rewrite Hk. apply evenb_double.
+  induction n as [|n' HI].    
+  -                            (* 
+                                  ============================
+                                  exists k : nat, 
+                                   0 = (if esPar 0 
+                                        then doble k 
+                                        else S (doble k)) *)
+    exists 0.                       (* 0 = (if esPar 0 
+                                       then doble 0 
+                                       else S (doble 0)) *)
+    reflexivity.
+  -                            (* n' : nat
+                                  HI : exists k : nat, 
+                                        n' = (if esPar n' 
+                                              then doble k 
+                                              else S (doble k))
+                                  ============================
+                                  exists k : nat, 
+                                   S n' = (if esPar (S n') 
+                                           then doble k 
+                                           else S (doble k)) *)
+    destruct (esPar n') eqn:H. 
+    +                          (* n' : nat
+                                  H : esPar n' = true
+                                  HI : exists k : nat, n' = doble k
+                                  ============================
+                                  exists k : nat, 
+                                   S n' = (if esPar (S n') 
+                                           then doble k 
+                                           else S (doble k)) *)
+      rewrite esPar_S.         (* exists k : nat,
+                                   S n' = (if negacion (esPar n') 
+                                           then doble k 
+                                           else S (doble k)) *)
+      rewrite H.               (* exists k : nat, 
+                                   S n' = (if negacion true 
+                                           then doble k 
+                                           else S (doble k)) *)
+      simpl.                   (* exists k : nat, S n' = S (doble k) *)
+      destruct HI as [k' Hk']. (* n' : nat
+                                  H : esPar n' = true
+                                  k' : nat
+                                  Hk' : n' = doble k'
+                                  ============================
+                                  exists k : nat, S n' = S (doble k) *)
+      exists k'.                    (* S n' = S (doble k') *)
+      rewrite Hk'.             (* S (doble k') = S (doble k') *)
+      reflexivity.
+    +                          (* n' : nat
+                                  H : esPar n' = false
+                                  HI : exists k : nat, n' = S (doble k)
+                                  ============================
+                                  exists k : nat, 
+                                   S n' = (if esPar (S n') 
+                                           then doble k 
+                                           else S (doble k)) *)
+      rewrite esPar_S.         (* exists k : nat,
+                                   S n' = (if negacion (esPar n') 
+                                           then doble k 
+                                           else S (doble k)) *)
+      rewrite H.               (* exists k : nat, 
+                                   S n' = (if negacion false 
+                                           then doble k 
+                                           else S (doble k)) *)
+      simpl.                   (* exists k : nat, S n' = doble k *)
+      destruct HI as [k' Hk']. (* n' : nat
+                                  H : esPar n' = false
+                                  k' : nat
+                                  Hk' : n' = S (doble k')
+                                  ============================
+                                  exists k : nat, S n' = doble k *)
+      exists (1 + k').              (* S n' = doble (1 + k') *)
+      rewrite Hk'.             (* S (S (doble k')) = doble (1 + k') *)
+      reflexivity.
 Qed.
 
-(** In view of this theorem, we say that the boolean
-    computation [evenb n] _reflects_ the logical proposition
-    [exists k, n = double k]. *)
+(* ---------------------------------------------------------------------
+   Ejemplo 5.2.2. Demostrar que
+      forall n : nat,
+        esPar n = true <-> exists k, n = doble k.
 
-(** Similarly, to state that two numbers [n] and [m] are equal, we can
-    say either (1) that [beq_nat n m] returns [true] or (2) that [n =
-    m].  Again, these two notions are equivalent. *)
+   Es decir, que la computación booleana (esPar n) refleja la
+   proposición (exists k, n = doble k).
+   ------------------------------------------------------------------ *)
 
-Theorem beq_nat_true_iff : forall n1 n2 : nat,
-  beq_nat n1 n2 = true <-> n1 = n2.
+Theorem esPar_bool_prop:
+  forall n : nat,
+    esPar n = true <-> exists k, n = doble k.
 Proof.
-  intros n1 n2. split.
-  - apply beq_nat_true.
-  - intros H. rewrite H. rewrite <- beq_nat_refl. reflexivity.
+  intros n.               (* n : nat
+                             ============================
+                             esPar n = true <-> (exists k : nat, n = doble k) *)
+  split.
+  -                       (* n : nat
+                             ============================
+                             esPar n = true -> exists k : nat, n = doble k *)
+    intros H.             (* n : nat                           
+                             H : esPar n = true
+                             ============================
+                             exists k : nat, n = doble k *)
+    destruct
+      (esPar_doble_aux n) 
+      as [k Hk].          (* n : nat
+                             H : esPar n = true
+                             k : nat
+                             Hk : n = (if esPar n then doble k else S (doble k))
+                             ============================
+                             exists k0 : nat, n = doble k0 *)
+    rewrite Hk.           (* exists k0 : nat, 
+                              (if esPar n 
+                               then doble k 
+                               else S (doble k)) 
+                              = doble k0 *)
+    rewrite H.            (* exists k0 : nat, doble k = doble k0 *)
+    exists k.                  (* doble k = doble k *)
+    reflexivity.
+  -                       (* n : nat
+                             ============================
+                             (exists k : nat, n = doble k) -> esPar n = true *)
+    intros [k Hk].        (* n, k : nat
+                             Hk : n = doble k
+                             ============================
+                             esPar n = true *)
+    rewrite Hk.           (* esPar (doble k) = true *)
+    apply esPar_doble.
 Qed.
 
-(** However, even when the boolean and propositional formulations of a
-    claim are equivalent from a purely logical perspective, they need
-    not be equivalent _operationally_.
+(* ---------------------------------------------------------------------
+   Ejemplo 5.2.3. Demostrar que
+      forall n m : nat,
+        iguales_nat n m = true <-> n = m.
+   ------------------------------------------------------------------ *)
 
-    Equality provides an extreme example: knowing that [beq_nat n m =
-    true] is generally of little direct help in the middle of a proof
-    involving [n] and [m]; however, if we convert the statement to the
-    equivalent form [n = m], we can rewrite with it. *)
+Theorem iguales_nat_bool_prop:
+  forall n m : nat,
+    iguales_nat n m = true <-> n = m.
+Proof.
+  intros n m.                 (* n, m : nat
+                                 ============================
+                                 iguales_nat n m = true <-> n = m *)
+  split.
+  -                           (* n, m : nat
+                                 ============================
+                                 iguales_nat n m = true -> n = m *)
+    apply iguales_nat_true.
+  -                           (* n, m : nat
+                                 ============================
+                                 n = m -> iguales_nat n m = true *)
+    intros H.                 (* n, m : nat
+                                 H : n = m
+                                 ============================
+                                 iguales_nat n m = true *)
+    rewrite H.                (* iguales_nat m m = true *)
+    rewrite iguales_nat_refl. (* true = true *)
+    reflexivity.
+Qed.
 
-(** The case of even numbers is also interesting.  Recall that,
-    when proving the backwards direction of [even_bool_prop] (i.e.,
-    [evenb_double], going from the propositional to the boolean
-    claim), we used a simple induction on [k].  On the other hand, the
-    converse (the [evenb_double_conv] exercise) required a clever
-    generalization, since we can't directly prove [(exists k, n =
-    double k) -> evenb n = true]. *)
+(* ---------------------------------------------------------------------
+   Ejemplo 5.2.4. Definir la función es_primo_par tal que 
+   (es_primo_par n) es verifica si n es un primo par.
+   ------------------------------------------------------------------ *)
 
-(** For these examples, the propositional claims are more useful than
-    their boolean counterparts, but this is not always the case.  For
-    instance, we cannot test whether a general proposition is true or
-    not in a function definition; as a consequence, the following code
-    fragment is rejected: *)
-
-Fail Definition is_even_prime n :=
-  if n = 2 then true
+(* 1º intento *)
+Fail Definition es_primo_par n :=
+  if n = 2
+  then true
   else false.
 
-(** Coq complains that [n = 2] has type [Prop], while it expects an
-    elements of [bool] (or some other inductive type with two
-    elements).  The reason for this error message has to do with the
-    _computational_ nature of Coq's core language, which is designed
-    so that every function that it can express is computable and
-    total.  One reason for this is to allow the extraction of
-    executable programs from Coq developments.  As a consequence,
-    [Prop] in Coq does _not_ have a universal case analysis operation
-    telling whether any given proposition is true or false, since such
-    an operation would allow us to write non-computable functions.
+(* 2º intento *)
+Definition es_primo_par n :=
+  if iguales_nat n 2
+  then true
+  else false.
 
-    Although general non-computable properties cannot be phrased as
-    boolean computations, it is worth noting that even many
-    _computable_ properties are easier to express using [Prop] than
-    [bool], since recursive function definitions are subject to
-    significant restrictions in Coq.  For instance, the next chapter
-    shows how to define the property that a regular expression matches
-    a given string using [Prop].  Doing the same with [bool] would
-    amount to writing a regular expression matcher, which would be
-    more complicated, harder to understand, and harder to reason
-    about.
+(* ---------------------------------------------------------------------
+   Ejemplo 5.2.5.1. Demostrar que
+      exists k : nat, 1000 = doble k.
+   ------------------------------------------------------------------ *)
 
-    Conversely, an important side benefit of stating facts using
-    booleans is enabling some proof automation through computation
-    with Coq terms, a technique known as _proof by
-    reflection_.  Consider the following statement: *)
-
-Example even_1000 : exists k, 1000 = double k.
-
-(** The most direct proof of this fact is to give the value of [k]
-    explicitly. *)
-
-Proof. exists 500. reflexivity. Qed.
-
-(** On the other hand, the proof of the corresponding boolean
-    statement is even simpler: *)
-
-Example even_1000' : evenb 1000 = true.
-Proof. reflexivity. Qed.
-
-(** What is interesting is that, since the two notions are equivalent,
-    we can use the boolean formulation to prove the other one without
-    mentioning the value 500 explicitly: *)
-
-Example even_1000'' : exists k, 1000 = double k.
-Proof. apply even_bool_prop. reflexivity. Qed.
-
-(** Although we haven't gained much in terms of proof size in this
-    case, larger proofs can often be made considerably simpler by the
-    use of reflection.  As an extreme example, the Coq proof of the
-    famous _4-color theorem_ uses reflection to reduce the analysis of
-    hundreds of different cases to a boolean computation.  We won't
-    cover reflection in great detail, but it serves as a good example
-    showing the complementary strengths of booleans and general
-    propositions. *)
-
-(** **** Exercise: 2 stars (logical_connectives)  *)
-(** The following lemmas relate the propositional connectives studied
-    in this chapter to the corresponding boolean operations. *)
-
-Lemma andb_true_iff : forall b1 b2:bool,
-  b1 && b2 = true <-> b1 = true /\ b2 = true.
+Example esPar_1000: exists k : nat, 1000 = doble k.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  exists 500.
+  reflexivity.
+Qed.
 
-Lemma orb_true_iff : forall b1 b2,
-  b1 || b2 = true <-> b1 = true \/ b2 = true.
+(* ---------------------------------------------------------------------
+   Ejemplo 5.2.5.2. Demostrar que
+      esPar 1000 = true.
+   ------------------------------------------------------------------ *)
+
+Example esPar_1000' : esPar 1000 = true.
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  reflexivity.
+Qed.
 
-(** **** Exercise: 1 star (beq_nat_false_iff)  *)
-(** The following theorem is an alternate "negative" formulation of
-    [beq_nat_true_iff] that is more convenient in certain
-    situations (we'll see examples in later chapters). *)
+(* ---------------------------------------------------------------------
+   Ejemplo 5.2.5.3. Demostrar que
+      exists k : nat, 1000 = doble k.
+   ------------------------------------------------------------------ *)
 
-Theorem beq_nat_false_iff : forall x y : nat,
-  beq_nat x y = false <-> x <> y.
+Example esPar_1000'': exists k : nat, 1000 = doble k.
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  apply esPar_bool_prop. (* esPar 1000 = true *)
+  reflexivity.
+Qed.
 
-(** **** Exercise: 3 stars (beq_list)  *)
-(** Given a boolean operator [beq] for testing equality of elements of
-    some type [A], we can define a function [beq_list beq] for testing
-    equality of lists with elements in [A].  Complete the definition
-    of the [beq_list] function below.  To make sure that your
-    definition is correct, prove the lemma [beq_list_true_iff]. *)
+(* ---------------------------------------------------------------------
+   Notas. 
+   1. En la proposicional se necesita proporcionar un testipo.
+   2. En la booleano se calcula sin testigo.
+   3, Se puede demostrar la proposional usando la equivalencia con la
+      booleana sin necesidad de testigo.
+   ------------------------------------------------------------------ *)
 
-Fixpoint beq_list {A : Type} (beq : A -> A -> bool)
-                  (l1 l2 : list A) : bool
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+(* ---------------------------------------------------------------------
+   Ejercicio 5.2.2.1. Demostrar que
+      forall x y : bool,
+        x && y = true <-> x = true /\ y = true.
+   ------------------------------------------------------------------ *)
 
-Lemma beq_list_true_iff :
-  forall A (beq : A -> A -> bool),
-    (forall a1 a2, beq a1 a2 = true <-> a1 = a2) ->
-    forall l1 l2, beq_list beq l1 l2 = true <-> l1 = l2.
+Lemma conj_verdad_syss:
+  forall x y : bool,
+    x && y = true <-> x = true /\ y = true.
 Proof.
-(* FILL IN HERE *) Admitted.
-(** [] *)
+  intros x y.             (* x, y : bool
+                             ============================
+                             x && y = true <-> x = true /\ y = true *)
+  destruct x.             
+  -                       (* y : bool
+                             ============================
+                             true && y = true <-> true = true /\ y = true *)
+    destruct y.           
+    +                     (* 
+                             ============================
+                             true && true = true <-> true = true /\ true=true *)
+      simpl.              (* true = true <-> true = true /\ true = true *)
+      split.              
+      *                   (* 
+                             ============================
+                             true = true -> true = true /\ true = true *)
+        apply conj_intro. (* true = true *)
+        reflexivity.
+      *                   (* 
+                             ============================
+                             true = true /\ true = true -> true = true *)
+        apply conj_e1.
+    +                     (* 
+                             ============================
+                             true && false = true <-> true=true /\ false=true *)
+      simpl.              (* false = true <-> true = true /\ false = true *)
+      split.
+      *                   (* 
+                             ============================
+                             false = true -> true = true /\ false = true *)
+        intros H.         (* H : false = true
+                             ============================
+                             true = true /\ false = true *)
+        inversion H.
+      *                   (* 
+                             ============================
+                             true = true /\ false = true -> false = true *)
+        intros [H1 H2].   (* H1 : true = true
+                             H2 : false = true
+                             ============================
+                             false = true *)
+        apply H2.
+  -                       (* y : bool
+                             ============================
+                             false && y = true <-> false = true /\ y = true *)
+    split.
+    +                     (* y : bool
+                             ============================
+                             false && y = true -> false = true /\ y = true *)
+      simpl.              (* false = true -> false = true /\ y = true *)
+      intros H.           (* y : bool
+                             H : false = true
+                             ============================
+                             false = true /\ y = true *)
+      inversion H.
+    +                     (* y : bool
+                             ============================
+                             false = true /\ y = true -> false && y = true *)
+      simpl.              (* false = true /\ y = true -> false = true *)
+      intros [H1 H2].     (* y : bool
+                             H1 : false = true
+                             H2 : y = true
+                             ============================
+                             false = true *)
+      apply H1.
+Qed.
 
-(** **** Exercise: 2 stars, recommended (All_forallb)  *)
-(** Recall the function [forallb], from the exercise
-    [forall_exists_challenge] in chapter [Tactics]: *)
+(* ---------------------------------------------------------------------
+   Ejercicio 5.2.2.2. Demostrar que
+      forall x y : bool,
+        x || y = true <-> x = true \/ y = true.
+   ------------------------------------------------------------------ *)
 
-Fixpoint forallb {X : Type} (test : X -> bool) (l : list X) : bool :=
-  match l with
-  | [] => true
-  | x :: l' => andb (test x) (forallb test l')
+Lemma dist_verdad_syss:
+  forall x y : bool,
+    x || y = true <-> x = true \/ y = true.
+Proof.
+  intros x y.           (* x, y : bool
+                           ============================
+                           x || y = true <-> x = true \/ y = true *)
+  destruct x.
+  -                     (* y : bool
+                           ============================
+                           true || y = true <-> true = true \/ y = true *)
+    simpl.              (* true = true <-> true = true \/ y = true *)
+    split.
+    +                   (* y : bool
+                           ============================
+                           true = true -> true = true \/ y = true *)
+      apply disy_intro. 
+    +                   (* y : bool
+                           ============================
+                           true = true \/ y = true -> true = true *)
+      intros.           (* y : bool
+                           H : true = true \/ y = true
+                           ============================
+                           true = true *)
+      reflexivity.
+  -                     (* y : bool
+                           ============================
+                           false || y = true <-> false = true \/ y = true *)
+    simpl.              (* y = true <-> false = true \/ y = true *)
+    split.
+    +                   (* y : bool
+                           ============================
+                           y = true -> false = true \/ y = true *)
+      destruct y.
+      *                 (* 
+                           ============================
+                           true = true -> false = true \/ true = true *)
+        intros.         (* H : true = true
+                           ============================
+                           false = true \/ true = true *)
+        right.          (* true = true *)
+        reflexivity.
+      *                 (* 
+                           ============================
+                           false = true -> false = true \/ false = true *)
+        apply disy_intro.
+    +                   (* y : bool
+                           ============================
+                           false = true \/ y = true -> y = true *)
+      intros [H1 | H2].
+      *                 (* y : bool
+                           H1 : false = true
+                           ============================
+                           y = true *)
+        inversion H1.
+      *                 (* y : bool
+                           H2 : y = true
+                           ============================
+                           y = true *)
+        apply H2.
+Qed.
+        
+(* ---------------------------------------------------------------------
+   Ejercicio 5.2.3. Demostrar que
+      forall x y : nat,
+        iguales_nat x y = false <-> x <> y.
+   ------------------------------------------------------------------ *)
+
+Theorem iguales_nat_falso_syss:
+  forall x y : nat,
+    iguales_nat x y = false <-> x <> y.
+Proof.
+  intros x y.                           (* x, y : nat
+                                           ============================
+                                           iguales_nat x y = false <-> x <> y *)
+  destruct (iguales_nat x y) eqn:H.
+  -                                     (* x, y : nat
+                                           H : iguales_nat x y = true
+                                           ============================
+                                           true = false <-> x <> y *)
+    rewrite iguales_nat_bool_prop in H. (* x, y : nat
+                                           H : x = y
+                                           ============================
+                                           true = false <-> x <> y *)
+    rewrite H.                          (* true = false <-> y <> y *)
+    split.
+    +                                   (* x, y : nat
+                                           H : x = y
+                                           ============================
+                                           true = false -> y <> y *)
+      intros H1.                        (* x, y : nat
+                                           H : x = y
+                                           H1 : true = false
+                                           ============================
+                                           y <> y *)
+      inversion H1.
+    +                                   (* x, y : nat
+                                           H : x = y
+                                           ============================
+                                           y <> y -> true = false *)
+      intros H1.                        (* x, y : nat
+                                           H : x = y
+                                           H1 : y <> y
+                                           ============================
+                                           true = false *)
+      exfalso.                          (* False *)
+      unfold not in H1.                 (* x, y : nat
+                                           H : x = y
+                                           H1 : y = y -> False
+                                           ============================
+                                           False *)
+      apply H1.                         (* y = y *)
+      apply eq_refl.
+  -                                     (* x, y : nat
+                                           H : iguales_nat x y = false
+                                           ============================
+                                           false = false <-> x <> y *)
+    split.
+    +                                   (* x, y : nat
+                                           H : iguales_nat x y = false
+                                           ============================
+                                           false = false -> x <> y *)
+      unfold not.                       (* false = false -> x = y -> False *)
+      intros H1 H2.                     (* x, y : nat
+                                           H : iguales_nat x y = false
+                                           H1 : false = false
+                                           H2 : x = y
+                                           ============================
+                                           False *)
+      rewrite H2 in H.                  (* x, y : nat
+                                           H : iguales_nat y y = false
+                                           H1 : false = false
+                                           H2 : x = y
+                                           ============================
+                                           False *)
+      rewrite iguales_nat_refl in H.    (* x, y : nat
+                                           H : true = false
+                                           H1 : false = false
+                                           H2 : x = y
+                                           ============================
+                                           False *)
+      inversion H.
+    +                                   (* x, y : nat
+                                           H : iguales_nat x y = false
+                                           ============================
+                                           x <> y -> false = false *)
+      intros.                           (* x, y : nat
+                                           H : iguales_nat x y = false
+                                           H0 : x <> y
+                                           ============================
+                                           false = false *)
+      reflexivity.
+Qed.
+
+(* ---------------------------------------------------------------------
+   Ejercicio 5.2.4.1. Definir la función 
+      iguales_lista {A : Type} (i : A -> A -> bool) (xs ys : list A)
+   tal que (iguales_lists xs ys) se verifica si los correspondientes
+   elementos de las listas xs e ys son iguales respecto de la relación
+   de igualdad i.
+   ------------------------------------------------------------------ *)
+
+Fixpoint iguales_lista {A : Type} (i : A -> A -> bool) (xs ys : list A) : bool :=
+  match xs, ys with
+  | nil, nil            => true
+  | x' ::xs', y' :: ys' => i x' y' && iguales_lista i xs' ys'
+  | _, _                => false                          
   end.
 
-(** Prove the theorem below, which relates [forallb] to the [All]
-    property of the above exercise. *)
+(* ---------------------------------------------------------------------
+   Ejercicio 5.2.4.2. Demostrar que
+      forall A (i : A -> A -> bool),
+        (forall x y, i x y = true <-> x = y) ->
+        forall xs ys, iguales_lista i xs ys = true <-> xs = ys.
+   ------------------------------------------------------------------ *)
 
-Theorem forallb_true_iff : forall X test (l : list X),
-   forallb test l = true <-> Todos (fun x => test x = true) l.
+Lemma iguales_lista_verdad_CN:
+  forall A (i : A -> A -> bool),
+    (forall x y, i x y = true <-> x = y) ->
+    forall xs ys, iguales_lista i xs ys = true -> xs = ys.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros A i H xs.                  (* A : Type
+                                       i : A -> A -> bool
+                                       H : forall x y : A, 
+                                            i x y = true <-> x = y
+                                       xs : list A
+                                       ============================
+                                       forall ys : list A, 
+                                        iguales_lista i xs ys = true -> xs=ys *)
+  induction xs as [|x xs' HIxs'].
+  -                                 (* A : Type
+                                       i : A -> A -> bool
+                                       H : forall x y : A, 
+                                            i x y = true <-> x = y
+                                       ============================
+                                       forall ys : list A, 
+                                        iguales_lista i [ ] ys = true -> 
+                                        [ ] = ys *)
+    destruct ys as [|y ys'].
+    +                               (* iguales_lista i [ ] [ ] = true -> 
+                                       [ ] = [ ] *)
+      intros.                       (*   H0 : iguales_lista i [ ] [ ] = true
+                                       ============================
+                                       [ ] = [ ] *)
+      reflexivity.
+    +                               (* y : A
+                                       ys' : list A
+                                       ============================
+                                       iguales_lista i [ ] (y :: ys') = true 
+                                       -> [ ] = y :: ys' *)
+      simpl.                        (* false = true -> [ ] = y :: ys' *)
+      intros H1.                    (* H1 : false = true
+                                       ============================
+                                       [ ] = y :: ys' *)
+      inversion H1.
+  -                                 (* x : A
+                                       xs' : list A
+                                       HIxs' : forall ys : list A, 
+                                                iguales_lista i xs' ys = true 
+                                                -> xs' = ys
+                                       ============================
+                                       forall ys : list A, 
+                                        iguales_lista i (x :: xs') ys = true 
+                                        -> x :: xs' = ys *)
+    destruct ys as [|y ys'].
+    +                               (* iguales_lista i (x :: xs') [ ] = true 
+                                       -> x :: xs' = [ ] *)
+      simpl.                        (* false = true -> x :: xs' = [ ] *)
+      intros H1.                    (* H1 : false = true
+                                       ============================
+                                       x :: xs' = [ ] *)
+      inversion H1.
+    +                               (* y : A
+                                       ys' : list A
+                                       ============================
+                                       iguales_lista i (x::xs') (y::ys') = true
+                                       -> x :: xs' = y :: ys' *)
+      simpl.                        (* i x y && iguales_lista i xs' ys' = true
+                                       -> x :: xs' = y :: ys' *)
+      intros H1.                    (* H1 : i x y && iguales_lista i xs' ys' = 
+                                            true
+                                       ============================
+                                       x :: xs' = y :: ys' *)
+      apply conj_verdad_syss in H1. (* H1 : i x y = true /\ 
+                                            iguales_lista i xs' ys' = true
+                                       ============================
+                                       x :: xs' = y :: ys' *)
+      destruct H1 as [H2 H3].       (* H2 : i x y = true
+                                       H3 : iguales_lista i xs' ys' = true
+                                       ============================
+                                       x :: xs' = y :: ys' *)
+      f_equal.
+      *                             (* x = y *)
+        apply H.                    (* i x y = true *)
+        apply H2.
+      *                             (* xs' = ys' *)
+        apply HIxs'.                (* iguales_lista i xs' ys' = true *)
+        apply H3.
+Qed.
 
-(** Are there any important properties of the function [forallb] which
-    are not captured by this specification? *)
+Lemma iguales_lista_verdad_CS:
+  forall A (i : A -> A -> bool),
+    (forall x y, i x y = true <-> x = y) ->
+    forall xs ys, xs = ys -> iguales_lista i xs ys = true.
+Proof.
+  intros A i H xs.                (* A : Type
+                                     i : A -> A -> bool
+                                     H : forall x y : A, i x y = true <-> x = y
+                                     xs : list A
+                                     ============================
+                                     forall ys : 
+                                      list A, xs = ys -> 
+                                      iguales_lista i xs ys = true *)
+  induction xs as [|x xs' HIxs']. 
+  -                               (* forall ys : 
+                                      list A, [ ] = ys -> 
+                                      iguales_lista i [ ] ys = true *)
+    intros ys H1.                 (* ys : list A
+                                     H1 : [ ] = ys
+                                     ============================
+                                     iguales_lista i [ ] ys = true *)
+    rewrite <- H1.                 (* iguales_lista i [ ] [ ] = true *)
+    simpl.                        (* true = true *)
+    reflexivity.
+  -                               (* x : A
+                                     xs' : list A
+                                     HIxs' : forall ys : 
+                                              list A, xs' = ys -> 
+                                              iguales_lista i xs' ys = true
+                                     ============================
+                                     forall ys : 
+                                      list A, x :: xs' = ys -> 
+                                      iguales_lista i (x :: xs') ys = true *)
+    intros ys H1.                 (* ys : list A
+                                     H1 : x :: xs' = ys
+                                     ============================
+                                     iguales_lista i (x :: xs') ys = true *)
+    rewrite <-H1.                  (* iguales_lista i (x::xs') (x::xs') = true *)
+    simpl.                        (* i x x && iguales_lista i xs' xs' = true *)
+    apply conj_verdad_syss.       (* i x x = true /\ 
+                                     iguales_lista i xs' xs' = true *)
+    split.
+    +                             (* i x x = true *)
+      apply H.                    (* x = x *)
+      reflexivity.
+    +                             (* iguales_lista i xs' xs' = true *)
+      apply HIxs'.                (* xs' = xs' *)
+      reflexivity.
+Qed.
 
-(* FILL IN HERE *)
-(** [] *)
+Lemma iguales_lista_verdad_syss:
+  forall A (i : A -> A -> bool),
+    (forall x y, i x y = true <-> x = y) ->
+    forall xs ys, iguales_lista i xs ys = true <-> xs = ys.
+Proof.
+  intros A i H xs ys.              (* A : Type
+                                      i : A -> A -> bool
+                                      H : forall x y : A, i x y = true <-> x = y
+                                      xs, ys : list A
+                                      ============================
+                                      iguales_lista i xs ys = true <-> xs=ys *)
+  split.
+  -                                (* iguales_lista i xs ys = true -> xs = ys *)
+    apply iguales_lista_verdad_CN. (* forall x y : A, i x y = true <-> x = y *)
+    apply H.
+  -                                (* xs = ys -> iguales_lista i xs ys = true *)
+    apply iguales_lista_verdad_CS. (* forall x y : A, i x y = true <-> x = y *)
+    apply H.
+Qed.
 
+(* ---------------------------------------------------------------------
+   Ejercicio 5.2.5. Demostrar que
+      forall (X : Type) (p : X -> bool) (xs : list X),
+        todos p xs = true <-> Todos (fun x => p x = true) xs.
+   ------------------------------------------------------------------ *)
+
+Theorem todos_verdad_CN:
+  forall (X : Type) (p : X -> bool) (xs : list X),
+    todos p xs = true -> Todos (fun x => p x = true) xs.
+Proof.
+  intros X p xs.                 (* X : Type
+                                    p : X -> bool
+                                    xs : list X
+                                    ============================
+                                    todos p xs = true -> 
+                                    Todos (fun x : X => p x = true) xs *)
+  induction xs as [|x' xs' HI].
+  -                              (* todos p [ ] = true -> 
+                                    Todos (fun x : X => p x = true) [ ] *)
+    simpl.                       (* true = true -> True *)
+    intros.                      (* H : true = true
+                                    ============================
+                                    True *)
+    reflexivity.
+  -                              (* x' : X
+                                    xs' : list X
+                                    HI : todos p xs' = true -> 
+                                         Todos (fun x : X => p x = true) xs'
+                                    ============================
+                                    todos p (x' :: xs') = true -> 
+                                    Todos (fun x : X => p x = true) (x'::xs') *)
+    simpl.                       (* p x' && todos p xs' = true ->
+                                    p x' = true /\ 
+                                    Todos (fun x : X => p x = true) xs' *)
+    intros H.                    (* H : p x' && todos p xs' = true
+                                    ============================
+                                    p x' = true /\ 
+                                    Todos (fun x : X => p x = true) xs' *)
+    apply conj_verdad_syss in H. (* H :p x' = true /\ todos p xs' = true
+                                    ============================
+                                    p x' = true /\ 
+                                    Todos (fun x : X => p x = true) xs' *)
+    destruct H as [H1 H2].       (* H1 : p x' = true
+                                    H2 : todos p xs' = true
+                                    ============================
+                                    p x' = true /\ 
+                                    Todos (fun x : X => p x = true) xs' *)
+    split.
+    +                            (* p x' = true *)
+      apply H1.
+    +                            (* Todos (fun x : X => p x = true) xs' *)
+      apply HI.                  (* todos p xs' = true *)
+      apply H2.
+Qed.
+
+Theorem todos_verdad_CS:
+  forall (X : Type) (p : X -> bool) (xs : list X),
+    Todos (fun x => p x = true) xs -> todos p xs = true.
+Proof.
+  intros X p xs.                (* X : Type
+                                   p : X -> bool
+                                   xs : list X
+                                   ============================
+                                   Todos (fun x : X => p x = true) xs -> 
+                                   todos p xs = true *)
+  induction xs as [|x' xs' HI]. 
+  -                             (* Todos (fun x : X => p x = true) [ ] -> 
+                                   todos p [ ] = true *)
+    simpl.                      (* True -> true = true *)
+    intros.                     (* H : True
+                                   ============================
+                                   true = true *)
+    reflexivity.
+  -                             (* x' : X
+                                   xs' : list X
+                                   HI : Todos (fun x : X => p x = true) xs' -> 
+                                        todos p xs' = true
+                                   ============================
+                                   Todos (fun x : X => p x = true) (x' :: xs') 
+                                   -> todos p (x' :: xs') = true *)
+    simpl.                      (* p x' = true /\ 
+                                   Todos (fun x : X => p x = true) xs' ->
+                                   p x' && todos p xs' = true *)
+    intros [H1 H2].             (* H1 : p x' = true
+                                   H2 : Todos (fun x : X => p x = true) xs'
+                                   ============================
+                                   p x' && todos p xs' = true *)
+    apply conj_verdad_syss.     (* p x' = true /\ todos p xs' = true *)
+    split.
+    +                           (* p x' = true *)
+      apply H1.
+    +                           (* todos p xs' = true *)
+      apply HI.                 (* Todos (fun x : X => p x = true) xs' *)
+      apply H2.
+Qed.
+
+Theorem todos_verdad_syss:
+  forall (X : Type) (p : X -> bool) (xs : list X),
+    todos p xs = true <-> Todos (fun x => p x = true) xs.
+Proof.
+  intros X p xs.           (* X : Type
+                              p : X -> bool
+                              xs : list X
+                              ============================
+                              todos p xs = true <-> 
+                              Todos (fun x : X => p x = true) xs *)
+  split.
+  -                        (* todos p xs = true -> 
+                              Todos (fun x : X => p x = true) xs *)
+    apply todos_verdad_CN. 
+  -                        (* Todos (fun x : X => p x = true) xs -> 
+                              todos p xs = true *)
+    apply todos_verdad_CS.
+Qed.
+  
 (* =====================================================================
    §§ 5.3. Lógica clásica vs. constructiva  
    ================================================================== *)
 
-(** We have seen that it is not possible to test whether or not a
-    proposition [P] holds while defining a Coq function.  You may be
-    surprised to learn that a similar restriction applies to _proofs_!
-    In other words, the following intuitive reasoning principle is not
-    derivable in Coq: *)
+(* ---------------------------------------------------------------------
+   Ejemplo 5.3.1. Definir la proposicion
+      tercio_excluso
+   que afirma que  (forall P : Prop, P \/ ~ P).
+   ------------------------------------------------------------------ *)
 
-Definition excluded_middle := forall P : Prop,
+
+Definition tercio_excluso : Prop := forall P : Prop,
   P \/ ~ P.
 
-(** To understand operationally why this is the case, recall
-    that, to prove a statement of the form [P \/ Q], we use the [left]
-    and [right] tactics, which effectively require knowing which side
-    of the disjunction holds.  But the universally quantified [P] in
-    [excluded_middle] is an _arbitrary_ proposition, which we know
-    nothing about.  We don't have enough information to choose which
-    of [left] or [right] to apply, just as Coq doesn't have enough
-    information to mechanically decide whether [P] holds or not inside
-    a function. *)
+(* ---------------------------------------------------------------------
+   Nota. La proposión tercio_excluso no es demostrable en Coq.
+   ------------------------------------------------------------------ *)
 
-(** However, if we happen to know that [P] is reflected in some
-    boolean term [b], then knowing whether it holds or not is trivial:
-    we just have to check the value of [b]. *)
+(* ---------------------------------------------------------------------
+   Ejemplo 5.3.2. Demostrar que
+      forall (P : Prop) (b : bool),
+        (P <-> b = true) -> P \/ ~ P.
+   ------------------------------------------------------------------ *)
 
-Theorem restricted_excluded_middle : forall P b,
-  (P <-> b = true) -> P \/ ~ P.
+Theorem tercio_exluso_restringido :
+  forall (P : Prop) (b : bool),
+    (P <-> b = true) -> P \/ ~ P.
 Proof.
-  intros P [] H.
-  - left. rewrite H. reflexivity.
-  - right. rewrite H. intros contra. inversion contra.
+  intros P [] H.  
+  -               (* P : Prop
+                     H : P <-> true = true
+                     ============================
+                     P \/ ~ P *)
+    left.         (* P *)
+    rewrite H.    (* true = true *)
+    reflexivity.
+  -               (* P : Prop
+                     H : P <-> false = true
+                     ============================
+                     P \/ ~ P *)
+    right.        (* ~ P *)
+    rewrite H.    (* false <> true *)
+    intros H1.    (* H1 : false = true
+                     ============================
+                     False *)
+    inversion H1. 
 Qed.
 
-(** In particular, the excluded middle is valid for equations [n = m],
-    between natural numbers [n] and [m]. *)
+(* ---------------------------------------------------------------------
+   Ejemplo 5.3.3. Demostrar que
+      forall (n m : nat),
+        n = m \/ n <> m.
+   ------------------------------------------------------------------ *)
 
-Theorem restricted_excluded_middle_eq : forall (n m : nat),
-  n = m \/ n <> m.
+Theorem tercio_exluso_restringido_eq:
+  forall (n m : nat),
+    n = m \/ n <> m.
 Proof.
-  intros n m.
-  apply (restricted_excluded_middle (n = m) (beq_nat n m)).
-  symmetry.
-  apply beq_nat_true_iff.
+  intros n m.                      (* n, m : nat
+                                      ============================
+                                      n = m \/ n <> m *)
+  apply (tercio_exluso_restringido 
+           (n = m)
+           (iguales_nat n m)).     (* n = m <-> iguales_nat n m = true *)
+  symmetry.                        (* iguales_nat n m = true <-> n = m *)
+  apply iguales_nat_bool_prop.
 Qed.
 
-(** It may seem strange that the general excluded middle is not
-    available by default in Coq; after all, any given claim must be
-    either true or false.  Nonetheless, there is an advantage in not
-    assuming the excluded middle: statements in Coq can make stronger
-    claims than the analogous statements in standard mathematics.
-    Notably, if there is a Coq proof of [exists x, P x], it is
-    possible to explicitly exhibit a value of [x] for which we can
-    prove [P x] -- in other words, every proof of existence is
-    necessarily _constructive_. *)
+(* ---------------------------------------------------------------------
+   Notas.
+   1. En Coq no se puede demostrar el principio del tercio exluso.
+   2. Las demostraciones de las fórmulas existenciales tienen que
+      proporcionar un testigo.
+   2. la lógica de Coq es constructiva.
+   ------------------------------------------------------------------ *)
 
-(** Logics like Coq's, which do not assume the excluded middle, are
-    referred to as _constructive logics_.
+(* ---------------------------------------------------------------------
+   Ejercicio 5.3.1. Demostrar que
+      forall (P : Prop),
+        ~ ~ (P \/ ~ P).
+   ------------------------------------------------------------------ *)
 
-    More conventional logical systems such as ZFC, in which the
-    excluded middle does hold for arbitrary propositions, are referred
-    to as _classical_. *)
-
-(** The following example illustrates why assuming the excluded middle
-    may lead to non-constructive proofs:
-
-    _Claim_: There exist irrational numbers [a] and [b] such that [a ^
-    b] is rational.
-
-    _Proof_: It is not difficult to show that [sqrt 2] is irrational.
-    If [sqrt 2 ^ sqrt 2] is rational, it suffices to take [a = b =
-    sqrt 2] and we are done.  Otherwise, [sqrt 2 ^ sqrt 2] is
-    irrational.  In this case, we can take [a = sqrt 2 ^ sqrt 2] and
-    [b = sqrt 2], since [a ^ b = sqrt 2 ^ (sqrt 2 * sqrt 2) = sqrt 2 ^
-    2 = 2].  []
-
-    Do you see what happened here?  We used the excluded middle to
-    consider separately the cases where [sqrt 2 ^ sqrt 2] is rational
-    and where it is not, without knowing which one actually holds!
-    Because of that, we wind up knowing that such [a] and [b] exist
-    but we cannot determine what their actual values are (at least,
-    using this line of argument).
-
-    As useful as constructive logic is, it does have its limitations:
-    There are many statements that can easily be proven in classical
-    logic but that have much more complicated constructive proofs, and
-    there are some that are known to have no constructive proof at
-    all!  Fortunately, like functional extensionality, the excluded
-    middle is known to be compatible with Coq's logic, allowing us to
-    add it safely as an axiom.  However, we will not need to do so in
-    this book: the results that we cover can be developed entirely
-    within constructive logic at negligible extra cost.
-
-    It takes some practice to understand which proof techniques must
-    be avoided in constructive reasoning, but arguments by
-    contradiction, in particular, are infamous for leading to
-    non-constructive proofs.  Here's a typical example: suppose that
-    we want to show that there exists [x] with some property [P],
-    i.e., such that [P x].  We start by assuming that our conclusion
-    is false; that is, [~ exists x, P x]. From this premise, it is not
-    hard to derive [forall x, ~ P x].  If we manage to show that this
-    intermediate fact results in a contradiction, we arrive at an
-    existence proof without ever exhibiting a value of [x] for which
-    [P x] holds!
-
-    The technical flaw here, from a constructive standpoint, is that
-    we claimed to prove [exists x, P x] using a proof of
-    [~ ~ (exists x, P x)].  Allowing ourselves to remove double
-    negations from arbitrary statements is equivalent to assuming the
-    excluded middle, as shown in one of the exercises below.  Thus,
-    this line of reasoning cannot be encoded in Coq without assuming
-    additional axioms. *)
-
-(** **** Exercise: 3 stars (excluded_middle_irrefutable)  *)
-(** Proving the consistency of Coq with the general excluded middle
-    axiom requires complicated reasoning that cannot be carried out
-    within Coq itself.  However, the following theorem implies that it
-    is always safe to assume a decidability axiom (i.e., an instance
-    of excluded middle) for any _particular_ Prop [P].  Why?  Because
-    we cannot prove the negation of such an axiom.  If we could, we
-    would have both [~ (P \/ ~P)] and [~ ~ (P \/ ~P)] (since [P]
-    implies [~ ~ P], by the exercise below), which would be a
-    contradiction.  But since we can't, it is safe to add [P \/ ~P] as
-    an axiom. *)
-
-Theorem excluded_middle_irrefutable: forall (P:Prop),
-  ~ ~ (P \/ ~ P).
+Theorem tercio_excluso_irrefutable:
+  forall (P : Prop),
+    ~ ~ (P \/ ~ P).
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  intros P.   (* P : Prop
+                 ============================
+                 ~ ~ (P \/ ~ P) *)
+  unfold not. (* (P \/ (P -> False) -> False) -> False *)
+  intros H.   (* H : P \/ (P -> False) -> False
+                 ============================
+                 False *)
+  apply H.    (* P \/ (P -> False) *)
+  right.      (* P -> False *)
+  intro H1.   (* H1 : P
+                 ============================
+                 False *)
+  apply H.    (* P \/ (P -> False) *)
+  left.       (* P *)
+  apply H1.
+Qed.
 
-(** **** Exercise: 3 stars, advanced (not_exists_dist)  *)
-(** It is a theorem of classical logic that the following two
-    assertions are equivalent:
+(* ---------------------------------------------------------------------
+   Nota. El teorema anterior garantiza que añadir el tercio excluso como
+   axioma no provoca contradicción.
+   ------------------------------------------------------------------ *)
 
-    ~ (exists x, ~ P x)
-    forall x, P x
+(* ---------------------------------------------------------------------
+   Ejercicio 5.3.2. Demostrar que
+      tercio_excluso ->
+      forall (X : Type) (P : X -> Prop),
+        ~ (exists x, ~ P x) -> (forall x, P x).
 
-    The [paraTodo_no_existe_no] theorem above proves one side of this
-    equivalence. Interestingly, the other direction cannot be proved
-    in constructive logic. Your job is to show that it is implied by
-    the excluded middle. *)
+   Nota. La condición del tercio_excluso es necesaria.
+   ------------------------------------------------------------------ *)
 
-Theorem not_exists_dist :
-  excluded_middle ->
-  forall (X:Type) (P : X -> Prop),
+Theorem no_existe_no:
+  tercio_excluso ->
+  forall (X : Type) (P : X -> Prop),
     ~ (exists x, ~ P x) -> (forall x, P x).
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  intros H1 X P H2 x.          (* H1 : tercio_excluso
+                                  X : Type
+                                  P : X -> Prop
+                                  H2 : ~ (exists x : X, ~ P x)
+                                  x : X
+                                  ============================
+                                  P x *)
+  unfold tercio_excluso in H1. (* H1 : forall P : Prop, P \/ ~ P *)
+  assert (P x \/ ~ P x).
+  -                            (* P x \/ ~ P x *)
+    apply H1.
+  -                            (* H : P x \/ ~ P x
+                                  ============================
+                                  P x *)
+    destruct H as [H3 | H4].
+    +                          (* x : X
+                                  H3 : P x
+                                  ============================
+                                  P x *)
+      apply H3.
+    +                          (* x : X
+                                  H4 : ~ P x
+                                  ============================
+                                  P x *)
+      exfalso.                 (* False *)
+      apply H2.                (* exists x0 : X, ~ P x0 *)
+      exists x.                     (* ~ P x *)
+      apply H4.
+Qed.
 
-(** **** Exercise: 5 stars, optional (classical_axioms)  *)
-(** For those who like a challenge, here is an exercise taken from the
-    Coq'Art book by Bertot and Casteran (p. 123).  Each of the
-    following four statements, together with [excluded_middle], can be
-    considered as characterizing classical logic.  We can't prove any
-    of them in Coq, but we can consistently add any one of them as an
-    axiom if we wish to work in classical logic.
+(* ---------------------------------------------------------------------
+   Ejercicio 5.4.1. En este ejercico se van a demostrar 4 formas
+   equivalentes del principio del tercio excluso. 
 
-    Prove that all five propositions (these four plus
-    [excluded_middle]) are equivalent. *)
+   Sea peirce la proposición definida por
+      Definition peirce: Prop := forall P Q : Prop,
+        ((P -> Q) -> P) -> P.
 
-Definition peirce := forall P Q: Prop,
-  ((P->Q)->P)->P.
+   Demostrar que 
+      tercio_excluso <-> peirce 
+   ------------------------------------------------------------------ *)
 
-Definition doble_negation_elimination := forall P:Prop,
+Definition peirce: Prop := forall P Q : Prop,
+  ((P -> Q) -> P) -> P.
+
+Theorem tercio_excluso_peirce_L1:
+  tercio_excluso -> peirce.
+Proof.
+  unfold tercio_excluso.     (* 
+                                ============================
+                                (forall P : Prop, P \/ ~ P) -> peirce *)
+  unfold peirce.             (* (forall P : Prop, P \/ ~ P) -> 
+                                forall P Q : Prop, ((P -> Q) -> P) -> P *)
+  intros H1 P Q H2.          (* H1 : forall P : Prop, P \/ ~ P
+                                P, Q : Prop
+                                H2 : (P -> Q) -> P
+                                ============================
+                                P *)
+  assert (P \/ ~P).
+  -                          (* P \/ ~ P *)
+    apply H1.
+  -                          (* H : P \/ ~ P
+                                ============================
+                                P *)
+    destruct H as [H3 | H4]. 
+    +                        (* H3 : P
+                                ============================
+                                P *)
+      apply H3.
+    +                        (* H4 : ~ P
+                                ============================
+                                P *)
+      apply H2.              (* P -> Q *)
+      intros H5.             (* H5 : P
+                                ============================
+                                Q *)
+      exfalso.               (* False *)
+      apply H4.              (* P *)
+      apply H5.
+Qed.
+
+Theorem tercio_excluso_peirce_L2:
+  peirce -> tercio_excluso.
+Proof.
+  unfold peirce.         (* 
+                            ============================
+                            (forall P Q : Prop, ((P -> Q) -> P) -> P) -> 
+                            tercio_excluso *)
+  unfold tercio_excluso. (* (forall P Q : Prop, ((P -> Q) -> P) -> P) -> 
+                            forall P : Prop, P \/ ~ P *)
+  intros H P.            (* H : forall P Q : Prop, ((P -> Q) -> P) -> P
+                            P : Prop
+                            ============================
+                            P \/ ~ P *)
+  apply H with (Q := False). (* (P \/ ~ P -> False) -> P \/ ~ P *)
+  intros H1.             (* H1 : P \/ ~ P -> False
+                            ============================
+                            P \/ ~ P *)
+  right.                 (* ~ P *)
+  unfold not.            (* P -> False *)
+  intros H2.             (* H2 : P
+                            ============================
+                            False *)
+  apply H1.              (* P \/ ~ P *)
+  left.                  (* P *)
+  apply H2.
+Qed.
+
+Theorem tercio_excluso_equiv_peirce:
+  tercio_excluso <-> peirce.
+Proof.
+  split.
+  -                                 (* 
+                                       ============================
+                                       tercio_excluso -> peirce *)
+    apply tercio_excluso_peirce_L1. 
+  -                                 (* 
+                                       ============================
+                                       peirce -> tercio_excluso *)
+    apply tercio_excluso_peirce_L2.
+Qed.
+
+
+Definition eliminacion_doble_negacion: Prop := forall P : Prop,
   ~~P -> P.
 
-Definition de_morgan_not_and_not := forall P Q:Prop,
-  ~(~P /\ ~Q) -> P\/Q.
+Theorem tercio_excluso_equiv_eliminacion_doble_negacion:
+  tercio_excluso <-> eliminacion_doble_negacion.
+Proof.
+Abort.
+  
+Definition de_morgan_no_no: Prop := forall P Q : Prop,
+  ~(~P /\ ~Q) -> P \/ Q.
 
-Definition implies_to_or := forall P Q:Prop,
-  (P->Q) -> (~P\/Q).
+Theorem tercio_excluso_equiv_de_morgan_no_no:
+  tercio_excluso <-> de_morgan_no_no.
+Proof.
+Abort.
+  
+Definition condicional_a_disyuncion: Prop := forall P Q : Prop,
+  (P -> Q) -> (~P \/ Q).
 
+Theorem tercio_excluso_equiv_condicional_a_disyuncion:
+  tercio_excluso <-> condicional_a_disyuncion.
+Proof.
+Abort.
+  
 (* FILL IN HERE *)
 (** [] *)
 
