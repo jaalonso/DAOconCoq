@@ -4,6 +4,8 @@
 
 + [[https://www.lri.fr/~paulin/LASER/course-notes.pdf][Introduction to the Coq proof-assistant for ractical software verification]]. 
   ~ Christine Paulin-Mohring
++ [[http://www.cis.upenn.edu/~rrand/popl_2016/][Programs and proofs in the Coq proof assistant]]. (En POPL 2016). ~
+  Arthur Azevedo de Amorim y Robert Rand
 
 * Libros
 
