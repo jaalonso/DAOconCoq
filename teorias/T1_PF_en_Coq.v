@@ -410,7 +410,7 @@ Proof. simpl. reflexivity.  Qed.
    Ejemplo 1.6.12. Iniciar el módulo Naturales2.
    ------------------------------------------------------------------ *)
 
-Module Naturales2.
+(* Module Naturales2. *)
 
 (* ---------------------------------------------------------------------
    Ejemplo 1.6.13. Definir la función
@@ -468,7 +468,7 @@ Fixpoint resta (n m:nat) : nat :=
    Ejemplo 1.6.16. Cerrar el módulo Naturales2.
    ------------------------------------------------------------------ *)
 
-End Naturales2.
+(* End Naturales2. *)
 
 (* ---------------------------------------------------------------------
    Ejemplo 1.6.17. Definir la función
