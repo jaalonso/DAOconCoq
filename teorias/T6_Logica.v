@@ -3722,7 +3722,7 @@ Proof.
 Qed.
 
 (* ---------------------------------------------------------------------
-   Ejercicio 5.4.1. En este ejercico se van a demostrar 4 formas
+   Ejercicio 5.3.1. En este ejercico se van a demostrar 4 formas
    equivalentes del principio del tercio excluso. 
 
    Sea peirce la proposición definida por
@@ -3814,33 +3814,262 @@ Proof.
 Qed.
 
 
+(* ---------------------------------------------------------------------
+   Ejercicio 5.3.2. Sea eliminacion_doble_negacion la proposición
+   definida por 
+      Definition eliminacion_doble_negacion: Prop := forall P : Prop,
+        ~~P -> P.
+
+   Demostrar que 
+      tercio_excluso <-> eliminacion_doble_negacion
+   ------------------------------------------------------------------ *)
+
 Definition eliminacion_doble_negacion: Prop := forall P : Prop,
   ~~P -> P.
+
+Theorem tercio_excluso_equiv_eliminacion_doble_negacion_L1:
+  tercio_excluso -> eliminacion_doble_negacion.
+Proof.
+  unfold tercio_excluso.             (* 
+                                        ============================
+                                        (forall P : Prop, P \/ ~ P) -> 
+                                        eliminacion_doble_negacion *)
+  unfold eliminacion_doble_negacion. (* (forall P : Prop, P \/ ~ P) -> 
+                                        forall P : Prop, ~ ~ P -> P *)
+  intros H1 P H2.                    (* H1 : forall P : Prop, P \/ ~ P
+                                        P : Prop
+                                        H2 : ~ ~ P
+                                        ============================
+                                        P *)
+  assert (P \/ ~P).
+  -                                  (* P \/ ~ P *)
+    apply H1.
+  -                                  (* H : P \/ ~ P
+                                        ============================
+                                        P *)
+    destruct H as [H3 | H4].
+    +                                (* H2 : ~ ~ P
+                                        H3 : P
+                                        ============================
+                                        P *)
+      apply H3.
+    +                                (* H4 : ~ P
+                                        ============================
+                                        P *)
+      exfalso.                       (* False *)
+      apply H2.                      (* ~ P *)
+      apply H4.
+Qed.
+
+Theorem tercio_excluso_equiv_eliminacion_doble_negacion_L2:
+  eliminacion_doble_negacion -> tercio_excluso.
+Proof.
+  unfold eliminacion_doble_negacion. (* 
+                                        ============================
+                                        (forall P : Prop, ~ ~ P -> P) -> 
+                                        tercio_excluso *)
+  unfold tercio_excluso.             (* (forall P : Prop, ~ ~ P -> P) -> 
+                                        forall P : Prop, P \/ ~ P *)
+  intros H P.                        (* H : forall P : Prop, ~ ~ P -> P
+                                        P : Prop
+                                        ============================
+                                        P \/ ~ P *)
+  apply H.                           (* ~ ~ (P \/ ~ P) *)
+  apply tercio_excluso_irrefutable.
+Qed.
 
 Theorem tercio_excluso_equiv_eliminacion_doble_negacion:
   tercio_excluso <-> eliminacion_doble_negacion.
 Proof.
-Abort.
-  
-Definition de_morgan_no_no: Prop := forall P Q : Prop,
-  ~(~P /\ ~Q) -> P \/ Q.
+  split.
+  -
+    apply tercio_excluso_equiv_eliminacion_doble_negacion_L1.
+  -
+    apply tercio_excluso_equiv_eliminacion_doble_negacion_L2.
+Qed.
+
+
+(* ---------------------------------------------------------------------
+   Ejercicio 5.3.3. Sea morgan_no_no la proposición
+   definida por 
+      Definition de_morgan_no_no: Prop :=
+        forall P Q : Prop, ~(~P /\ ~Q) -> P \/ Q.
+
+   Demostrar que 
+      tercio_excluso <-> morgan_no_no
+   ------------------------------------------------------------------ *)
+
+Definition de_morgan_no_no: Prop :=
+  forall P Q : Prop, ~(~P /\ ~Q) -> P \/ Q.
+
+Theorem tercio_excluso_equiv_de_morgan_no_no_L1:
+  tercio_excluso -> de_morgan_no_no.
+Proof.
+  unfold tercio_excluso.     (* 
+                                ============================
+                                (forall P : Prop, P \/ ~ P) -> 
+                                de_morgan_no_no *)
+  unfold de_morgan_no_no.    (* (forall P : Prop, P \/ ~ P) -> 
+                                forall P Q : Prop, ~ (~ P /\ ~ Q) -> P \/ Q *)
+  intros H1 P Q H2.          (* H1 : forall P : Prop, P \/ ~ P
+                                P, Q : Prop
+                                H2 : ~ (~ P /\ ~ Q)
+                                ============================
+                                P \/ Q *)
+  assert (P \/ ~P).
+  -                          (* P \/ ~ P *)
+    apply H1.
+  -                          (* H : P \/ ~ P
+                                ============================
+                                P \/ Q *)
+    destruct H as [H3 | H4]. 
+    +                        (* H2 : ~ (~ P /\ ~ Q)
+                                H3 : P
+                                ============================
+                                P \/ Q *)
+      left.                  (* P *)
+      apply H3.
+    +                        (* H4 : ~ P
+                                ============================
+                                P \/ Q *)
+      right.                 (* Q *)
+      assert (Q \/ ~ Q).
+      *                      (* Q \/ ~ Q *)
+        apply H1.
+      *                      (* H : Q \/ ~ Q
+                                ============================
+                                Q *)
+        destruct H as [H5 | H6].
+        --                   (* H5 : Q
+                                ============================
+                                Q *)
+          apply H5.
+        --                   (* H6 : ~ Q
+                                ============================
+                                Q *)
+          exfalso.           (* False *)
+          apply H2.          (* ~ P /\ ~ Q *)
+          split.
+          ++                 (* ~ P *)
+            apply H4.
+          ++                 (* ~ Q *)
+            apply H6.
+Qed.
+
+Theorem tercio_excluso_equiv_de_morgan_no_no_L2:
+  de_morgan_no_no -> tercio_excluso.
+Proof.
+  unfold de_morgan_no_no. (* 
+                             ============================
+                             (forall P Q : Prop, ~ (~ P /\ ~ Q) -> P \/ Q) -> 
+                             tercio_excluso *)
+  unfold tercio_excluso.  (* (forall P Q : Prop, ~ (~ P /\ ~ Q) -> P \/ Q) -> 
+                             forall P : Prop, P \/ ~ P *)
+  intros H1 P.            (* H1 : forall P Q : Prop, ~ (~ P /\ ~ Q) -> P \/ Q
+                             P : Prop
+                             ============================
+                             P \/ ~ P *)
+  apply H1.               (* ~ (~ P /\ ~ ~ P) *)
+  intros H2.              (* H2 : ~ P /\ ~ ~ P
+                             ============================
+                             False *)
+  destruct H2 as (H3,H4). (* H3 : ~ P
+                             H4 : ~ ~ P
+                             ============================
+                             False *)
+  apply H4.               (* ~ P *)
+  apply H3.
+Qed.
+
 
 Theorem tercio_excluso_equiv_de_morgan_no_no:
   tercio_excluso <-> de_morgan_no_no.
 Proof.
-Abort.
+  split.
+  -
+    apply tercio_excluso_equiv_de_morgan_no_no_L1.
+  -
+    apply tercio_excluso_equiv_de_morgan_no_no_L2.
+Qed.
   
-Definition condicional_a_disyuncion: Prop := forall P Q : Prop,
-  (P -> Q) -> (~P \/ Q).
+(* ---------------------------------------------------------------------
+   Ejercicio 5.3.4. Sea condicional_a_disyuncion la proposición
+   definida por 
+      Definition condicional_a_disyuncion: Prop :=
+        forall P Q : Prop, (P -> Q) -> (~P \/ Q).
+
+   Demostrar que 
+      tercio_excluso <-> morgan_no_no
+   ------------------------------------------------------------------ *)
+
+Definition condicional_a_disyuncion: Prop :=
+  forall P Q : Prop, (P -> Q) -> (~P \/ Q).
+
+Lemma tercio_excluso_equiv_condicional_a_disyuncion_L1:
+  tercio_excluso -> condicional_a_disyuncion.
+Proof.
+  unfold tercio_excluso.           (* 
+                                      ============================
+                                      (forall P : Prop, P \/ ~ P) -> 
+                                      condicional_a_disyuncion *)
+  unfold condicional_a_disyuncion. (* (forall P : Prop, P \/ ~ P) -> 
+                                      forall P Q : Prop, (P -> Q) -> ~ P \/ Q *)
+  intros H1 P Q H2.                (* H1 : forall P : Prop, P \/ ~ P
+                                      P, Q : Prop
+                                      H2 : P -> Q
+                                      ============================
+                                      ~ P \/ Q *)
+  assert (P \/ ~P).
+  -                                (* P \/ ~ P *)
+    apply H1.
+  -                                (* H : P \/ ~ P
+                                      ============================
+                                      ~ P \/ Q *)
+    destruct H as [H3 | H4]. 
+    +                              (* H3 : P
+                                      ============================
+                                      ~ P \/ Q *)
+      right.                       (* Q *)
+      apply H2.                    (* P *)
+      apply H3.
+    +                              (* H4 : ~ P
+                                      ============================
+                                      ~ P \/ Q *)
+      left.                        (* ~ P *)
+      apply H4.
+Qed.
+
+Lemma tercio_excluso_equiv_condicional_a_disyuncion_L2:
+  condicional_a_disyuncion -> tercio_excluso.
+Proof.
+  unfold condicional_a_disyuncion. (* 
+                                      ============================
+                                      (forall P Q:Prop, (P -> Q) -> ~ P \/ Q) 
+                                      -> tercio_excluso *)
+  unfold tercio_excluso.           (* (forall P Q:Prop, (P -> Q) -> ~ P \/ Q) 
+                                      -> forall P : Prop, P \/ ~ P *)
+  intros H1 P.                     (* H1 : forall P Q : Prop, 
+                                            (P -> Q) -> ~ P \/ Q
+                                      P : Prop
+                                      ============================
+                                      P \/ ~ P *)
+  apply disy_conmutativa.          (* ~ P \/ P *)
+  apply H1.                        (* P -> P *)
+  intros.                          (* H : P
+                                      ============================
+                                      P *)
+  apply H.
+Qed.
+
 
 Theorem tercio_excluso_equiv_condicional_a_disyuncion:
   tercio_excluso <-> condicional_a_disyuncion.
 Proof.
-Abort.
+  split.
+  - apply tercio_excluso_equiv_condicional_a_disyuncion_L1.
+  - apply tercio_excluso_equiv_condicional_a_disyuncion_L2.
+Qed.    
   
-(* FILL IN HERE *)
-(** [] *)
-
 (* =====================================================================
    § Bibliografía
    ================================================================== *)
