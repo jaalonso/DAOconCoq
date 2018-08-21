@@ -132,6 +132,10 @@ Abort.
   =forall x, (exists y P(y)) -> Q(x)= por =Q(x)= y le añade la
   hipótesis =Ha : P(a)=.
 + =inversion=: Aplica qe los constructores son disjuntos e inyectivos. 
++ =inversion E=, donde =E= es la etiqueta de una  proposición P definida
+  inductivamente, genera para cada uno de los constructores de =P= las
+  condiciones bajo las que se puede usar el constructor para demostrar
+  =P=. 
 + =left=: Sustituye el objetivo de la forma =A \/ B= por =A=.
 + =reflexivity=: Demuestra el objetivo si es una igualdad trivial.
 + =rewrite H=: Sustituye el término izquierdo de H por el derecho.
