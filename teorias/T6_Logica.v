@@ -1609,7 +1609,7 @@ Proof.
 Qed.
 
 (* ---------------------------------------------------------------------
-   Nota. Uso del patrón vacóp para descartar el último caso.
+   Nota. Uso del patrón vacío para descartar el último caso.
    ------------------------------------------------------------------ *)
 
 (* ---------------------------------------------------------------------
@@ -2449,7 +2449,7 @@ Check suma_conmutativa.
 (* ---------------------------------------------------------------------
    Notas.
    1. En Coq, las demostraciones son objetos de primera clase.
-   2. Coq devuelve el tipo de suma_conmutativa como es de cualquier
+   2. Coq devuelve el tipo de suma_conmutativa como el de cualquier
       expresión.
    3. El identificador suma_conmutativa representa un objeto prueba de
       (forall n m : nat, n + m = m + n).
@@ -3037,7 +3037,7 @@ Qed.
    Notas. 
    1. En la proposicional se necesita proporcionar un testipo.
    2. En la booleano se calcula sin testigo.
-   3, Se puede demostrar la proposional usando la equivalencia con la
+   3. Se puede demostrar la proposicional usando la equivalencia con la
       booleana sin necesidad de testigo.
    ------------------------------------------------------------------ *)
 
@@ -3642,7 +3642,7 @@ Qed.
    1. En Coq no se puede demostrar el principio del tercio exluso.
    2. Las demostraciones de las fórmulas existenciales tienen que
       proporcionar un testigo.
-   2. la lógica de Coq es constructiva.
+   2. La lógica de Coq es constructiva.
    ------------------------------------------------------------------ *)
 
 (* ---------------------------------------------------------------------
