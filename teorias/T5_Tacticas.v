@@ -2385,7 +2385,7 @@ Qed.
   + apply H1 in H2: Aplica la igualdad de la hipótesis H1 a la
     hipótesis H2.
 
-  + assert (H: P): Incluyed la demostración de la propiedad P y continúa
+  + assert (H: P): Incluye la demostración de la propiedad P y continúa
     la demostración añadiendo como premisa la propiedad P con nombre H. 
 
   + destruct b: Distingue dos casos según que b sea True o False.
@@ -2408,7 +2408,7 @@ Qed.
   + intros vars: Introduce las variables del cuantificador universal y,
     como premisas, los antecedentes de las implicaciones.
 
-  + inversion: Aplica qe los constructores son disjuntos e inyectivos. 
+  + inversion: Aplica que los constructores son disjuntos e inyectivos. 
 
   + reflexivity: Demuestra el objetivo si es una igualdad trivial.
 
@@ -2424,7 +2424,7 @@ Qed.
 
   + symmetry in H: Cambia la hipótesis H de la forma ~st~ en ~ts~.
 
-  + unfold f Expande la definición de la función f.
+  + unfold f: Expande la definición de la función f.
  *)
 
 (* =====================================================================

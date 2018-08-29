@@ -3124,7 +3124,7 @@ Qed.
         x || y = true <-> x = true \/ y = true.
    ------------------------------------------------------------------ *)
 
-Lemma dist_verdad_syss:
+Lemma disy_verdad_syss:
   forall x y : bool,
     x || y = true <-> x = true \/ y = true.
 Proof.
