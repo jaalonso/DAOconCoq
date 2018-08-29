@@ -32,7 +32,7 @@ Require Export T3_Listas.
    ================================================================== *)
 
 (* ---------------------------------------------------------------------
-   Nota. Se suprime algunos avisos.
+   Nota. Se suprimen algunos avisos.
    ------------------------------------------------------------------ *)
 
 Set Warnings "-notation-overridden,-parsing".
@@ -592,7 +592,7 @@ Check @empareja.
 (* ---------------------------------------------------------------------
    Ejercicio 2.2.3. Definir la función
       desempareja {X Y : Type} (ps : list (X*Y)) : (list X) * (list Y)
-   tal que (desempareja ps) es el par de lista (xs,ys) cuyo
+   tal que (desempareja ps) es el par de listas (xs,ys) cuyo
    emparejamiento es l. Por ejemplo,
       desempareja [(1,false);(2,false)] = ([1;2],[false;false]).
    ------------------------------------------------------------------ *)
