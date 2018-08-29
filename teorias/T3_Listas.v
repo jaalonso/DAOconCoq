@@ -27,7 +27,7 @@ Require Export T2_Induccion.
    ================================================================== *)
 
 (* ---------------------------------------------------------------------
-   Nota. Se iniciar el módulo ListaNat.
+   Nota. Se inicia el módulo ListaNat.
    ------------------------------------------------------------------ *)
 
 Module ListaNat. 
@@ -678,7 +678,7 @@ Proof. reflexivity. Qed.
 
 (* ---------------------------------------------------------------------
    Ejercicio 2.7.9. Escribir una propiedad sobre multiconjuntos con las
-   funciones nOcurrencias y agrega y demostrarla. 
+   funciones nOcurrencias y demostrarla. 
    ------------------------------------------------------------------ *)
 
 Theorem nOcurrencias_conc: forall xs ys : multiconjunto, forall n:nat,
